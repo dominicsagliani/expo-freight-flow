@@ -5,6 +5,7 @@ import { ScanLine } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, Panel } from "@/components/app/page-header";
 import { PriorityBadge, TicketStatusBadge } from "@/components/app/badges";
+import { OperatorJobActions } from "@/components/app/operator-job-actions";
 import { QrScanner } from "@/components/app/qr-scanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,7 +68,8 @@ function OperatorPage() {
       <Panel bodyClassName="divide-y">
         {jobs.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">No open jobs assigned to you.</p>}
         {jobs.map((j) => (
-          <Link key={j.id} to="/tickets/$ticketId" params={{ ticketId: j.id }} className="block p-4 hover:bg-muted/50">
+          <div key={j.id} className="grid gap-3 p-4">
+          <Link to="/tickets/$ticketId" params={{ ticketId: j.id }} className="block hover:opacity-80">
             <div className="flex items-center justify-between gap-2">
               <span className="font-mono text-sm font-semibold">{j.ticket_number}</span>
               <TicketStatusBadge status={j.status} />
@@ -77,6 +79,8 @@ function OperatorPage() {
               <PriorityBadge priority={j.priority} /> {SERVICE_LABEL[j.service_type]}{j.destination ? ` → ${j.destination}` : ""}
             </div>
           </Link>
+          <OperatorJobActions ticketId={j.id} status={j.status} />
+          </div>
         ))}
       </Panel>
 
