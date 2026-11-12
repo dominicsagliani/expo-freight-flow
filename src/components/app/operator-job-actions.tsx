@@ -13,11 +13,12 @@ export function OperatorJobActions({ ticketId, status }: { ticketId: string; sta
   const [notes, setNotes] = useState("");
   const [confirming, setConfirming] = useState(false);
 
-  const run = async (fn: () => PromiseLike<{ error: { message: string } | null }>, ok: string) => {
+  const run = async (fn: () => PromiseLike<{ error: { message: string } | null }>, ok: string, event: string) => {
     setBusy(true);
     const { error } = await fn();
     setBusy(false);
     if (error) { toast.error(error.message); return; }
+    window.__lovableEvents?.track?.(event, {});
     toast.success(ok);
     setConfirming(false);
     setNotes("");
@@ -27,7 +28,7 @@ export function OperatorJobActions({ ticketId, status }: { ticketId: string; sta
   if (status === "assigned")
     return (
       <Button className="h-12 w-full" disabled={busy}
-        onClick={() => run(() => supabase.rpc("operator_start_job", { _ticket: ticketId }), "Job started")}>
+        onClick={() => run(() => supabase.rpc("operator_start_job", { _ticket: ticketId }), "Job started", "project.job_started")}>
         <Play className="mr-2 size-4" /> Start job
       </Button>
     );
@@ -38,7 +39,7 @@ export function OperatorJobActions({ ticketId, status }: { ticketId: string; sta
         <div className="flex gap-2">
           <Button variant="outline" className="h-12 flex-1" onClick={() => setConfirming(false)}>Cancel</Button>
           <Button className="h-12 flex-1" disabled={busy}
-            onClick={() => run(() => supabase.rpc("operator_complete_job", { _ticket: ticketId, _notes: notes }), "Job completed")}>
+            onClick={() => run(() => supabase.rpc("operator_complete_job", { _ticket: ticketId, _notes: notes }), "Job completed", "project.job_completed")}>
             Confirm complete
           </Button>
         </div>
