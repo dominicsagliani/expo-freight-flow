@@ -20,7 +20,7 @@ const PRICE_ID_RE = /^[a-zA-Z0-9_-]+$/;
 // (portal, dashboards, subscriptions.search) resolvable.
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
-  options: { email?: string; userId?: string },
+  options: { email?: string | undefined; userId?: string | undefined },
 ): Promise<string> {
   // userId is interpolated into a Stripe Search query string below;
   // reject anything that could break out of the quoted value.
@@ -32,13 +32,14 @@ async function resolveOrCreateCustomer(
       query: `metadata['userId']:'${options.userId}'`,
       limit: 1,
     });
-    if (found.data.length) return found.data[0].id;
+    const match = found.data[0];
+    if (match) return match.id;
   }
   if (options.email) {
     const existing = await stripe.customers.list({ email: options.email, limit: 1 });
-    if (existing.data.length) {
-      const customer = existing.data[0];
-      if (options.userId && customer.metadata?.userId !== options.userId) {
+    const customer = existing.data[0];
+    if (customer) {
+      if (options.userId && customer.metadata?.["userId"] !== options.userId) {
         await stripe.customers.update(customer.id, {
           metadata: { ...customer.metadata, userId: options.userId },
         });
@@ -87,8 +88,8 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       const organizationId = await callerOrg(supabase, userId);
 
       const prices = await stripe.prices.list({ lookup_keys: [data.priceId] });
-      if (!prices.data.length) throw new Error("Price not found");
       const stripePrice = prices.data[0];
+      if (!stripePrice) throw new Error("Price not found");
       if (stripePrice.type !== "recurring") {
         throw new Error("This price is not a subscription");
       }
@@ -130,7 +131,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
 export const createPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { returnUrl?: string; environment: StripeEnv }) => {
+  .inputValidator((data: { returnUrl?: string | undefined; environment: StripeEnv }) => {
     if (data.environment !== "sandbox" && data.environment !== "live") {
       throw new Error("Invalid environment");
     }
