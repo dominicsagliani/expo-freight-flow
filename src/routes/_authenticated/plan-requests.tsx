@@ -40,7 +40,10 @@ function RequestsPage() {
     setBusy(requestId);
     const result = await reviewSalesRequest({ data: { requestId, decision } });
     setBusy(null);
-    if ("error" in result) return toast.error(result.error);
+    if ("error" in result) {
+      toast.error(result.error);
+      return;
+    }
     toast.success(decision === "approve" ? "Approved." : "Declined.");
     queryClient.invalidateQueries({ queryKey: ["sales-requests"] });
     queryClient.invalidateQueries({ queryKey: ["entitlement"] });
