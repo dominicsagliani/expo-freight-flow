@@ -1,0 +1,108 @@
+import { Link, useRouterState } from "@tanstack/react-router";
+import {
+  Building2,
+  CalendarDays,
+  ClipboardList,
+  HardHat,
+  LayoutDashboard,
+  Package,
+  Receipt,
+  Route as RouteIcon,
+  Settings,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { LogoMark } from "./logo";
+import type { AppRole } from "@/lib/labels";
+
+type NavItem = { title: string; url: string; icon: typeof LayoutDashboard; roles?: AppRole[] };
+
+const STAFF: AppRole[] = ["super_admin", "company_admin", "dispatcher"];
+
+const operations: NavItem[] = [
+  { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Events", url: "/events", icon: CalendarDays, roles: STAFF },
+  { title: "Exhibitors", url: "/exhibitors", icon: Building2, roles: STAFF },
+  { title: "Freight Management", url: "/freight", icon: Package },
+  { title: "Material Handling Tickets", url: "/tickets", icon: ClipboardList },
+  { title: "Dispatch", url: "/dispatch", icon: RouteIcon, roles: STAFF },
+  { title: "Operators", url: "/operators", icon: HardHat, roles: STAFF },
+];
+
+const admin: NavItem[] = [
+  { title: "Billing & Reports", url: "/billing", icon: Receipt, roles: [...STAFF, "exhibitor"] },
+  { title: "Settings", url: "/settings", icon: Settings },
+];
+
+export function AppSidebar({ role, orgName }: { role: AppRole | null; orgName: string }) {
+  const { state, isMobile, setOpenMobile } = useSidebar();
+  const collapsed = state === "collapsed" && !isMobile;
+  const path = useRouterState({ select: (r) => r.location.pathname });
+  const visible = (i: NavItem) => !i.roles || (role != null && i.roles.includes(role));
+  const isActive = (url: string) => path === url || path.startsWith(url + "/");
+
+  const renderGroup = (label: string, items: NavItem[]) => (
+    <SidebarGroup>
+      <SidebarGroupLabel className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/50">
+        {label}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.filter(visible).map((item) => (
+            <SidebarMenuItem key={item.url}>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive(item.url)}
+                tooltip={item.title}
+                className="h-9 text-sidebar-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-[inset_2px_0_0_var(--sidebar-primary)]"
+              >
+                <Link to={item.url} onClick={() => isMobile && setOpenMobile(false)}>
+                  <item.icon className="data-[active=true]:text-sidebar-primary" />
+                  <span>{item.title}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+
+  return (
+    <Sidebar collapsible="icon" className="border-r-0">
+      <SidebarHeader className="px-3 pb-2 pt-4">
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          <LogoMark className="size-8 shrink-0" />
+          {!collapsed && (
+            <div className="min-w-0 leading-tight">
+              <div className="font-display text-base font-bold text-sidebar-accent-foreground">DrayFlow</div>
+              <div className="truncate text-xs text-sidebar-foreground/60">{orgName}</div>
+            </div>
+          )}
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        {renderGroup("Operations", operations)}
+        {renderGroup("Management", admin)}
+      </SidebarContent>
+      {!collapsed && (
+        <SidebarFooter className="px-4 pb-4">
+          <p className="text-[0.6875rem] leading-relaxed text-sidebar-foreground/45">
+            The operating system for material handling.
+          </p>
+        </SidebarFooter>
+      )}
+    </Sidebar>
+  );
+}
