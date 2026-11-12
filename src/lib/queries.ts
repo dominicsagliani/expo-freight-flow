@@ -211,3 +211,33 @@ export const exhibitorCountQuery = () =>
       return count ?? 0;
     },
   });
+
+// The company's ExpoHaul subscription rows (test and live rows coexist, so
+// every read keeps the environment column and filters it in the UI).
+export const subscriptionsQuery = () =>
+  queryOptions({
+    queryKey: ["subscriptions"],
+    queryFn: async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const user = auth.user;
+      if (!user) throw new Error("Not signed in");
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("organization_id")
+        .eq("user_id", user.id)
+        .not("organization_id", "is", null)
+        .limit(1);
+      const orgId = roles?.[0]?.organization_id ?? null;
+      const orFilter = orgId
+        ? `user_id.eq.${user.id},organization_id.eq.${orgId}`
+        : `user_id.eq.${user.id}`;
+      return unwrap(
+        await supabase
+          .from("subscriptions")
+          .select("*")
+          .or(orFilter)
+          .order("created_at", { ascending: false }),
+      );
+    },
+    staleTime: 30_000,
+  });

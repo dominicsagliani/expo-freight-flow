@@ -126,6 +126,17 @@ export function planById(id: string): Plan | undefined {
   return PLANS.find((p) => p.id === id);
 }
 
+/** Which plan a stored price_id belongs to (e.g. "growth_yearly" -> "growth_plan"). */
+export function planIdFromPriceId(priceId: string | null | undefined): string | null {
+  if (!priceId) return null;
+  for (const plan of PLANS) {
+    for (const interval of Object.keys(plan.prices) as BillingInterval[]) {
+      if (plan.prices[interval].priceId === priceId) return plan.id;
+    }
+  }
+  return null;
+}
+
 export function priceFor(plan: Plan, interval: BillingInterval): PlanPrice {
   return plan.prices[interval];
 }
