@@ -33,7 +33,10 @@ import {
   type Plan,
 } from "@/lib/plans";
 
-type PlansSearch = { checkout?: string; session_id?: string };
+type PlansSearch = {
+  checkout?: string | undefined;
+  session_id?: string | undefined;
+};
 
 export const Route = createFileRoute("/_authenticated/plans")({
   head: () => ({
@@ -53,8 +56,9 @@ export const Route = createFileRoute("/_authenticated/plans")({
     ],
   }),
   validateSearch: (search: Record<string, unknown>): PlansSearch => ({
-    checkout: typeof search.checkout === "string" ? search.checkout : undefined,
-    session_id: typeof search.session_id === "string" ? search.session_id : undefined,
+    checkout: typeof search["checkout"] === "string" ? search["checkout"] : undefined,
+    session_id:
+      typeof search["session_id"] === "string" ? search["session_id"] : undefined,
   }),
   loader: ({ context: { queryClient } }) =>
     Promise.all([
