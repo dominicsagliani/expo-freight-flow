@@ -14,7 +14,7 @@ import {
   isStaff,
 } from "@/lib/queries";
 import { computeDashboardStats } from "@/lib/dashboard-stats";
-import { ACTIVITY_LABEL, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
+import { ACTIVITY_LABEL, type ActivityDetails, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
 import { fmtAgo, fmtDateRange } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -57,7 +57,7 @@ function Kpi({ label, value, sub, accent }: { label: string; value: number | str
 }
 
 function describeActivity(a: { action: string; details: unknown }) {
-  const d = (a.details ?? {}) as Record<string, string | null>;
+  const d = (a.details ?? {}) as ActivityDetails;
   switch (a.action) {
     case "status_changed":
       return `${TICKET_STATUS_LABEL[d.from as TicketStatus] ?? d.from} → ${TICKET_STATUS_LABEL[d.to as TicketStatus] ?? d.to}`;

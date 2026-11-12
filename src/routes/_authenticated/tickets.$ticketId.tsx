@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2, ScanLine } from "lucide-react";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ArrivalBadge, PriorityBadge, TicketStatusBadge } from "@/components/app/badges";
 import { ticketActivityQuery, ticketQuery } from "@/lib/queries";
-import { ACTIVITY_LABEL, FREIGHT_TYPE_LABEL, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
+import { ACTIVITY_LABEL, type ActivityDetails, FREIGHT_TYPE_LABEL, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
 import { fmtDateTime, fmtDims, fmtWeight } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/tickets/$ticketId")({
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/tickets/$ticketId")({
 });
 
 function detailText(action: string, details: unknown) {
-  const d = (details ?? {}) as Record<string, string | null>;
+  const d = (details ?? {}) as ActivityDetails;
   if (action === "status_changed")
     return `${TICKET_STATUS_LABEL[d.from as TicketStatus] ?? d.from} → ${TICKET_STATUS_LABEL[d.to as TicketStatus] ?? d.to}`;
   if (action === "assigned") return [d.operator, d.equipment].filter(Boolean).join(" · ") || "Unassigned";
