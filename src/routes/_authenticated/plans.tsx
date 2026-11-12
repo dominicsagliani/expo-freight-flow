@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Check, CreditCard, ExternalLink, Handshake, Sparkles } from "lucide-react";
 import { PageHeader, Panel } from "@/components/app/page-header";
@@ -28,7 +28,6 @@ import {
   annualSavings,
   fmtCents,
   planIdFromPriceId,
-  planPriceLabel,
   priceFor,
   type BillingInterval,
   type Plan,
@@ -82,7 +81,6 @@ function isLive(row: { status: string; current_period_end: string | null }) {
 function PlansPage() {
   const { data: m } = useSuspenseQuery(membershipQuery());
   const { data: subs } = useSuspenseQuery(subscriptionsQuery());
-  const queryClient = useQueryClient();
   const { checkout, session_id: sessionId } = Route.useSearch();
   const environment = safeEnvironment();
   const { openCheckout, closeCheckout, isOpen, checkoutElement } = useStripeCheckout();
