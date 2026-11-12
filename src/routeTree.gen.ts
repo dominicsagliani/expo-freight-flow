@@ -13,11 +13,17 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticated/dispatch'
 import { Route as AuthenticatedExhibitorsRouteImport } from './routes/_authenticated/exhibitors'
+import { Route as AuthenticatedFreightRouteImport } from './routes/_authenticated/freight'
+import { Route as AuthenticatedOperatorsRouteImport } from './routes/_authenticated/operators'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
 import { Route as AuthenticatedTicketsIndexRouteImport } from './routes/_authenticated/tickets.index'
+import { Route as AuthenticatedTicketsTicketIdRouteImport } from './routes/_authenticated/tickets.$ticketId'
 import { Route as AuthenticatedTicketsNewRouteImport } from './routes/_authenticated/tickets.new'
 
 const IndexRoute = IndexRouteImport.update({
@@ -39,14 +45,39 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDispatchRoute = AuthenticatedDispatchRouteImport.update({
+  id: '/dispatch',
+  path: '/dispatch',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedExhibitorsRoute = AuthenticatedExhibitorsRouteImport.update({
   id: '/exhibitors',
   path: '/exhibitors',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFreightRoute = AuthenticatedFreightRouteImport.update({
+  id: '/freight',
+  path: '/freight',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOperatorsRoute = AuthenticatedOperatorsRouteImport.update({
+  id: '/operators',
+  path: '/operators',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedEventsIndexRoute =
@@ -67,6 +98,12 @@ const AuthenticatedTicketsIndexRoute =
     path: '/tickets/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTicketsTicketIdRoute =
+  AuthenticatedTicketsTicketIdRouteImport.update({
+    id: '/tickets/$ticketId',
+    path: '/tickets/$ticketId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTicketsNewRoute = AuthenticatedTicketsNewRouteImport.update({
   id: '/tickets/new',
   path: '/tickets/new',
@@ -77,9 +114,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dispatch': typeof AuthenticatedDispatchRoute
   '/exhibitors': typeof AuthenticatedExhibitorsRoute
+  '/freight': typeof AuthenticatedFreightRoute
+  '/operators': typeof AuthenticatedOperatorsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
+  '/tickets/$ticketId': typeof AuthenticatedTicketsTicketIdRoute
   '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
   '/tickets/': typeof AuthenticatedTicketsIndexRoute
@@ -88,9 +131,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dispatch': typeof AuthenticatedDispatchRoute
   '/exhibitors': typeof AuthenticatedExhibitorsRoute
+  '/freight': typeof AuthenticatedFreightRoute
+  '/operators': typeof AuthenticatedOperatorsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
+  '/tickets/$ticketId': typeof AuthenticatedTicketsTicketIdRoute
   '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/events': typeof AuthenticatedEventsIndexRoute
   '/tickets': typeof AuthenticatedTicketsIndexRoute
@@ -101,9 +150,15 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/dispatch': typeof AuthenticatedDispatchRoute
   '/_authenticated/exhibitors': typeof AuthenticatedExhibitorsRoute
+  '/_authenticated/freight': typeof AuthenticatedFreightRoute
+  '/_authenticated/operators': typeof AuthenticatedOperatorsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
+  '/_authenticated/tickets/$ticketId': typeof AuthenticatedTicketsTicketIdRoute
   '/_authenticated/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/tickets/': typeof AuthenticatedTicketsIndexRoute
@@ -114,9 +169,15 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/billing'
     | '/dashboard'
+    | '/dispatch'
     | '/exhibitors'
+    | '/freight'
+    | '/operators'
+    | '/settings'
     | '/events/$eventId'
+    | '/tickets/$ticketId'
     | '/tickets/new'
     | '/events/'
     | '/tickets/'
@@ -125,9 +186,15 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/billing'
     | '/dashboard'
+    | '/dispatch'
     | '/exhibitors'
+    | '/freight'
+    | '/operators'
+    | '/settings'
     | '/events/$eventId'
+    | '/tickets/$ticketId'
     | '/tickets/new'
     | '/events'
     | '/tickets'
@@ -137,9 +204,15 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/billing'
     | '/_authenticated/dashboard'
+    | '/_authenticated/dispatch'
     | '/_authenticated/exhibitors'
+    | '/_authenticated/freight'
+    | '/_authenticated/operators'
+    | '/_authenticated/settings'
     | '/_authenticated/events/$eventId'
+    | '/_authenticated/tickets/$ticketId'
     | '/_authenticated/tickets/new'
     | '/_authenticated/events/'
     | '/_authenticated/tickets/'
@@ -182,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/billing': {
+      id: '/_authenticated/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof AuthenticatedBillingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -189,11 +269,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dispatch': {
+      id: '/_authenticated/dispatch'
+      path: '/dispatch'
+      fullPath: '/dispatch'
+      preLoaderRoute: typeof AuthenticatedDispatchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/exhibitors': {
       id: '/_authenticated/exhibitors'
       path: '/exhibitors'
       fullPath: '/exhibitors'
       preLoaderRoute: typeof AuthenticatedExhibitorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/freight': {
+      id: '/_authenticated/freight'
+      path: '/freight'
+      fullPath: '/freight'
+      preLoaderRoute: typeof AuthenticatedFreightRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/operators': {
+      id: '/_authenticated/operators'
+      path: '/operators'
+      fullPath: '/operators'
+      preLoaderRoute: typeof AuthenticatedOperatorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/events/': {
@@ -217,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTicketsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tickets/$ticketId': {
+      id: '/_authenticated/tickets/$ticketId'
+      path: '/tickets/$ticketId'
+      fullPath: '/tickets/$ticketId'
+      preLoaderRoute: typeof AuthenticatedTicketsTicketIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tickets/new': {
       id: '/_authenticated/tickets/new'
       path: '/tickets/new'
@@ -228,18 +343,30 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDispatchRoute: typeof AuthenticatedDispatchRoute
   AuthenticatedExhibitorsRoute: typeof AuthenticatedExhibitorsRoute
+  AuthenticatedFreightRoute: typeof AuthenticatedFreightRoute
+  AuthenticatedOperatorsRoute: typeof AuthenticatedOperatorsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
+  AuthenticatedTicketsTicketIdRoute: typeof AuthenticatedTicketsTicketIdRoute
   AuthenticatedTicketsNewRoute: typeof AuthenticatedTicketsNewRoute
   AuthenticatedEventsIndexRoute: typeof AuthenticatedEventsIndexRoute
   AuthenticatedTicketsIndexRoute: typeof AuthenticatedTicketsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDispatchRoute: AuthenticatedDispatchRoute,
   AuthenticatedExhibitorsRoute: AuthenticatedExhibitorsRoute,
+  AuthenticatedFreightRoute: AuthenticatedFreightRoute,
+  AuthenticatedOperatorsRoute: AuthenticatedOperatorsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
+  AuthenticatedTicketsTicketIdRoute: AuthenticatedTicketsTicketIdRoute,
   AuthenticatedTicketsNewRoute: AuthenticatedTicketsNewRoute,
   AuthenticatedEventsIndexRoute: AuthenticatedEventsIndexRoute,
   AuthenticatedTicketsIndexRoute: AuthenticatedTicketsIndexRoute,
