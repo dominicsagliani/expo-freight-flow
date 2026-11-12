@@ -24,3 +24,5 @@
 - [ ] Short brand launch video for LinkedIn / X / Product Hunt
 - [x] Collect customer payments: plans & billing page, test-mode checkout, subscription records
       (live payments need the go-live steps in the Payments tab)
+
+- [x] Plan entitlements, upgrades/downgrades, failed-payment grace, pilot approvals
