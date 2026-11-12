@@ -781,8 +781,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      operator_complete_job: {
+        Args: { _notes?: string; _ticket: string }
+        Returns: undefined
+      }
       operator_exhibitor_ids: { Args: never; Returns: string[] }
       operator_freight_ids: { Args: never; Returns: string[] }
+      operator_start_job: { Args: { _ticket: string }; Returns: undefined }
       operator_ticket_ids: { Args: never; Returns: string[] }
       user_exhibitor_ids: { Args: never; Returns: string[] }
       user_operator_ids: { Args: never; Returns: string[] }
