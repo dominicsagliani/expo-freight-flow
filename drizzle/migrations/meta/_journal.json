@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1794519467250,
+      "tag": "0000_drayflow_core_schema",
+      "breakpoints": true
+    }
+  ]
 }
