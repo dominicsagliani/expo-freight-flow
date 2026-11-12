@@ -22,6 +22,8 @@ import { Route as AuthenticatedOperatorsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
+import { Route as AuthenticatedLabelsFreightIdRouteImport } from './routes/_authenticated/labels.$freightId'
+import { Route as AuthenticatedScanTokenRouteImport } from './routes/_authenticated/scan.$token'
 import { Route as AuthenticatedTicketsIndexRouteImport } from './routes/_authenticated/tickets.index'
 import { Route as AuthenticatedTicketsTicketIdRouteImport } from './routes/_authenticated/tickets.$ticketId'
 import { Route as AuthenticatedTicketsNewRouteImport } from './routes/_authenticated/tickets.new'
@@ -92,6 +94,17 @@ const AuthenticatedEventsEventIdRoute =
     path: '/events/$eventId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLabelsFreightIdRoute =
+  AuthenticatedLabelsFreightIdRouteImport.update({
+    id: '/labels/$freightId',
+    path: '/labels/$freightId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedScanTokenRoute = AuthenticatedScanTokenRouteImport.update({
+  id: '/scan/$token',
+  path: '/scan/$token',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTicketsIndexRoute =
   AuthenticatedTicketsIndexRouteImport.update({
     id: '/tickets/',
@@ -122,6 +135,8 @@ export interface FileRoutesByFullPath {
   '/operators': typeof AuthenticatedOperatorsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
+  '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
+  '/scan/$token': typeof AuthenticatedScanTokenRoute
   '/tickets/$ticketId': typeof AuthenticatedTicketsTicketIdRoute
   '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
@@ -139,6 +154,8 @@ export interface FileRoutesByTo {
   '/operators': typeof AuthenticatedOperatorsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
+  '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
+  '/scan/$token': typeof AuthenticatedScanTokenRoute
   '/tickets/$ticketId': typeof AuthenticatedTicketsTicketIdRoute
   '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/events': typeof AuthenticatedEventsIndexRoute
@@ -158,6 +175,8 @@ export interface FileRoutesById {
   '/_authenticated/operators': typeof AuthenticatedOperatorsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
+  '/_authenticated/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
+  '/_authenticated/scan/$token': typeof AuthenticatedScanTokenRoute
   '/_authenticated/tickets/$ticketId': typeof AuthenticatedTicketsTicketIdRoute
   '/_authenticated/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
@@ -177,6 +196,8 @@ export interface FileRouteTypes {
     | '/operators'
     | '/settings'
     | '/events/$eventId'
+    | '/labels/$freightId'
+    | '/scan/$token'
     | '/tickets/$ticketId'
     | '/tickets/new'
     | '/events/'
@@ -194,6 +215,8 @@ export interface FileRouteTypes {
     | '/operators'
     | '/settings'
     | '/events/$eventId'
+    | '/labels/$freightId'
+    | '/scan/$token'
     | '/tickets/$ticketId'
     | '/tickets/new'
     | '/events'
@@ -212,6 +235,8 @@ export interface FileRouteTypes {
     | '/_authenticated/operators'
     | '/_authenticated/settings'
     | '/_authenticated/events/$eventId'
+    | '/_authenticated/labels/$freightId'
+    | '/_authenticated/scan/$token'
     | '/_authenticated/tickets/$ticketId'
     | '/_authenticated/tickets/new'
     | '/_authenticated/events/'
@@ -318,6 +343,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEventsEventIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/labels/$freightId': {
+      id: '/_authenticated/labels/$freightId'
+      path: '/labels/$freightId'
+      fullPath: '/labels/$freightId'
+      preLoaderRoute: typeof AuthenticatedLabelsFreightIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/scan/$token': {
+      id: '/_authenticated/scan/$token'
+      path: '/scan/$token'
+      fullPath: '/scan/$token'
+      preLoaderRoute: typeof AuthenticatedScanTokenRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tickets/': {
       id: '/_authenticated/tickets/'
       path: '/tickets'
@@ -351,6 +390,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOperatorsRoute: typeof AuthenticatedOperatorsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
+  AuthenticatedLabelsFreightIdRoute: typeof AuthenticatedLabelsFreightIdRoute
+  AuthenticatedScanTokenRoute: typeof AuthenticatedScanTokenRoute
   AuthenticatedTicketsTicketIdRoute: typeof AuthenticatedTicketsTicketIdRoute
   AuthenticatedTicketsNewRoute: typeof AuthenticatedTicketsNewRoute
   AuthenticatedEventsIndexRoute: typeof AuthenticatedEventsIndexRoute
@@ -366,6 +407,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOperatorsRoute: AuthenticatedOperatorsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
+  AuthenticatedLabelsFreightIdRoute: AuthenticatedLabelsFreightIdRoute,
+  AuthenticatedScanTokenRoute: AuthenticatedScanTokenRoute,
   AuthenticatedTicketsTicketIdRoute: AuthenticatedTicketsTicketIdRoute,
   AuthenticatedTicketsNewRoute: AuthenticatedTicketsNewRoute,
   AuthenticatedEventsIndexRoute: AuthenticatedEventsIndexRoute,
