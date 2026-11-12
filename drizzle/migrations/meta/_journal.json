@@ -15,6 +15,20 @@
       "when": 1794523486171,
       "tag": "0001_operator_job_actions",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794524343234,
+      "tag": "0002_billing_photos_arrival",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794524520031,
+      "tag": "0003_charge_backfill_fix",
+      "breakpoints": true
     }
   ]
 }

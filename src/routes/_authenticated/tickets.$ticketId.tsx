@@ -1,9 +1,11 @@
+import { TicketPhotos } from "@/components/app/ticket-photos";
+import { fmtMoney } from "@/lib/billing";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle2, ScanLine } from "lucide-react";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ArrivalBadge, PriorityBadge, TicketStatusBadge } from "@/components/app/badges";
-import { ticketActivityQuery, ticketQuery } from "@/lib/queries";
+import { isStaff, membershipQuery, ticketActivityQuery, ticketQuery } from "@/lib/queries";
 import { ACTIVITY_LABEL, type ActivityDetails, FREIGHT_TYPE_LABEL, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
 import { fmtDateTime, fmtDims, fmtWeight } from "@/lib/format";
 
@@ -40,6 +42,8 @@ function TicketDetail() {
   const { ticketId } = Route.useParams();
   const { data: t } = useSuspenseQuery(ticketQuery(ticketId));
   const { data: activity } = useSuspenseQuery(ticketActivityQuery(ticketId));
+  const { data: m } = useSuspenseQuery(membershipQuery());
+  const canUpload = t.status !== "cancelled" && (isStaff(m) || (!!m.operatorId && t.assigned_operator_id === m.operatorId));
   const totalWeight = t.ticket_freight.reduce((s, tf) => s + Number(tf.freight?.weight_lbs ?? 0), 0);
 
   return (
@@ -66,6 +70,8 @@ function TicketDetail() {
             <Item label="Destination" value={t.destination} />
             <Item label="Requested" value={fmtDateTime(t.requested_at)} />
             <Item label="On-site contact" value={[t.exhibitor?.contact_name, t.exhibitor?.contact_phone].filter(Boolean).join(" · ")} />
+            <Item label="Completed" value={fmtDateTime(t.completed_at)} />
+            <Item label="Charge" value={t.status === "completed" ? fmtMoney(t.charge_amount) : "Calculated on completion"} />
             <Item label="Operator · Equipment" value={[t.operator?.full_name, t.equipment?.unit_number].filter(Boolean).join(" · ") || "Not assigned"} />
             <div className="sm:col-span-2">
               <Item label="Special instructions" value={t.special_instructions ?? "None"} />
@@ -116,6 +122,9 @@ function TicketDetail() {
                 )}
               </ul>
             )}
+          </Panel>
+          <Panel title="Photos" bodyClassName="p-4">
+            <TicketPhotos ticketId={t.id} canUpload={canUpload} />
           </Panel>
         </div>
 

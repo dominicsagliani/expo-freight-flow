@@ -13,9 +13,12 @@
 
 ## Phase 2 — Freight identification + dispatch
 - [x] Freight registration, QR label generation and printing, sign-in-protected scan page
-- [ ] Dispatch board (pending / assigned / in progress / completed), assign operator + equipment
+- [x] Dispatch board (pending / assigned / in progress / completed), assign operator + equipment
 
 ## Phase 3 — Operator portal + billing
 - [x] Operator portal: assigned jobs list + camera QR scan
-- [ ] Operator portal: start/complete, notes, photos
-- [ ] Rate cards, charge calculation, billing review + export
+- [x] Operator portal: start/complete, notes, photos
+- [x] Rate cards, charge calculation, billing review + export
+
+## Requested
+- [ ] Short brand launch video for LinkedIn / X / Product Hunt

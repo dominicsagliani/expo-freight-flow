@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus, QrCode as QrIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FreightStatusEditor } from "@/components/app/freight-status-editor";
 import { FreightFormDialog } from "@/components/app/freight-form-dialog";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { PageHeader, Panel, ComingNext, EmptyState } from "@/components/app/page-header";
+import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ArrivalBadge } from "@/components/app/badges";
 import { eventExhibitorsQuery, eventsQuery, freightQuery, isStaff, membershipQuery } from "@/lib/queries";
 import { FREIGHT_TYPE_LABEL } from "@/lib/labels";
-import { fmtDims, fmtWeight } from "@/lib/format";
+import { fmtDateTime, fmtDims, fmtWeight } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/freight")({
   head: () => ({
@@ -86,7 +87,11 @@ function FreightPage() {
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{fmtDims(f.length_in, f.width_in, f.height_in)}</td>
                     <td className="px-4 py-3 text-muted-foreground">{f.storage_location ?? "—"}</td>
                     <td className="px-4 py-3">
-                      <ArrivalBadge status={f.arrival_status} />
+                      <div className="flex items-center gap-1">
+                        <ArrivalBadge status={f.arrival_status} />
+                        {isStaff(m) && <FreightStatusEditor id={f.id} status={f.arrival_status} location={f.storage_location} />}
+                      </div>
+                      {f.arrived_at && <div className="mt-1 text-xs text-muted-foreground">Arrived {fmtDateTime(f.arrived_at)}</div>}
                     </td>
                     <td className="px-4 py-3">
                       <Button asChild variant="outline" size="sm">
@@ -100,14 +105,6 @@ function FreightPage() {
           </div>
         )}
       </Panel>
-      <ComingNext
-        phase="Phase 2"
-        title="Freight updates & scanning"
-        items={[
-          "Update arrival status and storage location",
-          "Camera QR scanning inside the operator portal",
-        ]}
-      />
     </div>
   );
 }

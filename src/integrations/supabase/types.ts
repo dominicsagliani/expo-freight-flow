@@ -278,6 +278,7 @@ export type Database = {
       freight_items: {
         Row: {
           arrival_status: Database["public"]["Enums"]["arrival_status"]
+          arrived_at: string | null
           booth_number: string | null
           created_at: string
           created_by: string | null
@@ -299,6 +300,7 @@ export type Database = {
         }
         Insert: {
           arrival_status?: Database["public"]["Enums"]["arrival_status"]
+          arrived_at?: string | null
           booth_number?: string | null
           created_at?: string
           created_by?: string | null
@@ -320,6 +322,7 @@ export type Database = {
         }
         Update: {
           arrival_status?: Database["public"]["Enums"]["arrival_status"]
+          arrived_at?: string | null
           booth_number?: string | null
           created_at?: string
           created_by?: string | null
@@ -594,12 +597,55 @@ export type Database = {
           },
         ]
       }
+      ticket_photos: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          storage_path: string
+          ticket_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          storage_path: string
+          ticket_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          storage_path?: string
+          ticket_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_photos_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_photos_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tickets: {
         Row: {
           assigned_at: string | null
           assigned_equipment_id: string | null
           assigned_operator_id: string | null
           booth_number: string | null
+          charge_amount: number | null
           completed_at: string | null
           completion_notes: string | null
           created_at: string
@@ -623,6 +669,7 @@ export type Database = {
           assigned_equipment_id?: string | null
           assigned_operator_id?: string | null
           booth_number?: string | null
+          charge_amount?: number | null
           completed_at?: string | null
           completion_notes?: string | null
           created_at?: string
@@ -646,6 +693,7 @@ export type Database = {
           assigned_equipment_id?: string | null
           assigned_operator_id?: string | null
           booth_number?: string | null
+          charge_amount?: number | null
           completed_at?: string | null
           completion_notes?: string | null
           created_at?: string
@@ -760,6 +808,8 @@ export type Database = {
     }
     Functions: {
       can_view_ticket: { Args: { _ticket: string }; Returns: boolean }
+      can_work_ticket: { Args: { _ticket: string }; Returns: boolean }
+      compute_ticket_charge: { Args: { _ticket: string }; Returns: number }
       exhibitor_event_ids: { Args: never; Returns: string[] }
       has_org_role: {
         Args: { _org: string; _role: Database["public"]["Enums"]["app_role"] }
