@@ -500,6 +500,39 @@ export type Database = {
           },
         ]
       }
+      sales_requests: {
+        Row: {
+          company_name: string
+          contact_email: string
+          created_at: string | null
+          id: string
+          kind: string
+          message: string
+          organization_id: string | null
+          user_id: string
+        }
+        Insert: {
+          company_name?: string
+          contact_email?: string
+          created_at?: string | null
+          id?: string
+          kind: string
+          message?: string
+          organization_id?: string | null
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string
+          created_at?: string | null
+          id?: string
+          kind?: string
+          message?: string
+          organization_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       service_rates: {
         Row: {
           created_at: string
@@ -547,6 +580,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          organization_id: string | null
+          price_id: string
+          product_id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          organization_id?: string | null
+          price_id: string
+          product_id: string
+          status?: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          organization_id?: string | null
+          price_id?: string
+          product_id?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       ticket_freight: {
         Row: {
@@ -811,6 +895,10 @@ export type Database = {
       can_work_ticket: { Args: { _ticket: string }; Returns: boolean }
       compute_ticket_charge: { Args: { _ticket: string }; Returns: number }
       exhibitor_event_ids: { Args: never; Returns: string[] }
+      has_active_subscription: {
+        Args: { check_env?: string; user_uuid: string }
+        Returns: boolean
+      }
       has_org_role: {
         Args: { _org: string; _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
@@ -839,6 +927,10 @@ export type Database = {
       operator_freight_ids: { Args: never; Returns: string[] }
       operator_start_job: { Args: { _ticket: string }; Returns: undefined }
       operator_ticket_ids: { Args: never; Returns: string[] }
+      org_has_active_subscription: {
+        Args: { _org: string; check_env?: string }
+        Returns: boolean
+      }
       user_exhibitor_ids: { Args: never; Returns: string[] }
       user_operator_ids: { Args: never; Returns: string[] }
     }

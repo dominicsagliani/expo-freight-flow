@@ -29,6 +29,13 @@
       "when": 1794524520031,
       "tag": "0003_charge_backfill_fix",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794526138642,
+      "tag": "0004_payments_subscriptions",
+      "breakpoints": true
     }
   ]
 }

@@ -20,6 +20,7 @@ import { Route as AuthenticatedExhibitorsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedFreightRouteImport } from './routes/_authenticated/freight'
 import { Route as AuthenticatedOperatorRouteImport } from './routes/_authenticated/operator'
 import { Route as AuthenticatedOperatorsRouteImport } from './routes/_authenticated/operators'
+import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
@@ -28,6 +29,7 @@ import { Route as AuthenticatedScanTokenRouteImport } from './routes/_authentica
 import { Route as AuthenticatedTicketsIndexRouteImport } from './routes/_authenticated/tickets.index'
 import { Route as AuthenticatedTicketsTicketIdRouteImport } from './routes/_authenticated/tickets.$ticketId'
 import { Route as AuthenticatedTicketsNewRouteImport } from './routes/_authenticated/tickets.new'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -83,6 +85,11 @@ const AuthenticatedOperatorsRoute = AuthenticatedOperatorsRouteImport.update({
   path: '/operators',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlansRoute = AuthenticatedPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -128,6 +135,12 @@ const AuthenticatedTicketsNewRoute = AuthenticatedTicketsNewRouteImport.update({
   path: '/tickets/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -140,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/freight': typeof AuthenticatedFreightRoute
   '/operator': typeof AuthenticatedOperatorRoute
   '/operators': typeof AuthenticatedOperatorsRoute
+  '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
@@ -148,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
   '/tickets/': typeof AuthenticatedTicketsIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -160,6 +175,7 @@ export interface FileRoutesByTo {
   '/freight': typeof AuthenticatedFreightRoute
   '/operator': typeof AuthenticatedOperatorRoute
   '/operators': typeof AuthenticatedOperatorsRoute
+  '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
@@ -168,6 +184,7 @@ export interface FileRoutesByTo {
   '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/events': typeof AuthenticatedEventsIndexRoute
   '/tickets': typeof AuthenticatedTicketsIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -182,6 +199,7 @@ export interface FileRoutesById {
   '/_authenticated/freight': typeof AuthenticatedFreightRoute
   '/_authenticated/operator': typeof AuthenticatedOperatorRoute
   '/_authenticated/operators': typeof AuthenticatedOperatorsRoute
+  '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
@@ -190,6 +208,7 @@ export interface FileRoutesById {
   '/_authenticated/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/tickets/': typeof AuthenticatedTicketsIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -204,6 +223,7 @@ export interface FileRouteTypes {
     | '/freight'
     | '/operator'
     | '/operators'
+    | '/plans'
     | '/settings'
     | '/events/$eventId'
     | '/labels/$freightId'
@@ -212,6 +232,7 @@ export interface FileRouteTypes {
     | '/tickets/new'
     | '/events/'
     | '/tickets/'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -224,6 +245,7 @@ export interface FileRouteTypes {
     | '/freight'
     | '/operator'
     | '/operators'
+    | '/plans'
     | '/settings'
     | '/events/$eventId'
     | '/labels/$freightId'
@@ -232,6 +254,7 @@ export interface FileRouteTypes {
     | '/tickets/new'
     | '/events'
     | '/tickets'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -245,6 +268,7 @@ export interface FileRouteTypes {
     | '/_authenticated/freight'
     | '/_authenticated/operator'
     | '/_authenticated/operators'
+    | '/_authenticated/plans'
     | '/_authenticated/settings'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/labels/$freightId'
@@ -253,6 +277,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tickets/new'
     | '/_authenticated/events/'
     | '/_authenticated/tickets/'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -260,6 +285,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -341,6 +367,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOperatorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/plans': {
+      id: '/_authenticated/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof AuthenticatedPlansRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -397,6 +430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTicketsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -408,6 +448,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFreightRoute: typeof AuthenticatedFreightRoute
   AuthenticatedOperatorRoute: typeof AuthenticatedOperatorRoute
   AuthenticatedOperatorsRoute: typeof AuthenticatedOperatorsRoute
+  AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
   AuthenticatedLabelsFreightIdRoute: typeof AuthenticatedLabelsFreightIdRoute
@@ -426,6 +467,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFreightRoute: AuthenticatedFreightRoute,
   AuthenticatedOperatorRoute: AuthenticatedOperatorRoute,
   AuthenticatedOperatorsRoute: AuthenticatedOperatorsRoute,
+  AuthenticatedPlansRoute: AuthenticatedPlansRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
   AuthenticatedLabelsFreightIdRoute: AuthenticatedLabelsFreightIdRoute,
@@ -444,6 +486,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
