@@ -15,10 +15,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { isAdmin, membershipQuery, subscriptionsQuery } from "@/lib/queries";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { entitlementQuery, eventsThisYearQuery, isAdmin, membershipQuery, subscriptionsQuery } from "@/lib/queries";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
-import { createPortalSession, submitSalesRequest } from "@/utils/payments.functions";
+import { changePlan, createPortalSession, submitSalesRequest } from "@/utils/payments.functions";
 import {
   CUSTOM_PLAN,
   INTERVAL_HINT,
@@ -27,6 +29,7 @@ import {
   PLANS,
   annualSavings,
   fmtCents,
+  isUpgrade,
   planIdFromPriceId,
   priceFor,
   type BillingInterval,
@@ -84,7 +87,17 @@ function isLive(row: { status: string; current_period_end: string | null }) {
 
 function PlansPage() {
   const { data: m } = useSuspenseQuery(membershipQuery());
-  const { data: subs } = useSuspenseQuery(subscriptionsQuery());
+  const { checkout: checkoutFlag } = Route.useSearch();
+  const queryClient = useQueryClient();
+  const { data: subs } = useSuspenseQuery({
+    ...subscriptionsQuery(),
+    // After paying, poll until the confirmation creates the subscription row.
+    refetchInterval: (q) =>
+      checkoutFlag === "success" && !(q.state.data ?? []).some((r) => isLive(r)) ? 2000 : false,
+  });
+  const { data: entitlement } = useQuery(entitlementQuery(m.organizationId));
+  const { data: eventsUsed } = useQuery(eventsThisYearQuery());
+  const [switching, setSwitching] = useState<string | null>(null);
   const { checkout, session_id: sessionId } = Route.useSearch();
   const environment = safeEnvironment();
   const { openCheckout, closeCheckout, isOpen, checkoutElement } = useStripeCheckout();
@@ -97,10 +110,33 @@ function PlansPage() {
 
   const rows = subs.filter((s) => !environment || s.environment === environment);
   const active = rows.filter(isLive);
-  const activePlanIds = new Set(
-    active.map((r) => planIdFromPriceId(r.price_id)).filter((id): id is string => Boolean(id)),
-  );
   const primary = active[0] ?? rows[0] ?? null;
+  const currentPriceId = active[0]?.price_id ?? null;
+  const activated = checkout === "success" && active.length > 0;
+
+  const switchPlan = async (plan: Plan) => {
+    if (!environment || !currentPriceId) return;
+    const target = priceFor(plan, interval).priceId;
+    const up = isUpgrade(currentPriceId, target);
+    const ok = window.confirm(
+      up
+        ? `Switch to ${plan.name} (${INTERVAL_LABEL[interval]}) now? You'll be charged the prorated difference today.`
+        : `Switch to ${plan.name} (${INTERVAL_LABEL[interval]}) at your next renewal? You keep your current plan until then.`,
+    );
+    if (!ok) return;
+    setSwitching(target);
+    const result = await changePlan({ data: { priceId: target, environment } });
+    setSwitching(null);
+    if ("error" in result) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(result.mode === "upgraded" ? `Upgraded to ${plan.name}.` : `${plan.name} starts at your next renewal.`);
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      queryClient.invalidateQueries({ queryKey: ["entitlement"] });
+    }, 2500);
+  };
   const canBuy = isAdmin(m);
 
   const subscribe = (plan: Plan) => {
@@ -157,8 +193,9 @@ function PlansPage() {
 
       {checkout === "success" && (
         <div className="rounded-lg border border-teal/40 bg-teal/10 px-4 py-3 text-sm text-foreground">
-          Payment received. Your plan is activating — this page refreshes as soon as the record
-          arrives.
+          {activated
+            ? `You're all set — ${PLANS.find((p) => p.id === planIdFromPriceId(currentPriceId))?.name ?? "your plan"} is active.`
+            : "Payment received. Your plan is activating — this page updates on its own in a few seconds."}
           {sessionId ? (
             <span className="ml-1 text-muted-foreground">(Session {sessionId})</span>
           ) : null}
@@ -172,7 +209,37 @@ function PlansPage() {
         </div>
       )}
 
+      {m.isPlatformOwner && (
+        <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
+          Platform owner:{" "}
+          <Link to="/plan-requests" className="font-medium text-teal underline">
+            review pilot and Enterprise requests
+          </Link>
+        </div>
+      )}
+
+      {primary?.status === "past_due" && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-foreground">
+          Your last payment failed. Update your card under Manage billing — after 7 days without
+          payment your company becomes read-only.
+        </div>
+      )}
+
       <Panel title="Current plan" bodyClassName="p-4">
+        {entitlement ? (
+          <p className="mb-3 text-sm text-muted-foreground">
+            {entitlement.source === "pilot" ? "Founding Contractor Pilot" : "Plan"} allows{" "}
+            <span className="font-medium text-foreground">{entitlement.event_limit} events</span> a year
+            {eventsUsed != null ? ` — ${eventsUsed} used in ${new Date().getFullYear()}` : ""}.
+            {entitlement.source === "pilot" && entitlement.ends_at
+              ? ` Pilot ends ${new Date(entitlement.ends_at).toLocaleDateString()}.`
+              : ""}
+          </p>
+        ) : (
+          <p className="mb-3 text-sm text-foreground">
+            Your company is read-only until you choose a plan or your pilot is approved.
+          </p>
+        )}
         {primary ? (
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -188,6 +255,9 @@ function PlansPage() {
                     ? `Canceled — access until ${primary.current_period_end ? new Date(primary.current_period_end).toLocaleDateString() : "period end"}`
                     : `Status: ${primary.status.replace(/_/g, " ")}`}
                 {primary.cancel_at_period_end ? " · set to cancel at period end" : ""}
+                {primary.pending_price_id
+                  ? ` · switching to ${PLANS.find((p) => p.id === planIdFromPriceId(primary.pending_price_id))?.name ?? "a new plan"} (${primary.pending_price_id.endsWith("_yearly") ? "annual" : "monthly"}) on ${primary.pending_change_at ? new Date(primary.pending_change_at).toLocaleDateString() : "renewal"}`
+                  : ""}
               </div>
             </div>
             <Button variant="outline" onClick={manageBilling}>
@@ -222,7 +292,8 @@ function PlansPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         {PLANS.map((plan) => {
           const price = priceFor(plan, interval);
-          const alreadyOn = activePlanIds.has(plan.id);
+          const alreadyOn = currentPriceId === price.priceId;
+          const hasPlan = currentPriceId !== null;
           return (
             <section
               key={plan.id}
@@ -262,11 +333,17 @@ function PlansPage() {
               </ul>
               <Button
                 className="mt-5 w-full"
-                disabled={alreadyOn || !canBuy || !environment}
-                onClick={() => subscribe(plan)}
+                disabled={alreadyOn || !canBuy || !environment || switching !== null}
+                onClick={() => (hasPlan ? switchPlan(plan) : subscribe(plan))}
               >
                 <CreditCard className="size-4" />
-                {alreadyOn ? "Current plan" : `Choose ${plan.name}`}
+                {alreadyOn
+                  ? "Current plan"
+                  : switching === price.priceId
+                    ? "Switching…"
+                    : hasPlan
+                      ? `${isUpgrade(currentPriceId, price.priceId) ? "Upgrade" : "Switch"} to ${plan.name}`
+                      : `Choose ${plan.name}`}
               </Button>
               {!canBuy && (
                 <p className="mt-2 text-center text-xs text-muted-foreground">

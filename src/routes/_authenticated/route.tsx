@@ -12,7 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AppSidebar } from "@/components/app/app-sidebar";
-import { membershipQuery } from "@/lib/queries";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { entitlementQuery, isStaff, membershipQuery } from "@/lib/queries";
 import { ROLE_LABEL } from "@/lib/labels";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -40,6 +42,8 @@ function initials(name: string) {
 function AppLayout() {
   const { data: m } = useSuspenseQuery(membershipQuery());
   const queryClient = useQueryClient();
+  const { data: entitlement, isSuccess: entLoaded } = useQuery(entitlementQuery(m.organizationId));
+  const readOnly = entLoaded && !entitlement && m.organizationId !== null && !m.isPlatformOwner;
   const navigate = useNavigate();
 
   async function signOut() {
@@ -82,6 +86,18 @@ function AppLayout() {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
+          {readOnly && (
+            <div className="border-b border-border bg-muted px-4 py-2 text-center text-sm text-foreground">
+              Your company is in read-only mode — no active ExpoHaul plan.{" "}
+              {isStaff(m) ? (
+                <Link to="/plans" className="font-medium text-teal underline">
+                  Choose a plan
+                </Link>
+              ) : (
+                "Ask your company admin to choose a plan."
+              )}
+            </div>
+          )}
           <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <Outlet />
           </main>

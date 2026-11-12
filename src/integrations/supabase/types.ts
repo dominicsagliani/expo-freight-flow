@@ -431,6 +431,54 @@ export type Database = {
         }
         Relationships: []
       }
+      pilot_grants: {
+        Row: {
+          created_at: string
+          ends_at: string
+          granted_by: string | null
+          id: string
+          max_events: number
+          organization_id: string
+          sales_request_id: string | null
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          max_events?: number
+          organization_id: string
+          sales_request_id?: string | null
+          starts_at?: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          granted_by?: string | null
+          id?: string
+          max_events?: number
+          organization_id?: string
+          sales_request_id?: string | null
+          starts_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pilot_grants_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pilot_grants_sales_request_id_fkey"
+            columns: ["sales_request_id"]
+            isOneToOne: false
+            referencedRelation: "sales_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -509,6 +557,7 @@ export type Database = {
           kind: string
           message: string
           organization_id: string | null
+          status: string
           user_id: string
         }
         Insert: {
@@ -519,6 +568,7 @@ export type Database = {
           kind: string
           message?: string
           organization_id?: string | null
+          status?: string
           user_id: string
         }
         Update: {
@@ -529,6 +579,7 @@ export type Database = {
           kind?: string
           message?: string
           organization_id?: string | null
+          status?: string
           user_id?: string
         }
         Relationships: []
@@ -590,6 +641,8 @@ export type Database = {
           environment: string
           id: string
           organization_id: string | null
+          pending_change_at: string | null
+          pending_price_id: string | null
           price_id: string
           product_id: string
           status: string
@@ -606,6 +659,8 @@ export type Database = {
           environment?: string
           id?: string
           organization_id?: string | null
+          pending_change_at?: string | null
+          pending_price_id?: string | null
           price_id: string
           product_id: string
           status?: string
@@ -622,6 +677,8 @@ export type Database = {
           environment?: string
           id?: string
           organization_id?: string | null
+          pending_change_at?: string | null
+          pending_price_id?: string | null
           price_id?: string
           product_id?: string
           status?: string
@@ -927,6 +984,15 @@ export type Database = {
       operator_freight_ids: { Args: never; Returns: string[] }
       operator_start_job: { Args: { _ticket: string }; Returns: undefined }
       operator_ticket_ids: { Args: never; Returns: string[] }
+      org_entitlement: {
+        Args: { _org: string }
+        Returns: {
+          ends_at: string
+          event_limit: number
+          plan: string
+          source: string
+        }[]
+      }
       org_has_active_subscription: {
         Args: { _org: string; check_env?: string }
         Returns: boolean

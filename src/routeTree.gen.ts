@@ -20,6 +20,7 @@ import { Route as AuthenticatedExhibitorsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedFreightRouteImport } from './routes/_authenticated/freight'
 import { Route as AuthenticatedOperatorRouteImport } from './routes/_authenticated/operator'
 import { Route as AuthenticatedOperatorsRouteImport } from './routes/_authenticated/operators'
+import { Route as AuthenticatedPlanRequestsRouteImport } from './routes/_authenticated/plan-requests'
 import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
@@ -85,6 +86,12 @@ const AuthenticatedOperatorsRoute = AuthenticatedOperatorsRouteImport.update({
   path: '/operators',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlanRequestsRoute =
+  AuthenticatedPlanRequestsRouteImport.update({
+    id: '/plan-requests',
+    path: '/plan-requests',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPlansRoute = AuthenticatedPlansRouteImport.update({
   id: '/plans',
   path: '/plans',
@@ -153,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/freight': typeof AuthenticatedFreightRoute
   '/operator': typeof AuthenticatedOperatorRoute
   '/operators': typeof AuthenticatedOperatorsRoute
+  '/plan-requests': typeof AuthenticatedPlanRequestsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
@@ -175,6 +183,7 @@ export interface FileRoutesByTo {
   '/freight': typeof AuthenticatedFreightRoute
   '/operator': typeof AuthenticatedOperatorRoute
   '/operators': typeof AuthenticatedOperatorsRoute
+  '/plan-requests': typeof AuthenticatedPlanRequestsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
@@ -199,6 +208,7 @@ export interface FileRoutesById {
   '/_authenticated/freight': typeof AuthenticatedFreightRoute
   '/_authenticated/operator': typeof AuthenticatedOperatorRoute
   '/_authenticated/operators': typeof AuthenticatedOperatorsRoute
+  '/_authenticated/plan-requests': typeof AuthenticatedPlanRequestsRoute
   '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/freight'
     | '/operator'
     | '/operators'
+    | '/plan-requests'
     | '/plans'
     | '/settings'
     | '/events/$eventId'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/freight'
     | '/operator'
     | '/operators'
+    | '/plan-requests'
     | '/plans'
     | '/settings'
     | '/events/$eventId'
@@ -268,6 +280,7 @@ export interface FileRouteTypes {
     | '/_authenticated/freight'
     | '/_authenticated/operator'
     | '/_authenticated/operators'
+    | '/_authenticated/plan-requests'
     | '/_authenticated/plans'
     | '/_authenticated/settings'
     | '/_authenticated/events/$eventId'
@@ -367,6 +380,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOperatorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/plan-requests': {
+      id: '/_authenticated/plan-requests'
+      path: '/plan-requests'
+      fullPath: '/plan-requests'
+      preLoaderRoute: typeof AuthenticatedPlanRequestsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/plans': {
       id: '/_authenticated/plans'
       path: '/plans'
@@ -448,6 +468,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFreightRoute: typeof AuthenticatedFreightRoute
   AuthenticatedOperatorRoute: typeof AuthenticatedOperatorRoute
   AuthenticatedOperatorsRoute: typeof AuthenticatedOperatorsRoute
+  AuthenticatedPlanRequestsRoute: typeof AuthenticatedPlanRequestsRoute
   AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
@@ -467,6 +488,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFreightRoute: AuthenticatedFreightRoute,
   AuthenticatedOperatorRoute: AuthenticatedOperatorRoute,
   AuthenticatedOperatorsRoute: AuthenticatedOperatorsRoute,
+  AuthenticatedPlanRequestsRoute: AuthenticatedPlanRequestsRoute,
   AuthenticatedPlansRoute: AuthenticatedPlansRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,

@@ -31,55 +31,38 @@ function isoFromUnix(seconds: number | null | undefined): string | null {
   return seconds ? new Date(seconds * 1000).toISOString() : null;
 }
 
-async function handleSubscriptionCreated(subscription: any, env: StripeEnv) {
+// Created and updated events can arrive in any order, so both upsert the
+// full row. Pending downgrades live in subscription metadata.
+async function upsertSubscription(subscription: any, env: StripeEnv) {
+  const item = subscription.items?.data?.[0];
+  const priceId = priceIdOf(item);
+  const periodStart = item?.current_period_start ?? subscription.current_period_start;
+  const periodEnd = item?.current_period_end ?? subscription.current_period_end;
+  const pending = subscription.metadata?.pending_price_id || null;
+  const pendingAt = Number(subscription.metadata?.pending_change_at) || null;
+  const row = {
+    organization_id: subscription.metadata?.organization_id || null,
+    stripe_subscription_id: subscription.id,
+    stripe_customer_id: typeof subscription.customer === "string" ? subscription.customer : subscription.customer?.id,
+    product_id: typeof item?.price?.product === "string" ? item.price.product : item?.price?.product?.id ?? "",
+    price_id: priceId,
+    status: subscription.status,
+    current_period_start: isoFromUnix(periodStart),
+    current_period_end: isoFromUnix(periodEnd),
+    cancel_at_period_end: subscription.cancel_at_period_end || false,
+    pending_price_id: pending && pending !== priceId ? pending : null,
+    pending_change_at: pending && pending !== priceId ? isoFromUnix(pendingAt) : null,
+    environment: env,
+    updated_at: new Date().toISOString(),
+  };
   const userId = subscription.metadata?.userId;
-  if (!userId) {
-    console.error("No userId in subscription metadata");
-    return;
+  if (userId) {
+    const { error } = await getSupabase().from("subscriptions").upsert({ ...row, user_id: userId }, { onConflict: "stripe_subscription_id" });
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await getSupabase().from("subscriptions").update(row).eq("stripe_subscription_id", subscription.id).eq("environment", env);
+    if (error) throw new Error(error.message);
   }
-
-  const item = subscription.items?.data?.[0];
-  const productId = item?.price?.product;
-  const periodStart = item?.current_period_start ?? subscription.current_period_start;
-  const periodEnd = item?.current_period_end ?? subscription.current_period_end;
-
-  await getSupabase().from("subscriptions").upsert(
-    {
-      user_id: userId,
-      organization_id: subscription.metadata?.organization_id || null,
-      stripe_subscription_id: subscription.id,
-      stripe_customer_id: subscription.customer,
-      product_id: productId,
-      price_id: priceIdOf(item),
-      status: subscription.status,
-      current_period_start: isoFromUnix(periodStart),
-      current_period_end: isoFromUnix(periodEnd),
-      environment: env,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "stripe_subscription_id" },
-  );
-}
-
-async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
-  const item = subscription.items?.data?.[0];
-  const productId = item?.price?.product;
-  const periodStart = item?.current_period_start ?? subscription.current_period_start;
-  const periodEnd = item?.current_period_end ?? subscription.current_period_end;
-
-  await getSupabase()
-    .from("subscriptions")
-    .update({
-      status: subscription.status,
-      product_id: productId,
-      price_id: priceIdOf(item),
-      current_period_start: isoFromUnix(periodStart),
-      current_period_end: isoFromUnix(periodEnd),
-      cancel_at_period_end: subscription.cancel_at_period_end || false,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("stripe_subscription_id", subscription.id)
-    .eq("environment", env);
 }
 
 async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
@@ -87,6 +70,9 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     .from("subscriptions")
     .update({
       status: "canceled",
+      current_period_end: isoFromUnix(subscription.ended_at) ?? new Date().toISOString(),
+      pending_price_id: null,
+      pending_change_at: null,
       updated_at: new Date().toISOString(),
     })
     .eq("stripe_subscription_id", subscription.id)
@@ -98,10 +84,10 @@ async function handleWebhook(req: Request, env: StripeEnv) {
 
   switch (event.type) {
     case "customer.subscription.created":
-      await handleSubscriptionCreated(event.data.object, env);
+      await upsertSubscription(event.data.object, env);
       break;
     case "customer.subscription.updated":
-      await handleSubscriptionUpdated(event.data.object, env);
+      await upsertSubscription(event.data.object, env);
       break;
     case "customer.subscription.deleted":
       await handleSubscriptionDeleted(event.data.object, env);
