@@ -176,3 +176,38 @@ export const equipmentQuery = () =>
     queryKey: ["equipment"],
     queryFn: async () => unwrap(await supabase.from("equipment").select("*").order("unit_number")),
   });
+
+export const ticketPhotosQuery = (ticketId: string) =>
+  queryOptions({
+    queryKey: ["ticket_photos", ticketId],
+    queryFn: async () => {
+      const rows = unwrap(
+        await supabase.from("ticket_photos").select("*").eq("ticket_id", ticketId).order("created_at"),
+      );
+      if (rows.length === 0) return [];
+      const { data } = await supabase.storage.from("ticket-photos").createSignedUrls(rows.map((r) => r.storage_path), 3600);
+      return rows.map((r, i) => ({ ...r, url: data?.[i]?.signedUrl ?? null }));
+    },
+  });
+
+export const rateCardsQuery = () =>
+  queryOptions({
+    queryKey: ["rate_cards"],
+    queryFn: async () =>
+      unwrap(
+        await supabase
+          .from("rate_cards")
+          .select("*, event:events(id, name), service_rates(*)")
+          .order("is_default", { ascending: false }),
+      ),
+  });
+
+export const exhibitorCountQuery = () =>
+  queryOptions({
+    queryKey: ["exhibitors", "count"],
+    queryFn: async () => {
+      const { count, error } = await supabase.from("exhibitors").select("id", { count: "exact", head: true });
+      if (error) throw new Error(error.message);
+      return count ?? 0;
+    },
+  });

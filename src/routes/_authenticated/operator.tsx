@@ -1,3 +1,4 @@
+import { TicketPhotos } from "@/components/app/ticket-photos";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -79,6 +80,7 @@ function OperatorPage() {
               <PriorityBadge priority={j.priority} /> {SERVICE_LABEL[j.service_type]}{j.destination ? ` → ${j.destination}` : ""}
             </div>
           </Link>
+          {j.status === "in_progress" && <TicketPhotos ticketId={j.id} canUpload />}
           <OperatorJobActions ticketId={j.id} status={j.status} />
           </div>
         ))}
