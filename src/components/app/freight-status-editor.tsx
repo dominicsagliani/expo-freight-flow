@@ -20,7 +20,7 @@ export function FreightStatusEditor({ id, status, location }: { id: string; stat
     setBusy(true);
     const { error } = await supabase.from("freight_items").update({ arrival_status: s, storage_location: loc.trim() || null }).eq("id", id);
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Freight updated");
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["freight"] });

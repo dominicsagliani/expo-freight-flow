@@ -185,11 +185,11 @@ function RateCards({ cards, events, editable }: { cards: Card[]; events: { id: s
     const { data, error } = await supabase.from("rate_cards")
       .insert({ name: `${ev.name} rates`, event_id: ev.id, is_default: false, organization_id: def.organization_id })
       .select("id").single();
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     const { error: e2 } = await supabase.from("service_rates").insert(
       def.service_rates.map((r) => ({ rate_card_id: data.id, organization_id: def.organization_id, service_type: r.service_type, unit: r.unit, rate: r.rate, minimum_charge: r.minimum_charge })),
     );
-    if (e2) return toast.error(e2.message);
+    if (e2) { toast.error(e2.message); return; }
     toast.success("Event rate card created from the default rates");
     setNewEvent("");
     qc.invalidateQueries({ queryKey: ["rate_cards"] });
@@ -243,9 +243,9 @@ function RateRow({ r, editable }: { r: Card["service_rates"][number]; editable: 
   const [min, setMin] = useState(String(r.minimum_charge));
   const dirty = unit !== r.unit || Number(rate) !== Number(r.rate) || Number(min) !== Number(r.minimum_charge);
   const save = async () => {
-    if (!(Number(rate) >= 0) || !(Number(min) >= 0)) return toast.error("Rates must be zero or more");
+    if (!(Number(rate) >= 0) || !(Number(min) >= 0)) { toast.error("Rates must be zero or more"); return; }
     const { error } = await supabase.from("service_rates").update({ unit, rate: Number(rate), minimum_charge: Number(min) }).eq("id", r.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Rate saved");
     qc.invalidateQueries({ queryKey: ["rate_cards"] });
   };

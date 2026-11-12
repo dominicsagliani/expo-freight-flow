@@ -1,3 +1,4 @@
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -84,9 +85,9 @@ function JobCard({ t, operators, equipment }: {
 }) {
   const qc = useQueryClient();
   const editable = t.status === "requested" || t.status === "assigned";
-  const update = async (patch: Record<string, unknown>, ok: string) => {
+  const update = async (patch: TablesUpdate<"tickets">, ok: string) => {
     const { error } = await supabase.from("tickets").update(patch).eq("id", t.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(ok);
     qc.invalidateQueries({ queryKey: ["tickets"] });
     qc.invalidateQueries({ queryKey: ["operators"] });
