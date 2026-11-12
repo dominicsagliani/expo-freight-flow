@@ -28,3 +28,13 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules (ExpoHaul)
+
+- Multi-tenant: every business table carries `organization_id`; access is enforced by RLS through security-definer helpers (`is_org_staff`, `is_org_admin`, `user_exhibitor_ids`, `user_operator_ids`, `can_view_ticket`). Why: company, exhibitor, and operator isolation must hold even if the UI is bypassed.
+- Roles live only in `public.user_roles` (role + optional exhibitor_id / operator_id link), never on profiles. Why: prevents privilege escalation.
+- `organization_id`, ticket numbers, freight codes, and QR tokens are set by BEFORE triggers from the parent event; clients never choose them. Why: tenant and identifier integrity.
+- Activity history is written only by database triggers via `log_activity` (no client insert grant). Why: an audit trail users cannot forge.
+- QR codes encode only the random `qr_token`; resolving it requires sign-in and RLS. Why: no private exhibitor data in public URLs.
+- App pages live under `src/routes/_authenticated/` (client-only gate, `ssr: false`) and read data with the browser client + RLS via `src/lib/queries.ts` queryOptions and route loaders. Why: session lives in browser storage.
+- Signup trigger adds every new account to the demo company as company admin. Why: demo environment; replace with invites before real customers.
