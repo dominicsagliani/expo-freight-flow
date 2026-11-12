@@ -22,3 +22,4 @@
 
 ## Requested
 - [ ] Short brand launch video for LinkedIn / X / Product Hunt
+- [ ] Collect customer payments with Stripe (waiting: who pays for what)
