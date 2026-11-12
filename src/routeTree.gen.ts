@@ -17,6 +17,8 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedExhibitorsRouteImport } from './routes/_authenticated/exhibitors'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
+import { Route as AuthenticatedTicketsIndexRouteImport } from './routes/_authenticated/tickets.index'
+import { Route as AuthenticatedTicketsNewRouteImport } from './routes/_authenticated/tickets.new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,6 +61,17 @@ const AuthenticatedEventsEventIdRoute =
     path: '/events/$eventId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTicketsIndexRoute =
+  AuthenticatedTicketsIndexRouteImport.update({
+    id: '/tickets/',
+    path: '/tickets/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedTicketsNewRoute = AuthenticatedTicketsNewRouteImport.update({
+  id: '/tickets/new',
+  path: '/tickets/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,7 +80,9 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exhibitors': typeof AuthenticatedExhibitorsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
+  '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
+  '/tickets/': typeof AuthenticatedTicketsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,7 +91,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exhibitors': typeof AuthenticatedExhibitorsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
+  '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/events': typeof AuthenticatedEventsIndexRoute
+  '/tickets': typeof AuthenticatedTicketsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,7 +104,9 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exhibitors': typeof AuthenticatedExhibitorsRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
+  '/_authenticated/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
+  '/_authenticated/tickets/': typeof AuthenticatedTicketsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -98,7 +117,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/exhibitors'
     | '/events/$eventId'
+    | '/tickets/new'
     | '/events/'
+    | '/tickets/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -107,7 +128,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/exhibitors'
     | '/events/$eventId'
+    | '/tickets/new'
     | '/events'
+    | '/tickets'
   id:
     | '__root__'
     | '/'
@@ -117,7 +140,9 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/exhibitors'
     | '/_authenticated/events/$eventId'
+    | '/_authenticated/tickets/new'
     | '/_authenticated/events/'
+    | '/_authenticated/tickets/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -185,6 +210,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEventsEventIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tickets/': {
+      id: '/_authenticated/tickets/'
+      path: '/tickets'
+      fullPath: '/tickets/'
+      preLoaderRoute: typeof AuthenticatedTicketsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tickets/new': {
+      id: '/_authenticated/tickets/new'
+      path: '/tickets/new'
+      fullPath: '/tickets/new'
+      preLoaderRoute: typeof AuthenticatedTicketsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -192,14 +231,18 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExhibitorsRoute: typeof AuthenticatedExhibitorsRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
+  AuthenticatedTicketsNewRoute: typeof AuthenticatedTicketsNewRoute
   AuthenticatedEventsIndexRoute: typeof AuthenticatedEventsIndexRoute
+  AuthenticatedTicketsIndexRoute: typeof AuthenticatedTicketsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExhibitorsRoute: AuthenticatedExhibitorsRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
+  AuthenticatedTicketsNewRoute: AuthenticatedTicketsNewRoute,
   AuthenticatedEventsIndexRoute: AuthenticatedEventsIndexRoute,
+  AuthenticatedTicketsIndexRoute: AuthenticatedTicketsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
