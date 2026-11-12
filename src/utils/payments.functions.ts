@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import type Stripe from "stripe";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { isUpgrade } from "@/lib/plans";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   type StripeEnv,
@@ -223,18 +224,6 @@ export const submitSalesRequest = createServerFn({ method: "POST" })
       return { error: error instanceof Error ? error.message : "Request failed" };
     }
   });
-
-// Tier order and plan-change rules. Upgrade = higher tier, or same tier moving
-// to annual prepay. Everything else is a downgrade, applied at renewal.
-const TIER_RANK: Record<string, number> = { starter: 1, growth: 2, professional: 3 };
-export function isUpgrade(fromPriceId: string, toPriceId: string): boolean {
-  const [fromTier] = fromPriceId.split("_");
-  const [toTier] = toPriceId.split("_");
-  const a = TIER_RANK[fromTier ?? ""] ?? 0;
-  const b = TIER_RANK[toTier ?? ""] ?? 0;
-  if (b !== a) return b > a;
-  return toPriceId.endsWith("_yearly") && !fromPriceId.endsWith("_yearly");
-}
 
 type ChangePlanResult = { ok: true; mode: "upgraded" | "scheduled" } | { error: string };
 

@@ -165,3 +165,16 @@ export function planPriceLabel(plan: Plan, interval: BillingInterval): string {
   const price = priceFor(plan, interval);
   return `${fmtCents(price.amountCents)}/${interval === "annual" ? "yr" : "mo"}`;
 }
+
+// Tier order and plan-change rules. Upgrade = higher tier, or same tier moving
+// to annual prepay. Everything else is a downgrade, applied at renewal.
+const TIER_RANK: Record<string, number> = { starter: 1, growth: 2, professional: 3 };
+export function isUpgrade(fromPriceId: string, toPriceId: string): boolean {
+  const [fromTier] = fromPriceId.split("_");
+  const [toTier] = toPriceId.split("_");
+  const a = TIER_RANK[fromTier ?? ""] ?? 0;
+  const b = TIER_RANK[toTier ?? ""] ?? 0;
+  if (b !== a) return b > a;
+  return toPriceId.endsWith("_yearly") && !fromPriceId.endsWith("_yearly");
+}
+
