@@ -22,4 +22,5 @@
 
 ## Requested
 - [ ] Short brand launch video for LinkedIn / X / Product Hunt
-- [ ] Collect customer payments with Stripe (waiting: who pays for what)
+- [x] Collect customer payments: plans & billing page, test-mode checkout, subscription records
+      (live payments need the go-live steps in the Payments tab)

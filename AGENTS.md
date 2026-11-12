@@ -37,4 +37,5 @@ use the editor.
 - Activity history is written only by database triggers via `log_activity` (no client insert grant). Why: an audit trail users cannot forge.
 - QR codes encode only the random `qr_token`; resolving it requires sign-in and RLS. Why: no private exhibitor data in public URLs.
 - App pages live under `src/routes/_authenticated/` (client-only gate, `ssr: false`) and read data with the browser client + RLS via `src/lib/queries.ts` queryOptions and route loaders. Why: session lives in browser storage.
+- Subscription state lives only in `public.subscriptions`, written by the payments webhook with the service role; the app reads it through RLS and keys plan access off the human-readable `price_id`, never the provider's product id. Why: provider product ids differ between test and live, so gating on them breaks after publish.
 - Signup trigger adds every new account to the demo company as company admin. Why: demo environment; replace with invites before real customers.
