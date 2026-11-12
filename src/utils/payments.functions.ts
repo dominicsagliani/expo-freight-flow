@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import type Stripe from "stripe";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   type StripeEnv,
@@ -54,11 +56,7 @@ async function resolveOrCreateCustomer(
 // The caller's company, read through RLS so the client cannot claim another
 // organization's subscription.
 async function callerOrg(
-  supabase: ReturnType<
-    NonNullable<Parameters<Parameters<typeof createServerFn>["prototype"]>["handler"]>
-  > extends never
-    ? never
-    : any,
+  supabase: SupabaseClient<Database>,
   userId: string,
 ): Promise<string | null> {
   const { data } = await supabase
@@ -95,10 +93,12 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         throw new Error("This price is not a subscription");
       }
 
+      const customerId = await resolveOrCreateCustomer(stripe, { email, userId });
+
       // One active subscription per plan: don't let a company pay twice for
       // the same plan under a different billing interval.
       const existing = await stripe.subscriptions.list({
-        customer: await resolveOrCreateCustomer(stripe, { email, userId }),
+        customer: customerId,
         status: "active",
         price: stripePrice.id,
         limit: 1,
@@ -106,8 +106,6 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       if (existing.data.length) {
         return { error: "This plan is already active on your account." };
       }
-
-      const customerId = await resolveOrCreateCustomer(stripe, { email, userId });
 
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: stripePrice.id, quantity: 1 }],
