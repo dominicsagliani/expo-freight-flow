@@ -12,7 +12,9 @@ import {
   recentActivityQuery,
   ticketsQuery,
   isStaff,
+  exhibitorCountQuery,
 } from "@/lib/queries";
+import { fmtMoney } from "@/lib/billing";
 import { computeDashboardStats } from "@/lib/dashboard-stats";
 import { ACTIVITY_LABEL, type ActivityDetails, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
 import { fmtAgo, fmtDateRange } from "@/lib/format";
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       queryClient.ensureQueryData(operatorsQuery()),
       queryClient.ensureQueryData(recentActivityQuery()),
       queryClient.ensureQueryData(eventsQuery()),
+      queryClient.ensureQueryData(exhibitorCountQuery()),
     ]),
   component: Dashboard,
 });
@@ -81,6 +84,10 @@ function Dashboard() {
   const { data: operators } = useSuspenseQuery(operatorsQuery());
   const { data: activity } = useSuspenseQuery(recentActivityQuery());
   const { data: events } = useSuspenseQuery(eventsQuery());
+  const { data: exhibitorCount } = useSuspenseQuery(exhibitorCountQuery());
+  const completed = tickets.filter((t) => t.status === "completed");
+  const revenue = completed.reduce((s, t) => s + Number(t.charge_amount ?? 0), 0);
+  const activeEvents = events.filter((e) => e.status !== "closed" && e.status !== "planning").length;
 
   const stats = computeDashboardStats(tickets, freight, operators);
   const activeEvent = events.find((e) => e.status !== "closed") ?? events[0];
@@ -138,6 +145,13 @@ function Dashboard() {
           value={`${stats.freightOnSite}/${stats.freightTotal}`}
           sub={`${stats.freightExpected} still expected`}
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Kpi label="Active events" value={activeEvents} sub={`${events.length} total`} />
+        <Kpi label="Exhibitors" value={exhibitorCount} />
+        <Kpi label="Completed deliveries" value={completed.length} sub={`${stats.completedToday} today`} accent="text-status-completed" />
+        <Kpi label="Revenue" value={fmtMoney(revenue)} sub="From completed services" />
       </div>
 
       <Panel title="Ticket pipeline" bodyClassName="p-4">

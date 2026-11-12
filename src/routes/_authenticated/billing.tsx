@@ -171,7 +171,7 @@ function Totals({ title, rows }: { title: string; rows: [string, { count: number
   );
 }
 
-type Card = ReturnType<typeof useSuspenseQuery<Awaited<ReturnType<NonNullable<ReturnType<typeof rateCardsQuery>["queryFn"]>>>>>["data"][number];
+type Card = Awaited<ReturnType<NonNullable<ReturnType<typeof rateCardsQuery>["queryFn"]>>>[number];
 
 function RateCards({ cards, events, editable }: { cards: Card[]; events: { id: string; name: string }[]; editable: boolean }) {
   const qc = useQueryClient();
