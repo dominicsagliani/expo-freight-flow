@@ -20,9 +20,9 @@ import { fmtWeight } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/tickets/new")({
   head: () => ({
     meta: [
-      { title: "New ticket — DrayFlow" },
+      { title: "New ticket — ExpoHaul" },
       { name: "description", content: "Create a material handling ticket and attach freight." },
-      { property: "og:title", content: "New ticket — DrayFlow" },
+      { property: "og:title", content: "New ticket — ExpoHaul" },
       { property: "og:description", content: "Create a material handling ticket and attach freight." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

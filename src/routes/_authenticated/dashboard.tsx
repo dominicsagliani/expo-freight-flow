@@ -20,9 +20,9 @@ import { fmtAgo, fmtDateRange } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Overview — DrayFlow" },
+      { title: "Overview — ExpoHaul" },
       { name: "description", content: "Live material handling overview: open tickets, freight on site, and operator status." },
-      { property: "og:title", content: "Overview — DrayFlow" },
+      { property: "og:title", content: "Overview — ExpoHaul" },
       { property: "og:description", content: "Live material handling overview for your events." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

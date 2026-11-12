@@ -83,14 +83,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DrayFlow — The operating system for material handling" },
+      { title: "ExpoHaul — The operating system for material handling" },
       {
         name: "description",
         content:
-          "DrayFlow digitizes forklift ticketing, freight identification, dispatch, and billing for trade show contractors.",
+          "ExpoHaul digitizes forklift ticketing, freight identification, dispatch, and billing for trade show contractors.",
       },
-      { name: "author", content: "DrayFlow" },
-      { property: "og:title", content: "DrayFlow — The operating system for material handling" },
+      { name: "author", content: "ExpoHaul" },
+      { property: "og:title", content: "ExpoHaul — The operating system for material handling" },
       {
         property: "og:description",
         content: "Forklift ticketing, freight QR identification, dispatch, and billing for exhibition contractors.",
@@ -103,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

@@ -86,7 +86,7 @@ export function AppSidebar({ role, orgName }: { role: AppRole | null; orgName: s
           <LogoMark className="size-8 shrink-0" />
           {!collapsed && (
             <div className="min-w-0 leading-tight">
-              <div className="font-display text-base font-bold text-sidebar-accent-foreground">DrayFlow</div>
+              <div className="font-display text-base text-sidebar-accent-foreground"><span className="font-bold">Expo</span>Haul</div>
               <div className="truncate text-xs text-sidebar-foreground/60">{orgName}</div>
             </div>
           )}

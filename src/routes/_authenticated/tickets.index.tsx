@@ -13,10 +13,10 @@ import { fmtDateTime } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/tickets/")({
   head: () => ({
     meta: [
-      { title: "Material Handling Tickets — DrayFlow" },
+      { title: "Material Handling Tickets — ExpoHaul" },
       { name: "description", content: "Every forklift and material handling request across your events." },
-      { property: "og:title", content: "Material Handling Tickets — DrayFlow" },
-      { property: "og:description", content: "Forklift and material handling requests in DrayFlow." },
+      { property: "og:title", content: "Material Handling Tickets — ExpoHaul" },
+      { property: "og:description", content: "Forklift and material handling requests in ExpoHaul." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
