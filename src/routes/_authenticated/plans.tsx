@@ -110,9 +110,6 @@ function PlansPage() {
 
   const rows = subs.filter((s) => !environment || s.environment === environment);
   const active = rows.filter(isLive);
-  const activePlanIds = new Set(
-    active.map((r) => planIdFromPriceId(r.price_id)).filter((id): id is string => Boolean(id)),
-  );
   const primary = active[0] ?? rows[0] ?? null;
   const currentPriceId = active[0]?.price_id ?? null;
   const activated = checkout === "success" && active.length > 0;
