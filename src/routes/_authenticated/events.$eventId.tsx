@@ -17,9 +17,9 @@ import { fmtDate, fmtDateRange } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/events/$eventId")({
   head: () => ({
     meta: [
-      { title: "Event details — DrayFlow" },
+      { title: "Event details — ExpoHaul" },
       { name: "description", content: "Event schedule, venue, and participating exhibitors." },
-      { property: "og:title", content: "Event details — DrayFlow" },
+      { property: "og:title", content: "Event details — ExpoHaul" },
       { property: "og:description", content: "Event schedule, venue, and participating exhibitors." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

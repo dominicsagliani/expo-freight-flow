@@ -66,6 +66,16 @@ export const FREIGHT_TYPE_LABEL: Record<FreightType, string> = {
   other: "Other",
 };
 
+export type ActivityDetails = {
+  from?: string | null;
+  to?: string | null;
+  operator?: string | null;
+  equipment?: string | null;
+  freight_code?: string | null;
+  service_type?: string | null;
+  ticket_number?: string | null;
+};
+
 export const OPEN_STATUSES: TicketStatus[] = ["requested", "assigned", "in_progress"];
 
 export const ACTIVITY_LABEL: Record<string, string> = {

@@ -6,13 +6,13 @@ import { Wordmark } from "@/components/app/logo";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DrayFlow — The operating system for material handling" },
+      { title: "ExpoHaul — The operating system for material handling" },
       {
         name: "description",
         content:
           "Digitize forklift ticketing, freight QR identification, dispatch, service completion, and billing for trade shows and exhibition contractors.",
       },
-      { property: "og:title", content: "DrayFlow — The operating system for material handling" },
+      { property: "og:title", content: "ExpoHaul — The operating system for material handling" },
       {
         property: "og:description",
         content: "Forklift tickets, freight tracking, dispatch, and billing for convention centers and exhibition contractors.",
@@ -58,7 +58,7 @@ function Landing() {
               The operating system for material handling.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-sidebar-foreground">
-              DrayFlow replaces paper forklift tickets with one connected workflow — from freight arrival at the dock to
+              ExpoHaul replaces paper forklift tickets with one connected workflow — from freight arrival at the dock to
               delivery at the booth and the final invoice.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -111,7 +111,7 @@ function Landing() {
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6 text-sm text-muted-foreground">
-          <span>© 2026 DrayFlow</span>
+          <span>© 2026 ExpoHaul</span>
           <span>The operating system for material handling.</span>
         </div>
       </footer>

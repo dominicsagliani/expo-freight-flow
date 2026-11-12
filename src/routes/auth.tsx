@@ -12,15 +12,15 @@ import { Wordmark } from "@/components/app/logo";
 type Mode = "signin" | "signup" | "forgot";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
-    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  validateSearch: (search: Record<string, unknown>): { redirect?: string | undefined } => ({
+    redirect: typeof search["redirect"] === "string" ? search["redirect"] : undefined,
   }),
   head: () => ({
     meta: [
-      { title: "Sign in — DrayFlow" },
-      { name: "description", content: "Sign in to DrayFlow to manage material handling, freight, and dispatch." },
-      { property: "og:title", content: "Sign in — DrayFlow" },
-      { property: "og:description", content: "Access your DrayFlow material handling workspace." },
+      { title: "Sign in — ExpoHaul" },
+      { name: "description", content: "Sign in to ExpoHaul to manage material handling, freight, and dispatch." },
+      { property: "og:title", content: "Sign in — ExpoHaul" },
+      { property: "og:description", content: "Access your ExpoHaul material handling workspace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -213,7 +213,7 @@ function AuthPage() {
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {mode === "signin" ? (
               <>
-                New to DrayFlow?{" "}
+                New to ExpoHaul?{" "}
                 <button className="font-medium text-foreground hover:underline" onClick={() => setMode("signup")}>
                   Create an account
                 </button>
@@ -226,7 +226,7 @@ function AuthPage() {
           </p>
           <p className="mt-10 text-center text-xs text-muted-foreground">
             <Link to="/" className="hover:underline">
-              drayflow — the operating system for material handling
+              expohaul — the operating system for material handling
             </Link>
           </p>
         </div>

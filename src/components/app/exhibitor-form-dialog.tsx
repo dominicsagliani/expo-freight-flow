@@ -46,7 +46,7 @@ export function ExhibitorFormDialog({
   const save = useMutation({
     mutationFn: async () => {
       const parsed = schema.safeParse(form);
-      if (!parsed.success) throw new Error(parsed.error.issues[0].message);
+      if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Check the form");
       const v = parsed.data;
       const row = {
         company_name: v.company_name,

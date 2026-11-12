@@ -10,10 +10,10 @@ import { Wordmark } from "@/components/app/logo";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Set a new password — DrayFlow" },
-      { name: "description", content: "Choose a new password for your DrayFlow account." },
-      { property: "og:title", content: "Set a new password — DrayFlow" },
-      { property: "og:description", content: "Choose a new password for your DrayFlow account." },
+      { title: "Set a new password — ExpoHaul" },
+      { name: "description", content: "Choose a new password for your ExpoHaul account." },
+      { property: "og:title", content: "Set a new password — ExpoHaul" },
+      { property: "og:description", content: "Choose a new password for your ExpoHaul account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -32,7 +32,10 @@ function ResetPassword() {
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Password updated");
     navigate({ to: "/dashboard" });
   }

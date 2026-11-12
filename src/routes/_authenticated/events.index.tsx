@@ -11,10 +11,10 @@ import { fmtDateRange, fmtShortDate } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/events/")({
   head: () => ({
     meta: [
-      { title: "Events — DrayFlow" },
+      { title: "Events — ExpoHaul" },
       { name: "description", content: "Trade shows and exhibitions managed by your company." },
-      { property: "og:title", content: "Events — DrayFlow" },
-      { property: "og:description", content: "Trade shows and exhibitions managed in DrayFlow." },
+      { property: "og:title", content: "Events — ExpoHaul" },
+      { property: "og:description", content: "Trade shows and exhibitions managed in ExpoHaul." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

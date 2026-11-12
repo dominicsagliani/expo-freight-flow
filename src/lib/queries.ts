@@ -1,9 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-function unwrap<T>(res: { data: T | null; error: { message: string } | null }): T {
+function unwrap<T>(res: { data: T | null; error: { message: string } | null }): NonNullable<T> {
   if (res.error) throw new Error(res.error.message);
-  return res.data as T;
+  return res.data as NonNullable<T>;
 }
 
 export const membershipQuery = () =>
@@ -61,16 +61,17 @@ export const eventsQuery = () =>
 export const eventQuery = (id: string) =>
   queryOptions({
     queryKey: ["events", id],
-    queryFn: async () =>
-      unwrap(
-        await supabase
-          .from("events")
-          .select(
-            "*, event_exhibitors(id, booth_number, exhibitor_id, exhibitor:exhibitors(id, company_name, contact_name, contact_email, contact_phone))",
-          )
-          .eq("id", id)
-          .single(),
-      ),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select(
+          "*, event_exhibitors(id, booth_number, exhibitor_id, exhibitor:exhibitors(id, company_name, contact_name, contact_email, contact_phone))",
+        )
+        .eq("id", id)
+        .single();
+      if (error) throw new Error(error.message);
+      return data;
+    },
   });
 
 export const exhibitorsQuery = () =>
@@ -113,16 +114,17 @@ export type TicketListItem = Awaited<ReturnType<NonNullable<ReturnType<typeof ti
 export const ticketQuery = (id: string) =>
   queryOptions({
     queryKey: ["tickets", id],
-    queryFn: async () =>
-      unwrap(
-        await supabase
-          .from("tickets")
-          .select(
-            "*, exhibitor:exhibitors(id, company_name, contact_name, contact_phone, contact_email), event:events(id, name, venue), operator:operators(id, full_name, phone), equipment:equipment(id, unit_number, description), ticket_freight(scanned_at, freight:freight_items(id, freight_code, description, freight_type, pieces, weight_lbs, length_in, width_in, height_in, arrival_status, storage_location))",
-          )
-          .eq("id", id)
-          .single(),
-      ),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tickets")
+        .select(
+          "*, exhibitor:exhibitors(id, company_name, contact_name, contact_phone, contact_email), event:events(id, name, venue), operator:operators(id, full_name, phone), equipment:equipment(id, unit_number, description), ticket_freight(scanned_at, freight:freight_items(id, freight_code, description, freight_type, pieces, weight_lbs, length_in, width_in, height_in, arrival_status, storage_location))",
+        )
+        .eq("id", id)
+        .single();
+      if (error) throw new Error(error.message);
+      return data;
+    },
   });
 
 export const ticketActivityQuery = (id: string) =>

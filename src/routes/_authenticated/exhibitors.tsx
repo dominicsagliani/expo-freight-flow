@@ -11,9 +11,9 @@ import { eventsQuery, exhibitorsQuery, freightQuery, isStaff, membershipQuery, t
 export const Route = createFileRoute("/_authenticated/exhibitors")({
   head: () => ({
     meta: [
-      { title: "Exhibitors — DrayFlow" },
+      { title: "Exhibitors — ExpoHaul" },
       { name: "description", content: "Exhibitor companies, contacts, and booth assignments." },
-      { property: "og:title", content: "Exhibitors — DrayFlow" },
+      { property: "og:title", content: "Exhibitors — ExpoHaul" },
       { property: "og:description", content: "Exhibitor companies, contacts, and booth assignments." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
