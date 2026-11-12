@@ -47,6 +47,7 @@ function ScanPage() {
   return (
     <div className="grid gap-6">
       <PageHeader eyebrow="Freight identified" title={f.freight_code} description={f.event?.name} />
+      <Link to="/operator" className="text-sm font-medium text-status-progress hover:underline">← Scan another label</Link>
       <Panel bodyClassName="grid gap-4 p-4 sm:grid-cols-2">
         <Row label="Exhibitor" value={f.exhibitor?.company_name} />
         <Row label="Booth" value={f.booth_number} />
