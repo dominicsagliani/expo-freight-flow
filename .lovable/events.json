@@ -1,6 +1,19 @@
 {
   "schema_version": 1,
   "events": {
+    "project.job_completed": {
+      "event_schema_version": 1,
+      "description": "An operator successfully marked an in-progress material handling job complete.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      }
+    },
     "project.job_started": {
       "event_schema_version": 1,
       "description": "An operator successfully started an assigned material handling job.",
