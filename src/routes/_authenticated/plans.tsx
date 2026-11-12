@@ -143,7 +143,6 @@ function PlansPage() {
     setSalesKind(null);
     setCompanyName("");
     setMessage("");
-    queryClient.invalidateQueries({ queryKey: ["sales_requests"] });
   };
 
   return (

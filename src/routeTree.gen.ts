@@ -20,6 +20,7 @@ import { Route as AuthenticatedExhibitorsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedFreightRouteImport } from './routes/_authenticated/freight'
 import { Route as AuthenticatedOperatorRouteImport } from './routes/_authenticated/operator'
 import { Route as AuthenticatedOperatorsRouteImport } from './routes/_authenticated/operators'
+import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
@@ -82,6 +83,11 @@ const AuthenticatedOperatorRoute = AuthenticatedOperatorRouteImport.update({
 const AuthenticatedOperatorsRoute = AuthenticatedOperatorsRouteImport.update({
   id: '/operators',
   path: '/operators',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlansRoute = AuthenticatedPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -147,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/freight': typeof AuthenticatedFreightRoute
   '/operator': typeof AuthenticatedOperatorRoute
   '/operators': typeof AuthenticatedOperatorsRoute
+  '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/freight': typeof AuthenticatedFreightRoute
   '/operator': typeof AuthenticatedOperatorRoute
   '/operators': typeof AuthenticatedOperatorsRoute
+  '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
@@ -191,6 +199,7 @@ export interface FileRoutesById {
   '/_authenticated/freight': typeof AuthenticatedFreightRoute
   '/_authenticated/operator': typeof AuthenticatedOperatorRoute
   '/_authenticated/operators': typeof AuthenticatedOperatorsRoute
+  '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/freight'
     | '/operator'
     | '/operators'
+    | '/plans'
     | '/settings'
     | '/events/$eventId'
     | '/labels/$freightId'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/freight'
     | '/operator'
     | '/operators'
+    | '/plans'
     | '/settings'
     | '/events/$eventId'
     | '/labels/$freightId'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/_authenticated/freight'
     | '/_authenticated/operator'
     | '/_authenticated/operators'
+    | '/_authenticated/plans'
     | '/_authenticated/settings'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/labels/$freightId'
@@ -355,6 +367,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOperatorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/plans': {
+      id: '/_authenticated/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof AuthenticatedPlansRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -429,6 +448,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFreightRoute: typeof AuthenticatedFreightRoute
   AuthenticatedOperatorRoute: typeof AuthenticatedOperatorRoute
   AuthenticatedOperatorsRoute: typeof AuthenticatedOperatorsRoute
+  AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
   AuthenticatedLabelsFreightIdRoute: typeof AuthenticatedLabelsFreightIdRoute
@@ -447,6 +467,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFreightRoute: AuthenticatedFreightRoute,
   AuthenticatedOperatorRoute: AuthenticatedOperatorRoute,
   AuthenticatedOperatorsRoute: AuthenticatedOperatorsRoute,
+  AuthenticatedPlansRoute: AuthenticatedPlansRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
   AuthenticatedLabelsFreightIdRoute: AuthenticatedLabelsFreightIdRoute,

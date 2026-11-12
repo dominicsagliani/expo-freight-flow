@@ -3,6 +3,7 @@ import {
   Building2,
   CalendarDays,
   ClipboardList,
+  CreditCard,
   HardHat,
   LayoutDashboard,
   Package,
@@ -44,6 +45,7 @@ const operations: NavItem[] = [
 
 const admin: NavItem[] = [
   { title: "Billing & Reports", url: "/billing", icon: Receipt, roles: [...STAFF, "exhibitor"] },
+  { title: "Plans & Billing", url: "/plans", icon: CreditCard, roles: STAFF },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
