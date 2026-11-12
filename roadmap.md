@@ -7,9 +7,9 @@
 - [x] App shell with left sidebar, Overview dashboard
 - [x] Events (list, create/edit, booth assignments)
 - [x] Exhibitors (list, create/edit, event + booth)
-- [ ] Tickets (list, create with freight, detail + history)
-- [ ] Rename app to ExpoHaul with a new logo (user request)
-- [ ] Verify end-to-end signed in
+- [x] Tickets (list, create with freight, detail + history)
+- [x] Rename app to ExpoHaul with a new logo (user request)
+- [x] Verify end-to-end signed in (ticket creation tested; event/exhibitor forms not yet clicked through)
 
 ## Phase 2 — Freight identification + dispatch
 - [ ] Freight registration, QR label generation and printing
