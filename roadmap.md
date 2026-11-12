@@ -19,3 +19,6 @@
 - [x] Operator portal: assigned jobs list + camera QR scan
 - [ ] Operator portal: start/complete, notes, photos
 - [ ] Rate cards, charge calculation, billing review + export
+
+## Requested
+- [ ] Short brand launch video for LinkedIn / X / Product Hunt
