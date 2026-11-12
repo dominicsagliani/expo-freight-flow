@@ -8,6 +8,7 @@ import {
   Package,
   Receipt,
   Route as RouteIcon,
+  ScanLine,
   Settings,
 } from "lucide-react";
 import {
@@ -36,6 +37,7 @@ const operations: NavItem[] = [
   { title: "Exhibitors", url: "/exhibitors", icon: Building2, roles: STAFF },
   { title: "Freight Management", url: "/freight", icon: Package },
   { title: "Material Handling Tickets", url: "/tickets", icon: ClipboardList },
+  { title: "My Jobs & Scan", url: "/operator", icon: ScanLine, roles: ["operator", ...STAFF] },
   { title: "Dispatch", url: "/dispatch", icon: RouteIcon, roles: STAFF },
   { title: "Operators", url: "/operators", icon: HardHat, roles: STAFF },
 ];

@@ -16,5 +16,6 @@
 - [ ] Dispatch board (pending / assigned / in progress / completed), assign operator + equipment
 
 ## Phase 3 — Operator portal + billing
-- [ ] Mobile operator portal: assigned jobs, QR scan, start/complete, notes, photos
+- [x] Operator portal: assigned jobs list + camera QR scan
+- [ ] Operator portal: start/complete, notes, photos
 - [ ] Rate cards, charge calculation, billing review + export
