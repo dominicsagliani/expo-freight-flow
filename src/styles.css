@@ -186,3 +186,10 @@
   text-transform: uppercase;
   color: var(--color-muted-foreground);
 }
+
+@media print {
+  @page { size: 4in 3in; margin: 0; }
+  body * { visibility: hidden; }
+  .print-label, .print-label * { visibility: visible; }
+  .print-label { position: fixed; inset: 0; margin: 0; border-radius: 0; box-shadow: none; }
+}

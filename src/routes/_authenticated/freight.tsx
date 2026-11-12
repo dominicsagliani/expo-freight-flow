@@ -1,8 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Plus, QrCode as QrIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FreightFormDialog } from "@/components/app/freight-form-dialog";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { PageHeader, Panel, ComingNext, EmptyState } from "@/components/app/page-header";
 import { ArrivalBadge } from "@/components/app/badges";
-import { freightQuery } from "@/lib/queries";
+import { eventExhibitorsQuery, eventsQuery, freightQuery, isStaff, membershipQuery } from "@/lib/queries";
 import { FREIGHT_TYPE_LABEL } from "@/lib/labels";
 import { fmtDims, fmtWeight } from "@/lib/format";
 
@@ -17,15 +20,36 @@ export const Route = createFileRoute("/_authenticated/freight")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(freightQuery()),
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.ensureQueryData(freightQuery()),
+      queryClient.ensureQueryData(eventsQuery()),
+      queryClient.ensureQueryData(eventExhibitorsQuery()),
+    ]),
   component: FreightPage,
 });
 
 function FreightPage() {
   const { data: freight } = useSuspenseQuery(freightQuery());
+  const { data: m } = useSuspenseQuery(membershipQuery());
+  const { data: events } = useSuspenseQuery(eventsQuery());
+  const { data: booths } = useSuspenseQuery(eventExhibitorsQuery());
+  const canRegister = isStaff(m) || (m.role === "exhibitor" && !!m.exhibitorId);
   return (
     <div className="grid gap-6">
-      <PageHeader eyebrow="Freight identification" title="Freight Management" description="Every crate and pallet on file for your events." />
+      <PageHeader eyebrow="Freight identification" title="Freight Management" description="Every crate and pallet on file for your events."
+        actions={
+          canRegister ? (
+            <FreightFormDialog
+              events={events.filter((e) => e.status !== "closed")}
+              booths={booths}
+              lockedExhibitorId={m.role === "exhibitor" ? m.exhibitorId : null}
+              canSetStatus={isStaff(m)}
+              trigger={<Button variant="teal"><Plus /> Register freight</Button>}
+            />
+          ) : null
+        }
+      />
       <Panel title={`Registered freight (${freight.length})`}>
         {freight.length === 0 ? (
           <EmptyState title="No freight registered" />
@@ -41,6 +65,7 @@ function FreightPage() {
                   <th className="px-4 py-2.5 font-semibold">Dimensions</th>
                   <th className="px-4 py-2.5 font-semibold">Location</th>
                   <th className="px-4 py-2.5 font-semibold">Status</th>
+                  <th className="px-4 py-2.5 font-semibold">Label</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -63,6 +88,11 @@ function FreightPage() {
                     <td className="px-4 py-3">
                       <ArrivalBadge status={f.arrival_status} />
                     </td>
+                    <td className="px-4 py-3">
+                      <Button asChild variant="outline" size="sm">
+                        <Link to="/labels/$freightId" params={{ freightId: f.id }}><QrIcon /> Print</Link>
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -72,12 +102,10 @@ function FreightPage() {
       </Panel>
       <ComingNext
         phase="Phase 2"
-        title="Freight registration & QR labels"
+        title="Freight updates & scanning"
         items={[
-          "Register crates and pallets with weight and dimensions",
-          "Generate and print QR labels per freight item",
           "Update arrival status and storage location",
-          "Scan-to-identify with private details kept behind sign-in",
+          "Camera QR scanning inside the operator portal",
         ]}
       />
     </div>
