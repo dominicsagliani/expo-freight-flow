@@ -32,6 +32,7 @@ export const membershipQuery = () =>
         role: primary?.role ?? null,
         exhibitorId: primary?.exhibitor_id ?? null,
         operatorId: primary?.operator_id ?? null,
+        isPlatformOwner: rows.some((r) => r.role === "super_admin"),
       };
     },
     staleTime: 60_000,
@@ -240,4 +241,41 @@ export const subscriptionsQuery = () =>
       );
     },
     staleTime: 30_000,
+  });
+
+// What the caller's company may do right now (plan, yearly event limit).
+export const entitlementQuery = (orgId: string | null) =>
+  queryOptions({
+    queryKey: ["entitlement", orgId],
+    queryFn: async () => {
+      if (!orgId) return null;
+      const { data, error } = await supabase.rpc("org_entitlement", { _org: orgId });
+      if (error) throw new Error(error.message);
+      return data?.[0] ?? null;
+    },
+  });
+
+export const eventsThisYearQuery = () =>
+  queryOptions({
+    queryKey: ["events", "this-year"],
+    queryFn: async () => {
+      const y = new Date().getFullYear();
+      const { count, error } = await supabase
+        .from("events").select("id", { count: "exact", head: true })
+        .gte("start_date", `${y}-01-01`).lte("start_date", `${y}-12-31`);
+      if (error) throw new Error(error.message);
+      return count ?? 0;
+    },
+  });
+
+export const salesRequestsQuery = () =>
+  queryOptions({
+    queryKey: ["sales-requests"],
+    queryFn: async () => {
+      const [reqs, grants] = await Promise.all([
+        supabase.from("sales_requests").select("*").order("created_at", { ascending: false }),
+        supabase.from("pilot_grants").select("*").order("created_at", { ascending: false }),
+      ]);
+      return { requests: unwrap(reqs), grants: unwrap(grants) };
+    },
   });
