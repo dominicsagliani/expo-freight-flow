@@ -12,7 +12,7 @@
 - [x] Verify end-to-end signed in (ticket creation tested; event/exhibitor forms not yet clicked through)
 
 ## Phase 2 — Freight identification + dispatch
-- [ ] Freight registration, QR label generation and printing
+- [x] Freight registration, QR label generation and printing, sign-in-protected scan page
 - [ ] Dispatch board (pending / assigned / in progress / completed), assign operator + equipment
 
 ## Phase 3 — Operator portal + billing
