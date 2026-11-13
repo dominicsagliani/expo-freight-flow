@@ -300,10 +300,12 @@ function ScanScreen({ job, forklift, onDone }: { job: { id: string; booth_number
 
   const submit = async (token: string, extra: { booth_ok?: boolean; flag?: string | null; note?: string; photo?: File | null } = {}) => {
     setBusy(true);
-    const { data, error } = await supabase.rpc("op_scan_freight", {
-      _token: token, _ticket: job.id, _action: mode, _equipment: forklift,
-      _booth_ok: extra.booth_ok ?? undefined, _flag: extra.flag ?? undefined, _note: extra.note || undefined,
-    });
+    const args: { _token: string; _ticket: string; _action: string; _equipment: string; _booth_ok?: boolean; _flag?: string; _note?: string } =
+      { _token: token, _ticket: job.id, _action: mode, _equipment: forklift };
+    if (extra.booth_ok !== undefined) args._booth_ok = extra.booth_ok;
+    if (extra.flag) args._flag = extra.flag;
+    if (extra.note) args._note = extra.note;
+    const { data, error } = await supabase.rpc("op_scan_freight", args);
     setBusy(false);
     if (error) { setResult({ ok: false, error: error.message }); return; }
     const r = data as unknown as ScanResult & { freight_id?: string };
