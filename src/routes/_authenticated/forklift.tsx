@@ -67,11 +67,16 @@ function ForkliftMode() {
   const { data: me } = useQuery({
     queryKey: ["forklift-me"],
     queryFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      const { data } = await supabase.from("operators").select("id, full_name").eq("user_id", u.user?.id ?? "");
-      return data ?? [];
+      const { data, error } = await supabase.rpc("forklift_current");
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((d) => ({ id: d.operator_id, full_name: d.full_name }));
     },
   });
+  const switchOperator = async () => {
+    await supabase.rpc("forklift_lock");
+    setSelected(null); setView("home");
+    qc.invalidateQueries({ queryKey: ["forklift-me"] });
+  };
   const { data: equipment = [] } = useQuery({
     queryKey: ["forklift-equipment"],
     queryFn: async () => (await supabase.from("equipment").select("id, unit_number, status").order("unit_number")).data ?? [],
@@ -127,14 +132,7 @@ function ForkliftMode() {
   };
 
   if (me && me.length === 0) {
-    return (
-      <Shell onExit>
-        <div className="grid place-items-center gap-4 p-10 text-center">
-          <p className="text-2xl font-semibold">This account isn't linked to an operator.</p>
-          <p className="text-lg text-primary-foreground/70">Ask your dispatcher to invite you as an operator.</p>
-        </div>
-      </Shell>
-    );
+    return <Shell onExit><OperatorLogin onUnlocked={() => qc.invalidateQueries({ queryKey: ["forklift-me"] })} /></Shell>;
   }
 
   if (!forklift) {
@@ -163,6 +161,7 @@ function ForkliftMode() {
       <button className="rounded-md bg-accent px-3 py-1 font-mono font-bold text-accent-foreground"
         onClick={() => { localStorage.removeItem(FORKLIFT_KEY); setForklift(null); }}>{forkliftName ?? "Forklift"}</button>
       <span className="text-primary-foreground/70">{current?.event?.name ?? "No active event"}</span>
+      <button className="ml-auto rounded-md border border-primary-foreground/30 px-3 py-1 text-base" onClick={switchOperator}>Switch operator</button>
     </div>
   );
 
@@ -286,6 +285,90 @@ function ForkliftMode() {
         </div>
       )}
     </Shell>
+  );
+}
+
+function OperatorLogin({ onUnlocked }: { onUnlocked: () => void }) {
+  const [eventId, setEventId] = useState("");
+  const [operatorId, setOperatorId] = useState("");
+  const [pin, setPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const { data: events = [] } = useQuery({
+    queryKey: ["forklift-events"],
+    queryFn: async () => (await supabase.from("events").select("id, name, status").neq("status", "closed").order("start_date")).data ?? [],
+  });
+  useEffect(() => { if (!eventId && events.length === 1) setEventId(events[0].id); }, [events, eventId]);
+  const { data: ops = [] } = useQuery({
+    queryKey: ["forklift-operators", eventId],
+    enabled: !!eventId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("forklift_operators", { _event: eventId });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+  const op = ops.find((o) => o.id === operatorId);
+  const creating = op && !op.has_pin;
+
+  const submit = async (value: string) => {
+    if (creating && confirmPin === null) { setConfirmPin(value); setPin(""); return; }
+    if (creating && confirmPin !== value) { toast.error("PINs don't match — start again"); setConfirmPin(null); setPin(""); return; }
+    setBusy(true);
+    const { data, error } = await supabase.rpc("forklift_unlock", { _event: eventId, _operator: operatorId, _pin: value });
+    setBusy(false); setPin(""); setConfirmPin(null);
+    const res = data as { ok: boolean; error?: string; created?: boolean } | null;
+    if (error || !res?.ok) { toast.error(error?.message ?? res?.error ?? "Could not unlock"); return; }
+    toast.success(res.created ? "PIN saved — you're signed in" : `Welcome, ${op?.full_name}`);
+    onUnlocked();
+  };
+  const press = (d: string) => {
+    if (busy) return;
+    const v = (pin + d).slice(0, 6);
+    setPin(v);
+    if (v.length === 6) void submit(v);
+  };
+  const sel = "min-h-16 w-full rounded-xl border-2 border-primary-foreground/20 bg-primary-foreground/5 px-4 text-2xl text-primary-foreground [&>option]:text-foreground";
+
+  return (
+    <div className="mx-auto grid w-full max-w-md gap-5 p-6">
+      <h1 className="text-3xl font-bold">Operator sign-in</h1>
+      <label className="grid gap-2 text-lg">Event
+        <select className={sel} value={eventId} onChange={(e) => { setEventId(e.target.value); setOperatorId(""); setPin(""); setConfirmPin(null); }}>
+          <option value="">Choose event…</option>
+          {events.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+        </select>
+      </label>
+      {eventId && (
+        <label className="grid gap-2 text-lg">Operator
+          <select className={sel} value={operatorId} onChange={(e) => { setOperatorId(e.target.value); setPin(""); setConfirmPin(null); }}>
+            <option value="">Choose your name…</option>
+            {ops.map((o) => <option key={o.id} value={o.id}>{o.full_name}</option>)}
+          </select>
+          {ops.length === 0 && <span className="text-base text-primary-foreground/70">No operators registered for this event. Ask dispatch to add you on the Operators page.</span>}
+        </label>
+      )}
+      {op && (
+        <div className="grid gap-4">
+          <p className="text-center text-xl">
+            {creating ? (confirmPin === null ? "Create your 6-digit PIN" : "Enter the PIN again to confirm") : "Enter your 6-digit PIN"}
+          </p>
+          <div className="flex justify-center gap-3" aria-label={`${pin.length} of 6 digits entered`}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span key={i} className={`size-5 rounded-full border-2 border-primary-foreground/60 ${i < pin.length ? "bg-accent" : ""}`} />
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {["1","2","3","4","5","6","7","8","9"].map((d) => (
+              <button key={d} onClick={() => press(d)} className="min-h-20 rounded-xl bg-primary-foreground/10 text-3xl font-bold">{d}</button>
+            ))}
+            <button onClick={() => setPin("")} className="min-h-20 rounded-xl bg-primary-foreground/5 text-lg">Clear</button>
+            <button onClick={() => press("0")} className="min-h-20 rounded-xl bg-primary-foreground/10 text-3xl font-bold">0</button>
+            <button onClick={() => setPin(pin.slice(0, -1))} className="min-h-20 rounded-xl bg-primary-foreground/5 text-lg">Delete</button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
