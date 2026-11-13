@@ -1,12 +1,13 @@
 import { TicketPhotos } from "@/components/app/ticket-photos";
+import { AssignmentHistory, DeliveryUpdates } from "@/components/app/delivery-updates";
 import { fmtMoney } from "@/lib/billing";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle2, ScanLine } from "lucide-react";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ArrivalBadge, PriorityBadge, TicketStatusBadge } from "@/components/app/badges";
-import { isStaff, membershipQuery, ticketActivityQuery, ticketQuery } from "@/lib/queries";
-import { ACTIVITY_LABEL, type ActivityDetails, FREIGHT_TYPE_LABEL, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
+import { deliveryUpdatesQuery, isStaff, jobAssignmentsQuery, membershipQuery, ticketActivityQuery, ticketQuery } from "@/lib/queries";
+import { ACTIVITY_LABEL, DELIVERY_UPDATE_LABEL, type DeliveryUpdateKind, type ActivityDetails, FREIGHT_TYPE_LABEL, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
 import { fmtDateTime, fmtDims, fmtWeight } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/tickets/$ticketId")({
@@ -24,6 +25,8 @@ export const Route = createFileRoute("/_authenticated/tickets/$ticketId")({
     Promise.all([
       queryClient.ensureQueryData(ticketQuery(params.ticketId)),
       queryClient.ensureQueryData(ticketActivityQuery(params.ticketId)),
+      queryClient.ensureQueryData(deliveryUpdatesQuery(params.ticketId)),
+      queryClient.ensureQueryData(jobAssignmentsQuery(params.ticketId)),
     ]),
   component: TicketDetail,
 });
@@ -34,6 +37,10 @@ function detailText(action: string, details: unknown) {
     return `${TICKET_STATUS_LABEL[d.from as TicketStatus] ?? d.from} → ${TICKET_STATUS_LABEL[d.to as TicketStatus] ?? d.to}`;
   if (action === "assigned") return [d.operator, d.equipment].filter(Boolean).join(" · ") || "Unassigned";
   if (action.startsWith("freight")) return d.freight_code ?? "";
+  if (action === "delivery_update") {
+    const x = d as unknown as { kind?: string; note?: string };
+    return [DELIVERY_UPDATE_LABEL[x.kind as DeliveryUpdateKind], x.note].filter(Boolean).join(" — ");
+  }
   if (action === "ticket_created" && d.service_type) return SERVICE_LABEL[d.service_type as keyof typeof SERVICE_LABEL];
   return "";
 }
@@ -122,6 +129,16 @@ function TicketDetail() {
                 )}
               </ul>
             )}
+          </Panel>
+          <Panel title="Delivery updates & notes" bodyClassName="p-4">
+            <DeliveryUpdates
+              ticketId={t.id}
+              canPost={canUpload}
+              freight={t.ticket_freight.flatMap((tf) => (tf.freight ? [{ id: tf.freight.id, freight_code: tf.freight.freight_code }] : []))}
+            />
+          </Panel>
+          <Panel title="Assignment history" bodyClassName="px-4 py-2">
+            <AssignmentHistory ticketId={t.id} />
           </Panel>
           <Panel title="Photos" bodyClassName="p-4">
             <TicketPhotos ticketId={t.id} canUpload={canUpload} />
