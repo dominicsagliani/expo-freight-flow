@@ -11,6 +11,7 @@ import { equipmentQuery, operatorsQuery, ticketsQuery, type TicketListItem } fro
 import { PRIORITY_LABEL, SERVICE_LABEL, type TicketPriority, type TicketStatus } from "@/lib/labels";
 import { fmtAgo } from "@/lib/format";
 import { fmtMoney } from "@/lib/billing";
+import { CrewPicker, DispatchLive } from "@/components/app/dispatch-live";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
   head: () => ({
@@ -55,7 +56,8 @@ function Dispatch() {
   return (
     <div className="grid gap-6">
       <PageHeader eyebrow="Dispatch" title="Dispatch board"
-        description={`${operators.filter((o) => o.status === "available").length} operators available · refreshes every 15 seconds`} />
+        description={`${operators.filter((o) => o.status === "available").length} operators available · updates live`} />
+      <DispatchLive />
       <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         {COLUMNS.map((c) => {
           const items = col(c.key);
@@ -115,6 +117,9 @@ function JobCard({ t, operators, equipment }: {
           {!editable && t.operator ? ` · ${t.operator.full_name}` : ""}
         </div>
       </div>
+      {(t.status === "assigned" || t.status === "in_progress") && (
+        <CrewPicker ticketId={t.id} operators={operators} assignedId={t.assigned_operator_id} />
+      )}
       {editable && (
         <div className="grid gap-1.5">
           <Select value={t.assigned_operator_id ?? NONE} onValueChange={(v) => assign(v === NONE ? null : v, t.assigned_equipment_id)}>
