@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { entitlementQuery, isStaff, membershipQuery } from "@/lib/queries";
 import { ROLE_LABEL } from "@/lib/labels";
+import { CompanySetup } from "@/components/app/company-setup";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -99,7 +100,7 @@ function AppLayout() {
             </div>
           )}
           <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6 lg:px-8">
-            <Outlet />
+            {!m.organizationId && !m.isPlatformOwner ? <CompanySetup email={m.email} /> : <Outlet />}
           </main>
         </SidebarInset>
       </div>

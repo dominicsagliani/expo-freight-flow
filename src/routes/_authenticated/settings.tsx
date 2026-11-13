@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { PageHeader, Panel, ComingNext } from "@/components/app/page-header";
-import { membershipQuery } from "@/lib/queries";
+import { isAdmin, membershipQuery } from "@/lib/queries";
+import { TeamInvitations } from "@/components/app/team-invitations";
 import { ROLE_LABEL } from "@/lib/labels";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -39,10 +40,11 @@ function SettingsPage() {
           </div>
         </div>
       </Panel>
+      {m.organizationId && isAdmin(m) && <TeamInvitations orgId={m.organizationId} />}
       <ComingNext
         phase="Upcoming"
         title="Company administration"
-        items={["Invite users and assign roles", "Link exhibitor and operator accounts", "Company profile and branding", "Platform-level customer management for super admins"]}
+        items={["Invitation emails", "Change or remove team members' roles", "Company profile and branding", "Platform-level customer management for super admins"]}
       />
     </div>
   );
