@@ -1,6 +1,6 @@
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/app/page-header";
 import { PriorityBadge } from "@/components/app/badges";
@@ -12,6 +12,7 @@ import { PRIORITY_LABEL, SERVICE_LABEL, type TicketPriority, type TicketStatus }
 import { fmtAgo } from "@/lib/format";
 import { fmtMoney } from "@/lib/billing";
 import { CrewPicker, DispatchLive } from "@/components/app/dispatch-live";
+import { EQUIPMENT_CLASSES } from "@/lib/fleet";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
   head: () => ({
@@ -46,6 +47,10 @@ function Dispatch() {
   const { data: tickets } = useSuspenseQuery({ ...ticketsQuery(), refetchInterval: 15_000 });
   const { data: operators } = useSuspenseQuery({ ...operatorsQuery(), refetchInterval: 15_000 });
   const { data: equipment } = useSuspenseQuery(equipmentQuery());
+  const { data: queue = [] } = useQuery({ queryKey: ["queue-drivers"], refetchInterval: 10_000, queryFn: async () => {
+    const { data, error } = await supabase.from("queue_drivers").select("ready, heartbeat_at, operator:operators(full_name), equipment:equipment(unit_number), event:events(name)");
+    if (error) throw new Error(error.message); return data ?? [];
+  } });
   const today = new Date().toDateString();
 
   const col = (k: TicketStatus) =>
@@ -58,6 +63,11 @@ function Dispatch() {
       <PageHeader eyebrow="Dispatch" title="Dispatch board"
         description={`${operators.filter((o) => o.status === "available").length} operators available · updates live`} />
       <DispatchLive />
+      <section className="grid gap-2 border-y border-border py-4">
+        <h2 className="text-sm font-semibold">Live queue · {queue.filter(q => q.ready && new Date(q.heartbeat_at).getTime() > Date.now() - 60000).length} drivers online</h2>
+        {queue.map((q, i) => <div key={i} className="flex flex-wrap gap-x-4 gap-y-1 text-sm"><span className="font-medium">{q.operator?.full_name}</span><span className="font-mono">{q.equipment?.unit_number}</span><span className="text-muted-foreground">{q.event?.name} · {new Date(q.heartbeat_at).getTime() <= Date.now() - 60000 ? "Offline" : q.ready ? "Auto-dispatch on" : "Queue paused"}</span></div>)}
+        {!queue.length && <p className="text-sm text-muted-foreground">No drivers in the live queue.</p>}
+      </section>
       <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         {COLUMNS.map((c) => {
           const items = col(c.key);
@@ -122,6 +132,10 @@ function JobCard({ t, operators, equipment }: {
       )}
       {editable && (
         <div className="grid gap-1.5">
+          <Select value={t.required_equipment_class} onValueChange={v => update({ required_equipment_class: v }, "Equipment type updated")}>
+            <SelectTrigger className="h-8 text-xs" aria-label="Required equipment type"><SelectValue /></SelectTrigger>
+            <SelectContent>{Object.entries(EQUIPMENT_CLASSES).map(([v,l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
+          </Select>
           <Select value={t.assigned_operator_id ?? NONE} onValueChange={(v) => assign(v === NONE ? null : v, t.assigned_equipment_id)}>
             <SelectTrigger className="h-8 text-xs" aria-label="Operator"><SelectValue placeholder="Assign operator" /></SelectTrigger>
             <SelectContent>
