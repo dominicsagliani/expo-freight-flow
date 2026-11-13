@@ -9,7 +9,7 @@ import { PriorityBadge } from "@/components/app/badges";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { equipmentQuery, operatorsQuery, ticketsQuery, eventsQuery, eventExhibitorsQuery, membershipQuery, isStaff, type TicketListItem } from "@/lib/queries";
+import { freightQuery, equipmentQuery, operatorsQuery, ticketsQuery, eventsQuery, eventExhibitorsQuery, membershipQuery, isStaff, type TicketListItem } from "@/lib/queries";
 import { PRIORITY_LABEL, SERVICE_LABEL, type TicketPriority, type TicketStatus } from "@/lib/labels";
 import { fmtAgo } from "@/lib/format";
 import { fmtMoney } from "@/lib/billing";
@@ -17,6 +17,7 @@ import { CrewPicker, DispatchLive } from "@/components/app/dispatch-live";
 import { EQUIPMENT_CLASSES } from "@/lib/fleet";
 import { CallInDialog } from "@/components/app/call-in-dialog";
 import { driverState, REQUEST_SOURCES } from "@/lib/dispatch";
+import { DockQueue } from "@/components/app/dock-queue";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/_authenticated/dispatch")({
       queryClient.ensureQueryData(equipmentQuery()),
       queryClient.ensureQueryData(eventsQuery()),
       queryClient.ensureQueryData(eventExhibitorsQuery()),
+      queryClient.ensureQueryData(freightQuery()),
     ]),
   component: Dispatch,
 });
@@ -61,7 +63,7 @@ function Dispatch() {
   const staff = isStaff(membership);
   const event = events.find(e => e.id === eventId);
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
-  useRealtimeRefresh(["tickets", "queue_drivers", "operators", "work_sessions"], [["tickets"], ["queue-drivers"], ["operators"], ["live-sessions"]]);
+  useRealtimeRefresh(["tickets", "queue_drivers", "operators", "work_sessions", "freight_items"], [["tickets"], ["freight"], ["queue-drivers"], ["operators"], ["live-sessions"]]);
   const { data: tickets } = useSuspenseQuery({ ...ticketsQuery(), refetchInterval: 15_000 });
   const { data: operators } = useSuspenseQuery({ ...operatorsQuery(), refetchInterval: 15_000 });
   const { data: equipment } = useSuspenseQuery(equipmentQuery());
@@ -99,6 +101,7 @@ function Dispatch() {
       <div className="grid grid-cols-2 gap-4 border-b border-border pb-5 lg:grid-cols-4">
         {[{ label: "Drivers available", value: available.length, icon: Truck, tone: "text-teal" }, { label: "Waiting requests", value: waiting.length, icon: Phone, tone: "text-status-requested" }, { label: "Longest wait", value: `${oldest} min`, icon: Clock, tone: "text-foreground" }, { label: "Completed today", value: col("completed").length, icon: CheckCircle2, tone: "text-status-completed" }].map(s => <div key={s.label}><div className="flex items-center gap-2 text-xs text-muted-foreground"><s.icon className={`size-4 ${s.tone}`} />{s.label}</div><div className={`mt-2 font-mono text-3xl font-bold ${s.tone}`}>{s.value}</div></div>)}
       </div>
+      <DockQueue eventId={eventId} tickets={eventTickets} />
       <section className="grid gap-3 border-b border-border pb-5">
         <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-sm font-semibold">Driver fleet · {drivers.filter(q => driverState(q.heartbeat_at,q.ready,!!q.job,now) !== "Offline").length} online</h2>{staff && <Button size="sm" variant="outline" onClick={dispatch} disabled={sending || !event || event.status === "closed"}><Send />{sending ? "Checking…" : "Dispatch waiting"}</Button>}</div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{drivers.map(q => {
