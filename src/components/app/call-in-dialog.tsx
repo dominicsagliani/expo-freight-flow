@@ -35,7 +35,8 @@ export function CallInDialog({ eventId, eventName, open, onOpenChange }: { event
     mutationFn: async () => {
       const { data: id, error } = await supabase.rpc("create_call_in", {
         _event: eventId, _exhibitor: exhibitorId, _location: location.trim(), _service: service, _priority: priority,
-        _class: equipmentClass, _service_only: serviceOnly, _weight: !serviceOnly && weight ? Number(weight) : undefined,
+        // PostgreSQL accepts null here; generated RPC types omit parameter nullability.
+        _class: equipmentClass, _service_only: serviceOnly, _weight: (!serviceOnly && weight ? Number(weight) : null) as number,
         _notes: notes, _source: source, _key: key,
       });
       if (error) throw new Error(error.message);
