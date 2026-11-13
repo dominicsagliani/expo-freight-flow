@@ -425,7 +425,9 @@ export type Database = {
           contact_name: string | null
           contact_phone: string | null
           created_at: string
+          first_name: string | null
           id: string
+          last_name: string | null
           organization_id: string
           updated_at: string
         }
@@ -436,7 +438,9 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           organization_id: string
           updated_at?: string
         }
@@ -447,7 +451,9 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           organization_id?: string
           updated_at?: string
         }
