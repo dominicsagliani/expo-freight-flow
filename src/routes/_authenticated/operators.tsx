@@ -9,6 +9,7 @@ import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-quer
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, Panel } from "@/components/app/page-header";
+import { ResetDriversButton } from "@/components/app/admin-reset-actions";
 import { equipmentQuery, operatorsQuery, membershipQuery, isStaff, isAdmin } from "@/lib/queries";
 import { fmtDate } from "@/lib/format";
 
@@ -54,7 +55,8 @@ function OperatorsPage() {
   };
   return (
     <div className="grid gap-6">
-      <PageHeader eyebrow="Workforce" title="Operators" description="Certified forklift operators and the equipment fleet." />
+      <PageHeader eyebrow="Workforce" title="Operators" description="Certified forklift operators and the equipment fleet."
+        actions={canDelete && membership.organizationId ? <ResetDriversButton organizationId={membership.organizationId} /> : undefined} />
       <div className="grid gap-6 xl:grid-cols-2">
         <Panel title={`Operators (${operators.length})`} action={canEdit ? <Button size="sm" onClick={() => setEditing("new")}><Plus className="size-4" /> Add operator</Button> : undefined}>
           <ul className="divide-y divide-border">

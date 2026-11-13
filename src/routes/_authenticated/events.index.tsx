@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { EventStatusBadge } from "@/components/app/badges";
 import { EventFormDialog } from "@/components/app/event-form-dialog";
+import { DeleteEventButton } from "@/components/app/admin-reset-actions";
 import { eventsQuery, membershipQuery, isAdmin, ticketsQuery } from "@/lib/queries";
 import { fmtDateRange, fmtShortDate } from "@/lib/format";
 
@@ -71,6 +72,7 @@ function EventsPage() {
                   <th className="px-4 py-2.5 text-right font-semibold">Exhibitors</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Open tickets</th>
                   <th className="px-4 py-2.5 font-semibold">Status</th>
+                  {isAdmin(m) && <th className="w-12"><span className="sr-only">Actions</span></th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -106,6 +108,7 @@ function EventsPage() {
                     <td className="px-4 py-3">
                       <EventStatusBadge status={e.status} />
                     </td>
+                    {isAdmin(m) && <td className="px-2 py-3"><DeleteEventButton eventId={e.id} name={e.name} compact /></td>}
                   </tr>
                 ))}
               </tbody>

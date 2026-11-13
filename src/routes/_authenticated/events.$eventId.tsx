@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { EventStatusBadge } from "@/components/app/badges";
 import { EventFormDialog, Field } from "@/components/app/event-form-dialog";
+import { DeleteEventButton } from "@/components/app/admin-reset-actions";
 import { eventQuery, exhibitorsQuery, freightQuery, isAdmin, isStaff, membershipQuery, ticketsQuery } from "@/lib/queries";
 import { fmtDate, fmtDateRange } from "@/lib/format";
 
@@ -82,6 +83,7 @@ function EventDetail() {
         }
         actions={
           isAdmin(m) && m.organizationId ? (
+            <div className="flex flex-wrap gap-2">
             <EventFormDialog
               organizationId={m.organizationId}
               event={event}
@@ -91,6 +93,8 @@ function EventDetail() {
                 </Button>
               }
             />
+            <DeleteEventButton eventId={eventId} name={event.name} leavePage />
+            </div>
           ) : null
         }
       />

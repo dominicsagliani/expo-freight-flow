@@ -113,6 +113,13 @@
       "when": 1794546961523,
       "tag": "0015_precise_scan_duration_hours",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794547642556,
+      "tag": "0016_admin_event_delete_driver_reset",
+      "breakpoints": true
     }
   ]
 }

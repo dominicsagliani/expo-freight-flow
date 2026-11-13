@@ -1518,6 +1518,8 @@ export type Database = {
           adjustment_reason: string | null
           billable_amount: number | null
           billable_hours: number | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
           created_at: string
           ended_at: string | null
           equipment_id: string
@@ -1536,6 +1538,8 @@ export type Database = {
           adjustment_reason?: string | null
           billable_amount?: number | null
           billable_hours?: number | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           created_at?: string
           ended_at?: string | null
           equipment_id: string
@@ -1554,6 +1558,8 @@ export type Database = {
           adjustment_reason?: string | null
           billable_amount?: number | null
           billable_hours?: number | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           created_at?: string
           ended_at?: string | null
           equipment_id?: string
@@ -1636,6 +1642,7 @@ export type Database = {
         Returns: string
       }
       create_my_organization: { Args: { _name: string }; Returns: string }
+      delete_event: { Args: { _event: string }; Returns: undefined }
       dispatch_next_available: { Args: { _event: string }; Returns: undefined }
       exhibitor_event_ids: { Args: never; Returns: string[] }
       fleet_release: { Args: never; Returns: undefined }
@@ -1747,6 +1754,7 @@ export type Database = {
       queue_dispatch: { Args: { _event: string }; Returns: undefined }
       queue_poll: { Args: { _ready?: boolean }; Returns: string }
       reset_operator_pin: { Args: { _operator: string }; Returns: undefined }
+      reset_org_drivers: { Args: { _org: string }; Returns: number }
       resolve_issue: { Args: { _update: string }; Returns: undefined }
       session_hourly_rate: { Args: { _ticket: string }; Returns: number }
       session_hours: {
