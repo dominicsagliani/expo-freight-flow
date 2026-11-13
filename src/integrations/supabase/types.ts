@@ -82,6 +82,64 @@ export type Database = {
           },
         ]
       }
+      delivery_updates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          freight_id: string | null
+          id: string
+          kind: Database["public"]["Enums"]["delivery_update_kind"]
+          location: string | null
+          note: string | null
+          organization_id: string
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          freight_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["delivery_update_kind"]
+          location?: string | null
+          note?: string | null
+          organization_id: string
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          freight_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["delivery_update_kind"]
+          location?: string | null
+          note?: string | null
+          organization_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_updates_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freight_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_updates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_updates_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment: {
         Row: {
           capacity_lbs: number | null
@@ -362,6 +420,138 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          exhibitor_id: string | null
+          expires_at: string
+          id: string
+          invited_by: string | null
+          operator_id: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          exhibitor_id?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          operator_id?: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          exhibitor_id?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          operator_id?: string | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_exhibitor_id_fkey"
+            columns: ["exhibitor_id"]
+            isOneToOne: false
+            referencedRelation: "exhibitors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          equipment_id: string | null
+          id: string
+          operator_id: string | null
+          organization_id: string
+          release_reason: string | null
+          released_at: string | null
+          ticket_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          equipment_id?: string | null
+          id?: string
+          operator_id?: string | null
+          organization_id: string
+          release_reason?: string | null
+          released_at?: string | null
+          ticket_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          equipment_id?: string | null
+          id?: string
+          operator_id?: string | null
+          organization_id?: string
+          release_reason?: string | null
+          released_at?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_assignments_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_assignments_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_assignments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
             referencedColumns: ["id"]
           },
         ]
@@ -741,6 +931,8 @@ export type Database = {
       ticket_photos: {
         Row: {
           created_at: string
+          delivery_update_id: string | null
+          freight_id: string | null
           id: string
           organization_id: string
           storage_path: string
@@ -749,6 +941,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          delivery_update_id?: string | null
+          freight_id?: string | null
           id?: string
           organization_id: string
           storage_path: string
@@ -757,6 +951,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          delivery_update_id?: string | null
+          freight_id?: string | null
           id?: string
           organization_id?: string
           storage_path?: string
@@ -764,6 +960,20 @@ export type Database = {
           uploaded_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ticket_photos_delivery_update_id_fkey"
+            columns: ["delivery_update_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_updates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_photos_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freight_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ticket_photos_organization_id_fkey"
             columns: ["organization_id"]
@@ -948,9 +1158,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_my_invitations: { Args: never; Returns: number }
       can_view_ticket: { Args: { _ticket: string }; Returns: boolean }
       can_work_ticket: { Args: { _ticket: string }; Returns: boolean }
       compute_ticket_charge: { Args: { _ticket: string }; Returns: number }
+      create_my_organization: { Args: { _name: string }; Returns: string }
       exhibitor_event_ids: { Args: never; Returns: string[] }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
@@ -1014,6 +1226,13 @@ export type Database = {
         | "delivered_to_booth"
         | "outbound"
         | "shipped"
+      delivery_update_kind:
+        | "picked_up"
+        | "in_transit"
+        | "at_booth"
+        | "delivered"
+        | "exception"
+        | "note"
       equipment_status: "available" | "in_use" | "maintenance"
       event_status: "planning" | "move_in" | "live" | "move_out" | "closed"
       freight_type: "crate" | "pallet" | "skid" | "carton" | "loose" | "other"
@@ -1174,6 +1393,14 @@ export const Constants = {
         "delivered_to_booth",
         "outbound",
         "shipped",
+      ],
+      delivery_update_kind: [
+        "picked_up",
+        "in_transit",
+        "at_booth",
+        "delivered",
+        "exception",
+        "note",
       ],
       equipment_status: ["available", "in_use", "maintenance"],
       event_status: ["planning", "move_in", "live", "move_out", "closed"],
