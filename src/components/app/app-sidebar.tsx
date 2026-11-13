@@ -6,6 +6,7 @@ import {
   ClipboardList,
   CreditCard,
   LayoutDashboard,
+  Map,
   Package,
   Receipt,
   Route as RouteIcon,
@@ -41,6 +42,7 @@ const operations: NavItem[] = [
   { title: "My Jobs & Scan", url: "/operator", icon: ScanLine, roles: ["operator", ...STAFF] },
   { title: "Forklift Mode", url: "/forklift", icon: Forklift, roles: ["operator", ...STAFF] },
   { title: "Dispatch", url: "/dispatch", icon: RouteIcon, roles: STAFF },
+  { title: "Floor plan", url: "/floor-plan", icon: Map, roles: STAFF },
   { title: "Fleet inventory", url: "/equipment", icon: Forklift, roles: STAFF },
 ];
 

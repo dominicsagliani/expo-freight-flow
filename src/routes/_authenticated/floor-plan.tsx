@@ -33,6 +33,7 @@ import {
   type BoothStatus,
 } from "@/lib/floor-plan";
 import { DELIVERY_UPDATE_LABEL, OPEN_STATUSES } from "@/lib/labels";
+import type { TicketStatus } from "@/lib/labels";
 import { fmtAgo } from "@/lib/format";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
@@ -397,7 +398,7 @@ function FloorPlanPage() {
   );
 }
 
-function JobList({ tickets, empty }: { tickets: { id: string; ticket_number: string; status: never }[]; empty: string }) {
+function JobList({ tickets, empty }: { tickets: { id: string; ticket_number: string; status: TicketStatus }[]; empty: string }) {
   if (tickets.length === 0) return <p className="mt-1 text-xs text-muted-foreground">{empty}</p>;
   return (
     <ul className="mt-1 space-y-1">
