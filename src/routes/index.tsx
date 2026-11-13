@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ClipboardList, Package, Receipt, Route as RouteIcon, ScanLine, ShieldCheck } from "lucide-react";
+import { ArrowRight, ClipboardList, Package, Receipt, Route as RouteIcon, ScanLine, ShieldCheck, Sparkles } from "lucide-react";
+import heroImg from "@/assets/hero-forklift-hall.jpg";
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/components/app/logo";
 
@@ -33,69 +34,67 @@ const modules = [
   { icon: ShieldCheck, title: "Isolated by design", text: "Role-based access with company and exhibitor data separation." },
 ];
 
-const board = [
-  { n: "MH-10003", c: "Cascade Hydraulics", b: "842", s: "In progress", tone: "bg-status-progress-soft text-status-progress" },
-  { n: "MH-10001", c: "Northwind Robotics", b: "1214", s: "Assigned", tone: "bg-status-assigned-soft text-status-assigned" },
-  { n: "MH-10009", c: "Ironclad Safety Gear", b: "618", s: "Pending", tone: "bg-status-requested-soft text-status-requested" },
-  { n: "MH-10007", c: "Summit Conveyor Co.", b: "1507", s: "Completed", tone: "bg-status-completed-soft text-status-completed" },
-];
 
 function Landing() {
   return (
     <div className="min-h-screen bg-background">
-      <section className="relative overflow-hidden bg-brand-gradient text-navy-foreground">
-        <div className="absolute inset-0 grid-lines" />
-        <header className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-          <Wordmark inverse />
-          <Button asChild variant="inverse" size="sm">
-            <Link to="/auth" search={{}}>Sign in</Link>
-          </Button>
-        </header>
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-12 lg:grid-cols-[1.1fr_1fr] lg:pb-28 lg:pt-20">
+      <div className="border-b border-border bg-background">
+        <Link to="/plans" className="mx-auto flex max-w-6xl items-center justify-center gap-2 px-5 py-2 text-center text-xs font-medium text-foreground hover:text-teal sm:text-sm">
+          <Sparkles className="size-4 text-teal" />
+          Founding Contractor Pilot: 30 days at $0 for the first 3 contractors <ArrowRight className="size-3.5" />
+        </Link>
+      </div>
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
+          <Wordmark />
+          <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
+            <a href="#platform" className="hover:text-foreground">Platform</a>
+            <a href="#platform" className="hover:text-foreground">Live dispatch</a>
+            <a href="#platform" className="hover:text-foreground">Forklift Mode</a>
+            <Link to="/plans" className="hover:text-foreground">Pricing</Link>
+          </nav>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm"><Link to="/auth" search={{}}>Sign in</Link></Button>
+            <Button asChild size="sm" className="rounded-full"><Link to="/auth" search={{}}>Request pilot</Link></Button>
+          </div>
+        </div>
+      </header>
+
+      <section className="relative overflow-hidden bg-navy text-navy-foreground">
+        <div className="absolute inset-0 grid-lines opacity-60" />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 lg:grid-cols-[1.05fr_1fr] lg:py-24">
           <div>
-            <div className="eyebrow mb-5 text-sidebar-primary">For exhibition contractors & convention centers</div>
-            <h1 className="text-4xl font-bold leading-[1.08] sm:text-5xl lg:text-6xl">
-              The operating system for material handling.
+            <h1 className="text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl">
+              The <span className="text-teal">forklift dispatch OS</span> smart exhibition teams are turning to
             </h1>
             <p className="mt-6 max-w-xl text-lg text-sidebar-foreground">
-              ExpoHaul replaces paper forklift tickets with one connected workflow — from freight arrival at the dock to
-              delivery at the booth and the final invoice.
+              With ExpoHaul, exhibition contractors cut paperwork, stop losing crates, keep every driver moving, and bill
+              accurately straight from the dock.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild variant="teal" size="lg">
-                <Link to="/dashboard">
-                  Open workspace <ArrowRight />
-                </Link>
+              <Button asChild variant="teal" size="lg" className="rounded-full">
+                <Link to="/dashboard">Open live demo <ArrowRight /></Link>
               </Button>
-              <Button asChild variant="inverse" size="lg">
-                <Link to="/auth" search={{}}>Create an account</Link>
+              <Button asChild variant="inverse" size="lg" className="rounded-full">
+                <Link to="/plans">See pricing</Link>
               </Button>
             </div>
+            <p className="mt-6 text-sm text-sidebar-foreground">Digital tickets · QR freight tracking · Live auto-dispatch</p>
           </div>
 
-          <div className="rounded-xl border border-sidebar-border bg-card p-4 text-card-foreground shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div>
-                <div className="eyebrow">Live dispatch</div>
-                <div className="font-display text-sm font-semibold">Pacific Manufacturing & Automation Expo</div>
-              </div>
-              <span className="rounded-full bg-teal-soft px-2 py-0.5 text-xs font-medium text-status-progress">Move-in</span>
+          <div className="relative">
+            <img src={heroImg} alt="Forklift operator moving a crate in an exhibition hall" width={1280} height={1024}
+              className="aspect-[5/4] w-full rounded-[32px] object-cover shadow-2xl" />
+            <div className="absolute bottom-5 left-5 right-5 flex items-center gap-3 rounded-2xl border border-border bg-card/95 p-3 text-card-foreground shadow-xl backdrop-blur sm:right-auto">
+              <span className="size-2.5 rounded-full bg-teal" />
+              <span className="font-mono text-xs text-muted-foreground">MH-10003</span>
+              <span className="text-sm font-medium">Delivered to Booth 842 · FL-02</span>
             </div>
-            <ul className="divide-y divide-border">
-              {board.map((r) => (
-                <li key={r.n} className="flex items-center gap-3 py-3 text-sm">
-                  <span className="font-mono text-xs text-muted-foreground">{r.n}</span>
-                  <span className="min-w-0 flex-1 truncate font-medium">{r.c}</span>
-                  <span className="hidden text-xs text-muted-foreground sm:inline">Booth {r.b}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.tone}`}>{r.s}</span>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-20">
+      <section id="platform" className="mx-auto max-w-6xl px-5 py-20">
         <div className="eyebrow mb-3">Platform</div>
         <h2 className="max-w-2xl text-3xl font-semibold">Everything between the loading dock and the invoice.</h2>
         <div className="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
