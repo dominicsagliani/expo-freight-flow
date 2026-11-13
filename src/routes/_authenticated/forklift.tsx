@@ -298,7 +298,7 @@ function OperatorLogin({ onUnlocked }: { onUnlocked: () => void }) {
     queryKey: ["forklift-events"],
     queryFn: async () => (await supabase.from("events").select("id, name, status").neq("status", "closed").order("start_date")).data ?? [],
   });
-  useEffect(() => { if (!eventId && events.length === 1) setEventId(events[0].id); }, [events, eventId]);
+  useEffect(() => { if (!eventId && events.length === 1) setEventId(events[0]!.id); }, [events, eventId]);
   const { data: ops = [] } = useQuery({
     queryKey: ["forklift-operators", eventId],
     enabled: !!eventId,
