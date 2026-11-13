@@ -21,6 +21,7 @@
 - [x] Rate cards, charge calculation, billing review + export
 
 ## Requested
+- [ ] Fleet inventory with exclusive driver selection and capacity-aware automatic live queue
 - [ ] Short brand launch video for LinkedIn / X / Product Hunt
 - [x] Collect customer payments: plans & billing page, test-mode checkout, subscription records
       (live payments need the go-live steps in the Payments tab)
