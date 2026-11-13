@@ -33,7 +33,7 @@ export const Route = createFileRoute("/_authenticated/forklift")({
 
 const FORKLIFT_KEY = "expohaul.forklift";
 const JOB_SELECT = `id, ticket_number, status, priority, service_type, booth_number, destination, special_instructions,
-  assigned_operator_id, completed_at,
+  assigned_operator_id, completed_at, request_source, service_only, estimated_weight_lbs,
   event:events(name), exhibitor:exhibitors(company_name),
   ticket_freight(freight_id, picked_up_at, delivered_at, flag,
     freight:freight_items(id, freight_code, description, pieces, freight_type, booth_number, storage_location)),
@@ -142,6 +142,17 @@ function ForkliftMode() {
   const delivered = tf.filter((x) => x.delivered_at).length;
   const forkliftName = equipment.find((e) => e.id === forklift)?.unit_number;
   const refresh = () => qc.invalidateQueries({ queryKey: ["forklift-jobs"] });
+  const notified = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    for (const job of jobs) {
+      if (job.status === "assigned" && !notified.current.has(job.id)) {
+        notified.current.add(job.id);
+        toast.success(`New dispatch: ${job.ticket_number} · ${job.destination ?? job.booth_number ?? ""}`, { duration: 8000 });
+        setTab("current");
+      }
+    }
+  }, [jobs]);
+  const callIn = current?.request_source !== "standard" && tf.length === 0;
 
   const rpc = async (fn: () => PromiseLike<{ error: { message: string } | null }>, ok: string) => {
     const { error } = await fn();
@@ -157,6 +168,11 @@ function ForkliftMode() {
   };
   const completeDelivery = async () => {
     if (!current) return;
+    if (callIn) {
+      if (!confirm(`Complete request ${current.ticket_number}?`)) return;
+      if (await rpc(() => supabase.rpc("op_complete_call_in", { _ticket: current.id }), "Request completed")) { setSelected(null); refresh(); }
+      return;
+    }
     if (!mySession) { toast.error("No running timer on this forklift"); return; }
     if (!confirm(`Stop ${forkliftName ?? "forklift"} timer on ${current.ticket_number}?`)) return;
     if (!(await rpc(() => supabase.rpc("op_complete_session", { _session: mySession.id }), "Work session complete"))) return;
@@ -320,9 +336,9 @@ function ForkliftMode() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <BigButton onClick={accept} disabled={current.status !== "assigned"}><ClipboardCheck className="size-8" />Accept job</BigButton>
-              <BigButton tone="accent" onClick={() => setView("scan")}><ScanLine className="size-8" />Scan freight</BigButton>
+              {callIn ? <BigButton tone="accent" disabled={!!mySession} onClick={() => rpc(() => supabase.rpc("op_start_session", { _ticket: current.id, _equipment: forklift }), "Work timer started")}><Play className="size-8" />Start work</BigButton> : <BigButton tone="accent" onClick={() => setView("scan")}><ScanLine className="size-8" />Scan freight</BigButton>}
               <BigButton onClick={() => setView("freight")}><Package className="size-8" />View freight</BigButton>
-              <BigButton tone="success" onClick={completeDelivery} disabled={!mySession}><CheckCircle2 className="size-8" />Complete delivery</BigButton>
+              <BigButton tone="success" onClick={completeDelivery} disabled={!mySession}><CheckCircle2 className="size-8" />{callIn ? "Complete request" : "Complete delivery"}</BigButton>
               {mySession?.status === "paused" ? (
                 <BigButton onClick={() => rpc(() => supabase.rpc("op_resume_session", { _session: mySession.id }), "Timer resumed")}><Play className="size-8" />Resume job</BigButton>
               ) : (
