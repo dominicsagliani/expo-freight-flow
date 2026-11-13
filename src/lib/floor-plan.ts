@@ -62,8 +62,8 @@ export const openIssuesQuery = (eventId: string) =>
       unwrap(
         await supabase
           .from("delivery_updates")
-          .select("ticket_id, ticket:tickets!inner(exhibitor_id)")
-          .eq("event_id", eventId)
+          .select("ticket_id, ticket:tickets!inner(exhibitor_id, event_id)")
+          .eq("ticket.event_id", eventId)
           .not("issue_type", "is", null)
           .is("resolved_at", null),
       ),

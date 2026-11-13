@@ -57,7 +57,7 @@ export function FloorPlanViewer({
           "pdfjs-dist/build/pdf.worker.min.mjs",
           import.meta.url,
         ).toString();
-        const doc = await pdfjs.getDocument(fileUrl).promise;
+        const doc = await pdfjs.getDocument({ url: fileUrl }).promise;
         const page = await doc.getPage(1);
         const base = page.getViewport({ scale: 1 });
         const viewport = page.getViewport({ scale: MAX_RENDER_WIDTH / base.width });
@@ -65,7 +65,7 @@ export function FloorPlanViewer({
         if (!canvas || cancelled) return;
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        await page.render({ canvasContext: canvas.getContext("2d")!, viewport }).promise;
+        await page.render({ canvasContext: canvas.getContext("2d")!, viewport, canvas }).promise;
         if (!cancelled) setSize({ w: viewport.width, h: viewport.height });
       } catch (err) {
         if (!cancelled) setPdfError(err instanceof Error ? err.message : "Could not render this PDF");

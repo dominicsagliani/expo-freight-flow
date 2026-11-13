@@ -168,7 +168,10 @@ function FloorPlanPage() {
     if (!plan) return;
     if (!window.confirm(`Delete floor plan "${plan.name}" and all its booth markers?`)) return;
     const { error } = await supabase.from("floor_plans").delete().eq("id", plan.id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await supabase.storage.from("floor-plans").remove([plan.storage_path]);
     setPlanId("");
     setSelectedMarkerId(null);
@@ -433,8 +436,14 @@ function UploadPlanDialog({
 
   const submit = async () => {
     const file = fileRef.current?.files?.[0];
-    if (!file) return toast.error("Choose a PDF, PNG, or JPG file first");
-    if (!name.trim()) return toast.error("Give the floor plan a name");
+    if (!file) {
+      toast.error("Choose a PDF, PNG, or JPG file first");
+      return;
+    }
+    if (!name.trim()) {
+      toast.error("Give the floor plan a name");
+      return;
+    }
     setBusy(true);
     try {
       const path = `${orgId}/${eventId}/${crypto.randomUUID()}-${file.name}`;
@@ -508,7 +517,10 @@ function MarkerFormDialog({
   };
 
   const save = async () => {
-    if (!booth.trim()) return toast.error("Booth number is required");
+    if (!booth.trim()) {
+      toast.error("Booth number is required");
+      return;
+    }
     setBusy(true);
     try {
       if (marker) {
@@ -544,7 +556,10 @@ function MarkerFormDialog({
     setBusy(true);
     const { error } = await supabase.from("booth_markers").delete().eq("id", marker.id);
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Booth marker removed");
     onDone();
   };
