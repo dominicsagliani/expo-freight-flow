@@ -69,7 +69,7 @@ export const openIssuesQuery = (eventId: string) =>
       ),
   });
 
-export type BoothStatus = "pending" | "assigned" | "in_progress" | "completed" | "on_hold" | "none";
+export type BoothStatus = "pending" | "assigned" | "in_progress" | "completed" | "on_hold" | "waiting" | "no_freight";
 
 /**
  * One marker summarizes every job for that booth: an unresolved issue report
@@ -79,10 +79,11 @@ export type BoothStatus = "pending" | "assigned" | "in_progress" | "completed" |
 export function boothStatus(
   tickets: Pick<TicketListItem, "status">[],
   hasOpenIssue: boolean,
+  hasFreight = true,
 ): BoothStatus {
   const open = tickets.filter((t) => t.status !== "cancelled");
-  if (open.length === 0) return "none";
-  if (hasOpenIssue) return "on_hold";
+  if (hasOpenIssue && open.length > 0) return "on_hold";
+  if (open.length === 0) return hasFreight ? "waiting" : "no_freight";
   if (open.some((t) => t.status === "in_progress")) return "in_progress";
   if (open.some((t) => t.status === "assigned")) return "assigned";
   if (open.some((t) => t.status === "requested")) return "pending";
@@ -95,7 +96,8 @@ export const BOOTH_STATUS_META: Record<BoothStatus, { label: string; dot: string
   in_progress: { label: "In progress", dot: "bg-status-progress" },
   completed: { label: "Completed", dot: "bg-status-completed" },
   on_hold: { label: "On hold", dot: "bg-status-hold" },
-  none: { label: "No jobs", dot: "bg-status-cancelled" },
+  waiting: { label: "Waiting", dot: "bg-status-cancelled" },
+  no_freight: { label: "No freight ordered", dot: "bg-status-nofreight" },
 };
 
 export const FLOOR_PLAN_ACCEPT = ".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg";

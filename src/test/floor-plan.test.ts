@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 import { boothStatus } from "@/lib/floor-plan";
 
 describe("boothStatus", () => {
-  it("returns none when the booth has no active tickets", () => {
-    expect(boothStatus([], false)).toBe("none");
-    expect(boothStatus([{ status: "cancelled" }], false)).toBe("none");
+  it("stays grey (waiting) when freight exists but no job has started", () => {
+    expect(boothStatus([], false, true)).toBe("waiting");
+    expect(boothStatus([{ status: "cancelled" }], false, true)).toBe("waiting");
+  });
+
+  it("flags booths with no freight ordered", () => {
+    expect(boothStatus([], false, false)).toBe("no_freight");
   });
 
   it("puts the booth on hold when an unresolved issue report exists", () => {
