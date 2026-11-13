@@ -111,7 +111,7 @@ export const eventExhibitorsQuery = () =>
   });
 
 const TICKET_LIST_SELECT =
-  "*, exhibitor:exhibitors(id, company_name), event:events(id, name), operator:operators(id, full_name), equipment:equipment(id, unit_number), ticket_freight(freight_id)";
+  "*, exhibitor:exhibitors(id, company_name), event:events(id, name), operator:operators!tickets_assigned_operator_id_fkey(id, full_name), equipment:equipment!tickets_assigned_equipment_id_fkey(id, unit_number), ticket_freight(freight_id)";
 
 export const ticketsQuery = () =>
   queryOptions({
@@ -131,7 +131,7 @@ export const ticketQuery = (id: string) =>
       const { data, error } = await supabase
         .from("tickets")
         .select(
-          "*, exhibitor:exhibitors(id, company_name, contact_name, contact_phone, contact_email), event:events(id, name, venue), operator:operators(id, full_name, phone), equipment:equipment(id, unit_number, description), ticket_freight(scanned_at, freight:freight_items(id, freight_code, description, freight_type, pieces, weight_lbs, length_in, width_in, height_in, arrival_status, storage_location))",
+          "*, exhibitor:exhibitors(id, company_name, contact_name, contact_phone, contact_email), event:events(id, name, venue), operator:operators!tickets_assigned_operator_id_fkey(id, full_name, phone), equipment:equipment!tickets_assigned_equipment_id_fkey(id, unit_number, description), ticket_freight(scanned_at, freight:freight_items(id, freight_code, description, freight_type, pieces, weight_lbs, length_in, width_in, height_in, arrival_status, storage_location))",
         )
         .eq("id", id)
         .single();
