@@ -4,6 +4,7 @@ import { PageHeader, Panel, ComingNext } from "@/components/app/page-header";
 import { isAdmin, membershipQuery } from "@/lib/queries";
 import { TeamInvitations } from "@/components/app/team-invitations";
 import { ROLE_LABEL } from "@/lib/labels";
+import { PaymentSettings } from "@/components/app/payment-settings";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -40,6 +41,7 @@ function SettingsPage() {
           </div>
         </div>
       </Panel>
+      {m.organizationId && isAdmin(m) && <PaymentSettings orgId={m.organizationId} />}
       {m.organizationId && isAdmin(m) && <TeamInvitations orgId={m.organizationId} />}
       <ComingNext
         phase="Upcoming"

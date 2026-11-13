@@ -165,7 +165,7 @@ function ForkliftMode() {
     if (!current) return;
     if (callIn) {
       if (!confirm(`Complete request ${current.ticket_number}?`)) return;
-      if (await rpc(() => supabase.rpc("op_complete_call_in", { _ticket: current.id }), "Request completed")) { setSelected(null); refresh(); }
+      if (await rpc(() => supabase.rpc("op_complete_call_in", { _ticket: current.id }), "Request completed")) { autoInvoice(current.id); setSelected(null); refresh(); }
       return;
     }
     setView("scan");
@@ -339,6 +339,7 @@ function ScanScreen({ job, forklift, onDone, onCompleted }: { job: { id: string;
       try { await uploadPhoto(job.id, extra.photo, { freight_id: r.freight_id }); } catch (e) { toast.error((e as Error).message); }
     }
     setPending(null); setResult(r);
+    if (r.ok && r.job_completed) autoInvoice(job.id);
     if (!r.job_completed) onDone();
   };
   const onScan = (raw: string) => {
