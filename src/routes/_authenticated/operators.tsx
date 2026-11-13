@@ -185,14 +185,14 @@ function OperatorDialog({ op, orgId, onClose }: { op: Tables<"operators"> | null
   const [busy, setBusy] = useState(false);
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!f.full_name.trim()) return toast.error("Name is required");
+    if (!f.full_name.trim()) { toast.error("Name is required"); return; }
     setBusy(true);
     const patch = { ...f, full_name: f.full_name.trim(), phone: f.phone || null, certification_number: f.certification_number || null, certification_expires: f.certification_expires || null };
     const { error } = op
       ? await supabase.from("operators").update(patch).eq("id", op.id)
       : await supabase.from("operators").insert({ ...patch, organization_id: orgId });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(op ? "Operator updated" : "Operator added");
     qc.invalidateQueries({ queryKey: ["operators"] });
     onClose();
