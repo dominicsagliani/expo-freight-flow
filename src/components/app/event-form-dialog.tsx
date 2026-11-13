@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AddressAutocomplete } from "./address-autocomplete";
 import { EVENT_STATUS_LABEL, type EventStatus } from "@/lib/labels";
 
 const schema = z
@@ -99,14 +100,25 @@ export function EventFormDialog({
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Venue">
-              <Input value={form.venue} onChange={(e) => set("venue")(e.target.value)} required />
+              <AddressAutocomplete
+                value={form.venue}
+                onChange={set("venue")}
+                placeholder="Search venue or address"
+                required
+                onSelect={(d) => setForm((f) => ({ ...f, venue: d.name || f.venue, address: d.street, city: d.city }))}
+              />
             </Field>
             <Field label="City / location">
               <Input value={form.city} onChange={(e) => set("city")(e.target.value)} />
             </Field>
           </div>
           <Field label="Venue address">
-            <Input value={form.address} onChange={(e) => set("address")(e.target.value)} />
+            <AddressAutocomplete
+              value={form.address}
+              onChange={set("address")}
+              placeholder="Start typing an address"
+              onSelect={(d) => setForm((f) => ({ ...f, address: d.street, city: d.city || f.city }))}
+            />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Move-in begins">
