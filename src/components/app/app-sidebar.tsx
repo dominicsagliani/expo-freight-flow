@@ -5,7 +5,6 @@ import {
   CalendarDays,
   ClipboardList,
   CreditCard,
-  HardHat,
   LayoutDashboard,
   Package,
   Receipt,
