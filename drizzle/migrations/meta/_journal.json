@@ -120,6 +120,13 @@
       "when": 1794547642556,
       "tag": "0016_admin_event_delete_driver_reset",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1794571299680,
+      "tag": "0017_forklift_units_go_online",
+      "breakpoints": true
     }
   ]
 }
