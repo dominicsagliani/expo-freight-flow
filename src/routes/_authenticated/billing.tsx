@@ -12,7 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { exhibitorsQuery, eventsQuery, isAdmin, isStaff, membershipQuery, rateCardsQuery, ticketsQuery } from "@/lib/queries";
 import { SERVICE_LABEL } from "@/lib/labels";
 import { fmtDateTime } from "@/lib/format";
-import { RATE_UNIT_LABEL, fmtMoney, toCsv, type RateUnit } from "@/lib/billing";
+import { RATE_UNIT_LABEL, customerChargeTotal, fmtMoney, toCsv, type RateUnit } from "@/lib/billing";
+import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/billing")({
 const ALL = "__all";
 
 function Billing() {
+  useRealtimeRefresh(["tickets", "work_sessions", "ticket_freight"], [["tickets"]]);
   const { data: m } = useSuspenseQuery(membershipQuery());
   const { data: tickets } = useSuspenseQuery(ticketsQuery());
   const { data: events } = useSuspenseQuery(eventsQuery());
@@ -54,12 +56,13 @@ function Billing() {
         .filter((t) => t.status === "completed" && t.completed_at)
         .filter((t) => eventId === ALL || t.event_id === eventId)
         .filter((t) => exhibitorId === ALL || t.exhibitor_id === exhibitorId)
-        .filter((t) => !from || t.completed_at!.slice(0, 10) >= from)
-        .filter((t) => !to || t.completed_at!.slice(0, 10) <= to)
-        .sort((a, b) => b.completed_at!.localeCompare(a.completed_at!)),
+        .filter((t) => !from || (t.completed_at ?? "").slice(0, 10) >= from)
+        .filter((t) => !to || (t.completed_at ?? "").slice(0, 10) <= to)
+        .sort((a, b) => (b.completed_at ?? "").localeCompare(a.completed_at ?? "")),
     [tickets, eventId, exhibitorId, from, to],
   );
-  const total = rows.reduce((s, t) => s + Number(t.charge_amount ?? 0), 0);
+  const total = customerChargeTotal(rows);
+  const billedHours = (t: (typeof rows)[number]) => t.work_sessions.length ? t.work_sessions.reduce((sum, s) => sum + Number(s.billable_hours ?? 0), 0).toFixed(2) : t.labor_hours;
   const group = (key: (t: (typeof rows)[number]) => string) => {
     const map = new Map<string, { count: number; sum: number }>();
     for (const t of rows) {
@@ -74,7 +77,7 @@ function Billing() {
   const download = () => {
     const csv = toCsv([
       ["Ticket", "Event", "Exhibitor", "Booth", "Service", "Completed", "Labor hours", "Calculated", "Charge", "Adjustment reason"],
-      ...rows.map((t) => [t.ticket_number, t.event?.name, t.exhibitor?.company_name, t.booth_number, SERVICE_LABEL[t.service_type], t.completed_at, t.labor_hours, t.calculated_charge == null ? "" : Number(t.calculated_charge).toFixed(2), Number(t.charge_amount ?? 0).toFixed(2), t.charge_adjustment_reason]),
+      ...rows.map((t) => [t.ticket_number, t.event?.name, t.exhibitor?.company_name, t.booth_number, SERVICE_LABEL[t.service_type], t.completed_at, billedHours(t), t.calculated_charge == null ? "" : Number(t.calculated_charge).toFixed(2), t.charge_amount == null ? "" : Number(t.charge_amount).toFixed(2), t.charge_adjustment_reason]),
       ["", "", "", "", "", "", "", "Total", total.toFixed(2), ""],
     ]);
     const ex = exhibitors.find((e) => e.id === exhibitorId);
@@ -119,7 +122,7 @@ function Billing() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Revenue" value={fmtMoney(total)} />
+        <Stat label={isStaff(m) ? "Total customer charges" : "Account charges"} value={fmtMoney(total)} />
         <Stat label="Completed services" value={String(rows.length)} />
         <Stat label="Average charge" value={fmtMoney(rows.length ? total / rows.length : 0)} />
       </div>
@@ -150,7 +153,7 @@ function Billing() {
                     <td className="px-4 py-3"><div className="font-medium">{t.exhibitor?.company_name}</div><div className="text-xs text-muted-foreground">{t.event?.name} · Booth {t.booth_number ?? "—"}</div></td>
                     <td className="px-4 py-3">{SERVICE_LABEL[t.service_type]}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{fmtDateTime(t.completed_at)}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{t.labor_hours ?? "—"}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{billedHours(t) ?? "—"}</td>
                     <td className="px-4 py-3 text-right font-medium tabular-nums">{fmtMoney(t.charge_amount)}{t.charge_adjusted_at && <div className="text-xs font-normal text-muted-foreground" title={t.charge_adjustment_reason ?? ""}>Adjusted</div>}</td>
                   </tr>
                 ))}

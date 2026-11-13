@@ -99,6 +99,20 @@
       "when": 1794544049953,
       "tag": "0013_call_in_insert_fix",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1794546623706,
+      "tag": "0014_scan_out_timed_customer_charges",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1794546961523,
+      "tag": "0015_precise_scan_duration_hours",
+      "breakpoints": true
     }
   ]
 }

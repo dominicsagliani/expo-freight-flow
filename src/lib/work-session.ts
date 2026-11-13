@@ -17,6 +17,11 @@ export function ticketHours(sessions: SessionTimes[], now: number = Date.now()):
   return Math.round((sessions.reduce((a, s) => a + sessionSeconds(s, now), 0) / 3600) * 100) / 100;
 }
 
+/** A driver's final scan-out closes only their own loaded session. */
+export function scanOutStopsTimer(items: { picked_up_session_id: string | null; delivered_at: string | null }[], sessionId: string): boolean {
+  return !items.some((item) => item.picked_up_session_id === sessionId && item.delivered_at === null);
+}
+
 export function fmtDuration(totalSeconds: number): string {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
