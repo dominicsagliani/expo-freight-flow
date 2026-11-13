@@ -14,6 +14,12 @@ describe("charge rules", () => {
   it("bills hours in half-hour steps", () => {
     expect(computeCharge({ unit: "per_hour", rate: 165, minimum_charge: 0 }, { weightLbs: 0, pieces: 0, hours: 1.2 })).toBe(247.5);
   });
+  it("uses dispatcher-entered labor hours at the contractor's hourly rate", () => {
+    expect(computeCharge({ unit: "per_hour", rate: 130, minimum_charge: 0 }, { weightLbs: 0, pieces: 0, hours: 5, laborHours: 2.25 })).toBe(292.5);
+  });
+  it("still applies the minimum to labor hours", () => {
+    expect(computeCharge({ unit: "per_hour", rate: 130, minimum_charge: 195 }, { weightLbs: 0, pieces: 0, hours: 0, laborHours: 1 })).toBe(195);
+  });
 });
 
 describe("csv export", () => {
