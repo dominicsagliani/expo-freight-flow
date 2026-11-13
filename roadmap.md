@@ -34,3 +34,4 @@
 - [x] Backend foundation: own workspace per contractor on sign-up, team invitations, assignment history, delivery updates with notes, per-item photo links
 
 - [x] Hourly labor rates per event, dispatcher labor hours, auto charge, exhibitor billing report, admin charge adjustments
+- [x] Interactive event floor plans: PDF/PNG/JPG upload per event, zoom/pan viewer, admin booth marker placement, status-colored markers, filters, booth detail panel with jobs/freight/delivery history, live refresh
