@@ -11,7 +11,7 @@ export function buildDockQueue(freight: DockFreight[], tickets: DockTicket[]): D
     const ts = tickets.filter(t => t.exhibitor_id === id && t.status !== "cancelled").sort((a, b) => a.created_at.localeCompare(b.created_at));
     const open = ts.filter(t => t.status !== "completed");
     const status: DockStatus = !ts.length ? "no_ticket" : open.some(t => t.status === "requested") ? "waiting" : open.length ? "in_transit" : "delivered";
-    return { exhibitorId: id, company: items[0].exhibitor?.company_name ?? "Exhibitor", booth: items.find(i => i.booth_number)?.booth_number ?? null, firstPrintedAt: ts[0]?.created_at ?? null, truck: null, freightCount: items.length, pieces: items.reduce((s, i) => s + i.pieces, 0), weight: items.reduce((s, i) => s + Number(i.weight_lbs || 0), 0), codes: items.map(i => i.freight_code), status, tickets: ts, forklifts: [...new Set(open.map(t => t.equipment?.unit_number).filter((u): u is string => !!u))] };
+    return { exhibitorId: id, company: items[0]?.exhibitor?.company_name ?? "Exhibitor", booth: items.find(i => i.booth_number)?.booth_number ?? null, firstPrintedAt: ts[0]?.created_at ?? null, truck: null, freightCount: items.length, pieces: items.reduce((s, i) => s + i.pieces, 0), weight: items.reduce((s, i) => s + Number(i.weight_lbs || 0), 0), codes: items.map(i => i.freight_code), status, tickets: ts, forklifts: [...new Set(open.map(t => t.equipment?.unit_number).filter((u): u is string => !!u))] };
   });
   rows.sort((a, b) => a.firstPrintedAt === b.firstPrintedAt ? a.company.localeCompare(b.company) : !a.firstPrintedAt ? 1 : !b.firstPrintedAt ? -1 : a.firstPrintedAt.localeCompare(b.firstPrintedAt));
   let n = 0;
