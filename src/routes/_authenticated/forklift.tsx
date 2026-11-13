@@ -40,7 +40,7 @@ const JOB_SELECT = `id, ticket_number, status, priority, service_type, booth_num
   work_sessions(id, equipment_id, operator_id, status, started_at, ended_at, paused_at, paused_seconds)`;
 
 type View = "home" | "scan" | "freight" | "issue" | "pause";
-type ScanResult = { ok: boolean; error?: string; action?: string; freight_code?: string; description?: string; exhibitor?: string; booth?: string; ticket_number?: string };
+type ScanResult = { ok: boolean; error?: string; action?: string; freight_code?: string; description?: string; exhibitor?: string; booth?: string; ticket_number?: string; timer_stopped?: boolean; job_completed?: boolean };
 
 async function uploadPhoto(ticketId: string, file: File, extra: { freight_id?: string; delivery_update_id?: string }) {
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -173,15 +173,7 @@ function ForkliftMode() {
       if (await rpc(() => supabase.rpc("op_complete_call_in", { _ticket: current.id }), "Request completed")) { setSelected(null); refresh(); }
       return;
     }
-    if (!mySession) { toast.error("No running timer on this forklift"); return; }
-    if (!confirm(`Stop ${forkliftName ?? "forklift"} timer on ${current.ticket_number}?`)) return;
-    if (!(await rpc(() => supabase.rpc("op_complete_session", { _session: mySession.id }), "Work session complete"))) return;
-    const othersOpen = current.work_sessions.some((s) => s.status !== "completed" && s.id !== mySession.id);
-    if (!othersOpen && delivered === tf.length && myIds.includes(current.assigned_operator_id ?? "")) {
-      if (await rpc(() => supabase.rpc("operator_complete_job", { _ticket: current.id }), "Job completed")) {
-        await supabase.rpc("queue_poll", {}); setSelected(null); refresh();
-      }
-    }
+    setView("scan");
   };
 
   if (me && me.length === 0) {
@@ -231,7 +223,7 @@ function ForkliftMode() {
   );
 
   if (view === "scan" && current) {
-    return <Shell onBack={() => setView("home")}>{header}<ScanScreen job={current} forklift={forklift} onDone={refresh} /></Shell>;
+    return <Shell onBack={() => setView("home")}>{header}<ScanScreen key={current.id} job={current} forklift={forklift} onDone={refresh} onCompleted={() => { setSelected(null); setView("home"); refresh(); }} /></Shell>;
   }
   if (view === "freight" && current) {
     return (
@@ -338,7 +330,7 @@ function ForkliftMode() {
               <BigButton onClick={accept} disabled={current.status !== "assigned"}><ClipboardCheck className="size-8" />Accept job</BigButton>
               {callIn ? <BigButton tone="accent" disabled={!!mySession} onClick={() => rpc(() => supabase.rpc("op_start_session", { _ticket: current.id, _equipment: forklift }), "Work timer started")}><Play className="size-8" />Start work</BigButton> : <BigButton tone="accent" onClick={() => setView("scan")}><ScanLine className="size-8" />Scan freight</BigButton>}
               <BigButton onClick={() => setView("freight")}><Package className="size-8" />View freight</BigButton>
-              <BigButton tone="success" onClick={completeDelivery} disabled={!mySession}><CheckCircle2 className="size-8" />{callIn ? "Complete request" : "Complete delivery"}</BigButton>
+              {callIn && <BigButton tone="success" onClick={completeDelivery} disabled={!mySession}><CheckCircle2 className="size-8" />Complete request</BigButton>}
               {mySession?.status === "paused" ? (
                 <BigButton onClick={() => rpc(() => supabase.rpc("op_resume_session", { _session: mySession.id }), "Timer resumed")}><Play className="size-8" />Resume job</BigButton>
               ) : (
@@ -437,7 +429,7 @@ function OperatorLogin({ onUnlocked }: { onUnlocked: () => void }) {
   );
 }
 
-function ScanScreen({ job, forklift, onDone }: { job: { id: string; booth_number: string | null }; forklift: string; onDone: () => void }) {
+function ScanScreen({ job, forklift, onDone, onCompleted }: { job: { id: string; booth_number: string | null }; forklift: string; onDone: () => void; onCompleted: () => void }) {
   const [mode, setMode] = useState<"pickup" | "deliver">("pickup");
   const [result, setResult] = useState<ScanResult | null>(null);
   const [pending, setPending] = useState<string | null>(null);
@@ -460,7 +452,8 @@ function ScanScreen({ job, forklift, onDone }: { job: { id: string; booth_number
     if (r.ok && extra.photo && r.freight_id) {
       try { await uploadPhoto(job.id, extra.photo, { freight_id: r.freight_id }); } catch (e) { toast.error((e as Error).message); }
     }
-    setPending(null); setResult(r); onDone();
+    setPending(null); setResult(r);
+    if (!r.job_completed) onDone();
   };
   const onScan = (raw: string) => {
     if (busy || result || pending) return;
@@ -473,11 +466,12 @@ function ScanScreen({ job, forklift, onDone }: { job: { id: string; booth_number
     return (
       <div className={`m-5 grid place-items-center gap-4 rounded-2xl p-10 text-center ${result.ok ? "bg-status-completed" : "bg-destructive"} text-primary-foreground`}>
         {result.ok ? <CheckCircle2 className="size-24" /> : <XCircle className="size-24" />}
-        <div className="text-4xl font-bold">{result.ok ? (result.action === "pickup" ? "PICKED UP" : "DELIVERED") : result.error}</div>
+        <div className="text-4xl font-bold">{result.ok ? (result.action === "pickup" ? "SCANNED IN" : "SCANNED OUT") : result.error}</div>
+        {result.ok && <div className="text-xl">{result.job_completed ? "Job completed · Charge added to customer account" : result.timer_stopped ? "Driver timer stopped" : "Driver timer running"}</div>}
         {result.freight_code && <div className="font-mono text-2xl">{result.freight_code}</div>}
         {result.description && <div className="text-xl">{result.description}</div>}
         {(result.exhibitor || result.booth) && <div className="text-xl">{result.exhibitor} · Booth {result.booth ?? "—"}{result.ticket_number ? ` · ${result.ticket_number}` : ""}</div>}
-        <BigButton onClick={() => setResult(null)}>Scan next</BigButton>
+        <BigButton onClick={() => result.job_completed ? onCompleted() : setResult(null)}>{result.job_completed ? "Next job" : "Scan next"}</BigButton>
       </div>
     );
   }
@@ -487,10 +481,10 @@ function ScanScreen({ job, forklift, onDone }: { job: { id: string; booth_number
     <div className="grid gap-4 p-5">
       <div className="grid grid-cols-2 gap-3">
         {(["pickup", "deliver"] as const).map((m) => (
-          <button key={m} onClick={() => setMode(m)}
+          <Button variant="inverse" key={m} onClick={() => setMode(m)}
             className={`min-h-16 rounded-xl text-2xl font-bold ${mode === m ? "bg-accent text-accent-foreground" : "bg-primary-foreground/10"}`}>
-            {m === "pickup" ? "PICK UP" : "DELIVER"}
-          </button>
+            {m === "pickup" ? "SCAN IN" : "SCAN OUT"}
+          </Button>
         ))}
       </div>
       <div className="mx-auto w-full max-w-md overflow-hidden rounded-xl bg-background text-foreground"><QrScanner onResult={onScan} /></div>
@@ -527,7 +521,7 @@ function DeliverConfirm({ booth, busy, onCancel, onConfirm }: {
       <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (optional)" className="bg-background text-lg text-foreground" />
       <div className="grid grid-cols-2 gap-3">
         <BigButton onClick={onCancel}><X className="size-8" />Cancel</BigButton>
-        <BigButton tone="success" disabled={busy} onClick={() => onConfirm({ booth_ok: boothOk, flag, note, photo })}><CheckCircle2 className="size-8" />Mark delivered</BigButton>
+        <BigButton tone="success" disabled={busy || !boothOk} onClick={() => onConfirm({ booth_ok: boothOk, flag, note, photo })}><CheckCircle2 className="size-8" />Confirm scan-out</BigButton>
       </div>
     </div>
   );

@@ -1,5 +1,14 @@
 export type RateUnit = "per_cwt" | "per_piece" | "per_hour" | "flat";
 
+export function scanSessionCharge(sessions: { billable_amount: number | null; billable_hours: number | null; hourly_rate: number | null }[], minimum = 0): number | null {
+  if (!sessions.length || sessions.some((s) => s.hourly_rate === null || s.billable_hours === null)) return null;
+  return Math.round(Math.max(minimum, sessions.reduce((sum, s) => sum + (s.billable_amount ?? Math.round(Number(s.billable_hours) * Number(s.hourly_rate) * 100) / 100), 0)) * 100) / 100;
+}
+
+export function customerChargeTotal(tickets: { status: string; charge_amount: number | null }[]): number {
+  return Math.round(tickets.reduce((sum, t) => sum + (t.status === "completed" ? Number(t.charge_amount ?? 0) : 0), 0) * 100) / 100;
+}
+
 /** Mirrors the database charge rule used when a ticket is completed. */
 export function computeCharge(
   rate: { unit: RateUnit; rate: number; minimum_charge: number },

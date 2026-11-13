@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { computeCharge, toCsv } from "@/lib/billing";
+import { computeCharge, customerChargeTotal, scanSessionCharge, toCsv } from "@/lib/billing";
 
 describe("charge rules", () => {
+  it("bills scan-timed work at the captured contractor hourly rate", () => {
+    expect(scanSessionCharge([{ billable_hours: 0.25, hourly_rate: 130, billable_amount: null }])).toBe(32.5);
+  });
+  it("adds completed jobs into the customer account and excludes unfinished work", () => {
+    expect(customerChargeTotal([{ status: "completed", charge_amount: 32.5 }, { status: "completed", charge_amount: 65 }, { status: "assigned", charge_amount: 130 }])).toBe(97.5);
+  });
+  it("never invents a zero charge when a scan session has no rate", () => {
+    expect(scanSessionCharge([{ billable_hours: 1, hourly_rate: null, billable_amount: null }])).toBeNull();
+  });
   it("rounds weight up to the next 100 lbs", () => {
     expect(computeCharge({ unit: "per_cwt", rate: 98.5, minimum_charge: 197 }, { weightLbs: 1250, pieces: 1, hours: 0 })).toBe(1280.5);
   });
