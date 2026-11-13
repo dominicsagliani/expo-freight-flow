@@ -57,6 +57,13 @@
       "when": 1794529970889,
       "tag": "0007_labor_hours_charge_adjustments",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794532577647,
+      "tag": "0008_forklift_work_sessions",
+      "breakpoints": true
     }
   ]
 }
