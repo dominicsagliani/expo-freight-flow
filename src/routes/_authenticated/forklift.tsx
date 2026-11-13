@@ -110,11 +110,6 @@ function ForkliftMode() {
     void poll(); const interval = setInterval(poll, 10_000);
     return () => { active = false; clearInterval(interval); };
   }, [forklift, me?.[0]?.id, qc]);
-  const chooseForklift = async (id: string) => {
-    const { error } = await supabase.rpc("fleet_select", { _equipment: id });
-    if (error) { toast.error(error.message); return; }
-    setForklift(id); qc.invalidateQueries({ queryKey: ["forklift-queue"] });
-  };
   const myIds = useMemo(() => (me ?? []).map((m) => m.id), [me]);
   const { data: jobs = [] } = useQuery({
     queryKey: ["forklift-jobs", myIds],
