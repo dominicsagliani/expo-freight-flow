@@ -44,7 +44,7 @@ const Email = ({ contractorName = 'Your service company', contactName, exhibitor
 
 export const template = {
   component: Email,
-  subject: (d: Record<string, any>) => `${d.amount ?? 'Payment'} due — ${d.ticketNumber ?? 'forklift service'} complete`,
+  subject: (d: Record<string, any>) => `${d['amount'] ?? 'Payment'} due — ${d['ticketNumber'] ?? 'forklift service'} complete`,
   displayName: 'Service receipt with pay button',
   previewData: { contractorName: 'Summit Material Handling', contactName: 'Jane', exhibitorName: 'Northwind Robotics', eventName: 'Pacific Manufacturing Expo', booth: '1214', ticketNumber: 'MH-10002', service: 'Inbound delivery to booth', completedAt: 'Nov 13, 2:40 PM', amount: '$197.00', paymentUrl: 'https://example.com/pay', instructions: 'Card, ACH or check accepted.' },
 } satisfies TemplateEntry
