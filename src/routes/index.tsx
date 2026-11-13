@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ClipboardList, Package, Receipt, Route as RouteIcon, ScanLine, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, ClipboardList, Package, Receipt, Route as RouteIcon, ScanLine, ShieldCheck, Sparkles } from "lucide-react";
 import heroImg from "@/assets/hero-forklift-hall.jpg";
+import dispatchImg from "@/assets/live-dispatch.jpg";
+import forkliftImg from "@/assets/forklift-mode.jpg";
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/components/app/logo";
 
@@ -49,8 +51,8 @@ function Landing() {
           <Wordmark />
           <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
             <a href="#platform" className="hover:text-foreground">Platform</a>
-            <a href="#platform" className="hover:text-foreground">Live dispatch</a>
-            <a href="#platform" className="hover:text-foreground">Forklift Mode</a>
+            <a href="#live-dispatch" className="hover:text-foreground">Live dispatch</a>
+            <a href="#forklift-mode" className="hover:text-foreground">Forklift Mode</a>
             <Link to="/plans" className="hover:text-foreground">Pricing</Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -107,6 +109,32 @@ function Landing() {
           ))}
         </div>
       </section>
+
+      {[
+        { id: "live-dispatch", img: dispatchImg, eyebrow: "Live dispatch", title: "Mission control for every forklift on the floor.",
+          text: "When an exhibitor calls in or walks up to the desk, your dispatcher opens a ticket in seconds and it goes straight to the next available forklift that can lift the load.",
+          points: ["Call-in and walk-in tickets in one tap", "First-truck-in dock queue by exhibitor", "Live view of every forklift: available, on a job, or on break"], flip: false },
+        { id: "forklift-mode", img: forkliftImg, eyebrow: "Forklift Mode", title: "A delivery-driver app, built for forklifts.",
+          text: "Mount a tablet in the cab, pick the forklift and go online. Jobs arrive automatically, scanning a crate starts the clock and scanning it out at the booth stops it and bills the exhibitor.",
+          points: ["No logins or PINs — sign in by forklift", "Scan in starts the timer, scan out stops it", "Charges added to the exhibitor's account automatically"], flip: true },
+      ].map((f) => (
+        <section key={f.id} id={f.id} className="scroll-mt-20 border-t border-border">
+          <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-20 lg:grid-cols-2">
+            <img src={f.img} alt={f.title} width={1280} height={960} loading="lazy"
+              className={`aspect-[4/3] w-full rounded-[28px] object-cover shadow-xl ${f.flip ? "lg:order-2" : ""}`} />
+            <div>
+              <div className="eyebrow mb-3">{f.eyebrow}</div>
+              <h2 className="text-3xl font-semibold">{f.title}</h2>
+              <p className="mt-4 text-muted-foreground">{f.text}</p>
+              <ul className="mt-6 space-y-3">
+                {f.points.map((pt) => (
+                  <li key={pt} className="flex items-start gap-3 text-sm"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-teal" />{pt}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      ))}
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6 text-sm text-muted-foreground">
