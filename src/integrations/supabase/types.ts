@@ -88,10 +88,13 @@ export type Database = {
           created_by: string | null
           freight_id: string | null
           id: string
+          issue_type: string | null
           kind: Database["public"]["Enums"]["delivery_update_kind"]
           location: string | null
           note: string | null
           organization_id: string
+          resolved_at: string | null
+          resolved_by: string | null
           ticket_id: string
         }
         Insert: {
@@ -99,10 +102,13 @@ export type Database = {
           created_by?: string | null
           freight_id?: string | null
           id?: string
+          issue_type?: string | null
           kind?: Database["public"]["Enums"]["delivery_update_kind"]
           location?: string | null
           note?: string | null
           organization_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
           ticket_id: string
         }
         Update: {
@@ -110,10 +116,13 @@ export type Database = {
           created_by?: string | null
           freight_id?: string | null
           id?: string
+          issue_type?: string | null
           kind?: Database["public"]["Enums"]["delivery_update_kind"]
           location?: string | null
           note?: string | null
           organization_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
           ticket_id?: string
         }
         Relationships: [
@@ -879,32 +888,109 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_crew: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          operator_id: string
+          organization_id: string
+          ticket_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          operator_id: string
+          organization_id: string
+          ticket_id: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          operator_id?: string
+          organization_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_crew_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_crew_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_crew_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_freight: {
         Row: {
+          booth_verified: boolean | null
           created_at: string
+          delivered_at: string | null
+          delivered_by: string | null
+          delivered_session_id: string | null
+          flag: string | null
           freight_id: string
           organization_id: string
+          picked_up_at: string | null
+          picked_up_by: string | null
+          picked_up_session_id: string | null
           scanned_at: string | null
           scanned_by: string | null
           ticket_id: string
         }
         Insert: {
+          booth_verified?: boolean | null
           created_at?: string
+          delivered_at?: string | null
+          delivered_by?: string | null
+          delivered_session_id?: string | null
+          flag?: string | null
           freight_id: string
           organization_id: string
+          picked_up_at?: string | null
+          picked_up_by?: string | null
+          picked_up_session_id?: string | null
           scanned_at?: string | null
           scanned_by?: string | null
           ticket_id: string
         }
         Update: {
+          booth_verified?: boolean | null
           created_at?: string
+          delivered_at?: string | null
+          delivered_by?: string | null
+          delivered_session_id?: string | null
+          flag?: string | null
           freight_id?: string
           organization_id?: string
+          picked_up_at?: string | null
+          picked_up_by?: string | null
+          picked_up_session_id?: string | null
           scanned_at?: string | null
           scanned_by?: string | null
           ticket_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ticket_freight_delivered_session_id_fkey"
+            columns: ["delivered_session_id"]
+            isOneToOne: false
+            referencedRelation: "work_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ticket_freight_freight_id_fkey"
             columns: ["freight_id"]
@@ -917,6 +1003,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_freight_picked_up_session_id_fkey"
+            columns: ["picked_up_session_id"]
+            isOneToOne: false
+            referencedRelation: "work_sessions"
             referencedColumns: ["id"]
           },
           {
@@ -1168,6 +1261,137 @@ export type Database = {
           },
         ]
       }
+      work_session_pauses: {
+        Row: {
+          created_by: string | null
+          id: string
+          organization_id: string
+          paused_at: string
+          reason: string
+          resumed_at: string | null
+          session_id: string
+        }
+        Insert: {
+          created_by?: string | null
+          id?: string
+          organization_id: string
+          paused_at?: string
+          reason: string
+          resumed_at?: string | null
+          session_id: string
+        }
+        Update: {
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          paused_at?: string
+          reason?: string
+          resumed_at?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_session_pauses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_session_pauses_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "work_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_sessions: {
+        Row: {
+          adjusted_by: string | null
+          adjustment_reason: string | null
+          billable_amount: number | null
+          billable_hours: number | null
+          created_at: string
+          ended_at: string | null
+          equipment_id: string
+          hourly_rate: number | null
+          id: string
+          operator_id: string
+          organization_id: string
+          paused_at: string | null
+          paused_seconds: number
+          started_at: string
+          status: Database["public"]["Enums"]["work_session_status"]
+          ticket_id: string
+        }
+        Insert: {
+          adjusted_by?: string | null
+          adjustment_reason?: string | null
+          billable_amount?: number | null
+          billable_hours?: number | null
+          created_at?: string
+          ended_at?: string | null
+          equipment_id: string
+          hourly_rate?: number | null
+          id?: string
+          operator_id: string
+          organization_id: string
+          paused_at?: string | null
+          paused_seconds?: number
+          started_at?: string
+          status?: Database["public"]["Enums"]["work_session_status"]
+          ticket_id: string
+        }
+        Update: {
+          adjusted_by?: string | null
+          adjustment_reason?: string | null
+          billable_amount?: number | null
+          billable_hours?: number | null
+          created_at?: string
+          ended_at?: string | null
+          equipment_id?: string
+          hourly_rate?: number | null
+          id?: string
+          operator_id?: string
+          organization_id?: string
+          paused_at?: string | null
+          paused_seconds?: number
+          started_at?: string
+          status?: Database["public"]["Enums"]["work_session_status"]
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_sessions_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_sessions_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_sessions_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1215,6 +1439,29 @@ export type Database = {
         }
         Returns: undefined
       }
+      my_operator_on_ticket: { Args: { _ticket: string }; Returns: string }
+      op_complete_session: { Args: { _session: string }; Returns: undefined }
+      op_pause_session: {
+        Args: { _reason: string; _session: string }
+        Returns: undefined
+      }
+      op_resume_session: { Args: { _session: string }; Returns: undefined }
+      op_scan_freight: {
+        Args: {
+          _action: string
+          _booth_ok?: boolean
+          _equipment?: string
+          _flag?: string
+          _note?: string
+          _ticket: string
+          _token: string
+        }
+        Returns: Json
+      }
+      op_start_session: {
+        Args: { _equipment: string; _ticket: string }
+        Returns: string
+      }
       operator_complete_job: {
         Args: { _notes?: string; _ticket: string }
         Returns: undefined
@@ -1235,6 +1482,21 @@ export type Database = {
       org_has_active_subscription: {
         Args: { _org: string; check_env?: string }
         Returns: boolean
+      }
+      resolve_issue: { Args: { _update: string }; Returns: undefined }
+      session_hourly_rate: { Args: { _ticket: string }; Returns: number }
+      session_hours: {
+        Args: { s: Database["public"]["Tables"]["work_sessions"]["Row"] }
+        Returns: number
+      }
+      staff_correct_scan: {
+        Args: {
+          _freight: string
+          _reason: string
+          _ticket: string
+          _what: string
+        }
+        Returns: undefined
       }
       user_exhibitor_ids: { Args: never; Returns: string[] }
       user_operator_ids: { Args: never; Returns: string[] }
@@ -1260,6 +1522,7 @@ export type Database = {
         | "delivered"
         | "exception"
         | "note"
+        | "issue"
       equipment_status: "available" | "in_use" | "maintenance"
       event_status: "planning" | "move_in" | "live" | "move_out" | "closed"
       freight_type: "crate" | "pallet" | "skid" | "carton" | "loose" | "other"
@@ -1279,6 +1542,7 @@ export type Database = {
         | "in_progress"
         | "completed"
         | "cancelled"
+      work_session_status: "active" | "paused" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1428,6 +1692,7 @@ export const Constants = {
         "delivered",
         "exception",
         "note",
+        "issue",
       ],
       equipment_status: ["available", "in_use", "maintenance"],
       event_status: ["planning", "move_in", "live", "move_out", "closed"],
@@ -1450,6 +1715,7 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
+      work_session_status: ["active", "paused", "completed"],
     },
   },
 } as const

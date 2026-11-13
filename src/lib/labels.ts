@@ -90,6 +90,13 @@ export const ACTIVITY_LABEL: Record<string, string> = {
   labor_hours_set: "Labor hours entered",
   charge_adjusted: "Charge adjusted",
   charge_reset: "Charge reset to calculated",
+  crew_added: "Forklift crew added",
+  session_started: "Forklift timer started",
+  session_paused: "Forklift timer paused",
+  session_resumed: "Forklift timer resumed",
+  session_completed: "Forklift timer stopped",
+  scan_corrected: "Scan corrected",
+  issue_resolved: "Issue resolved",
 };
 
 export const DELIVERY_UPDATE_LABEL = {
@@ -99,5 +106,6 @@ export const DELIVERY_UPDATE_LABEL = {
   delivered: "Delivered",
   exception: "Problem reported",
   note: "Note",
+  issue: "Issue reported",
 } as const;
 export type DeliveryUpdateKind = keyof typeof DELIVERY_UPDATE_LABEL;
