@@ -35,7 +35,7 @@ export function TeamInvitations({ orgId }: { orgId: string }) {
       operator_id: role === "operator" ? linkId || null : null,
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(`Invitation saved for ${email}`);
     setEmail("");
     setLinkId("");
@@ -44,7 +44,7 @@ export function TeamInvitations({ orgId }: { orgId: string }) {
 
   async function revoke(id: string) {
     const { error } = await supabase.from("invitations").update({ status: "revoked" }).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["invitations", orgId] });
   }
 

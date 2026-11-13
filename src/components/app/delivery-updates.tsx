@@ -34,7 +34,7 @@ export function DeliveryUpdates({ ticketId, freight, canPost }: { ticketId: stri
       location: location.trim() || null,
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Update posted");
     setNote("");
     setLocation("");

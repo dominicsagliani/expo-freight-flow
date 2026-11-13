@@ -17,7 +17,7 @@ export function CompanySetup({ email }: { email: string }) {
     setBusy(true);
     const { error } = await supabase.rpc("create_my_organization", { _name: name });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Your company workspace is ready");
     await qc.invalidateQueries();
   }
