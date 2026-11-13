@@ -31,6 +31,8 @@ use the editor.
 
 ## Project rules (ExpoHaul)
 
+- Fleet reservations and auto-dispatch use authenticated database RPCs with event locks, exclusive operator/machine reservations and short heartbeats; only registered PIN-unlocked drivers receive compatible known-weight tickets. Why: prevents duplicate assignments and unsafe or cross-event routing; assignment never starts billable time.
+
 - Multi-tenant: every business table carries `organization_id`; access is enforced by RLS through security-definer helpers (`is_org_staff`, `is_org_admin`, `user_exhibitor_ids`, `user_operator_ids`, `can_view_ticket`). Why: company, exhibitor, and operator isolation must hold even if the UI is bypassed.
 - Roles live only in `public.user_roles` (role + optional exhibitor_id / operator_id link), never on profiles. Why: prevents privilege escalation.
 - `organization_id`, ticket numbers, freight codes, and QR tokens are set by BEFORE triggers from the parent event; clients never choose them. Why: tenant and identifier integrity.

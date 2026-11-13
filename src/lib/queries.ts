@@ -187,7 +187,7 @@ export const operatorsQuery = () =>
 export const equipmentQuery = () =>
   queryOptions({
     queryKey: ["equipment"],
-    queryFn: async () => unwrap(await supabase.from("equipment").select("*").order("unit_number")),
+    queryFn: async () => unwrap(await supabase.from("equipment").select("*").is("retired_at", null).order("unit_number")),
   });
 
 export const ticketPhotosQuery = (ticketId: string) =>
