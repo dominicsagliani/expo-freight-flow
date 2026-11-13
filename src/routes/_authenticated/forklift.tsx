@@ -181,8 +181,9 @@ function ForkliftMode() {
   const header = (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-primary-foreground/15 px-5 py-3 text-lg">
       <span className="font-mono text-xl font-bold">{forkliftName ?? "Forklift"}</span>
+      <span className="rounded-md bg-status-completed px-2 py-1 text-sm font-bold uppercase tracking-wide text-primary-foreground">Online</span>
       <span className="text-primary-foreground/70">{current?.event?.name ?? "No active event"}</span>
-      <Button variant="inverse" className="ml-auto" onClick={switchOperator}>Go offline</Button>
+      <Button variant="destructive" className="ml-auto uppercase tracking-wide" onClick={switchOperator}><XCircle className="size-5" />Offline</Button>
       <Button variant="inverse" onClick={async () => {
         const { error } = await supabase.rpc("queue_poll", { _ready: !queueState?.ready });
         if (error) toast.error(error.message);
@@ -526,7 +527,15 @@ function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_numbe
               <div className="text-base font-normal">{e.model || e.description}</div>
               <div className="text-sm font-normal">{EQUIPMENT_CLASSES[e.equipment_class as keyof typeof EQUIPMENT_CLASSES]} · {FUEL_TYPES[e.fuel_type as keyof typeof FUEL_TYPES]}</div>
               <div className="text-base">{e.capacity_lbs?.toLocaleString() ?? "Unknown"} lb</div>
-              <div className="text-base font-normal text-primary-foreground/70">{busy === e.id ? "Going online…" : e.status === "maintenance" ? "Maintenance" : e.status === "in_use" ? "In use" : "Available — tap to go online"}</div>
+              <span className={`mt-1 inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-lg font-bold uppercase tracking-wide ${
+                busy === e.id ? "bg-status-completed/60 text-primary-foreground"
+                  : blocked ? "bg-primary-foreground/10 text-primary-foreground/50"
+                  : "bg-status-completed text-primary-foreground"
+              }`}>
+                {blocked ? <XCircle className="size-5" /> : <CheckCircle2 className="size-5" />}
+                {busy === e.id ? "Going online…" : e.status === "maintenance" ? "Maintenance" : e.status === "in_use" ? "In use" : "Online"}
+              </span>
+              {!blocked && busy !== e.id && <div className="text-base font-normal text-primary-foreground/70">Tap to take this lift online</div>}
             </Button>
           );
         })}
