@@ -78,6 +78,13 @@
       "when": 1794539811808,
       "tag": "0010_fleet_live_queue",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794539931883,
+      "tag": "0011_fleet_session_guards",
+      "breakpoints": true
     }
   ]
 }
