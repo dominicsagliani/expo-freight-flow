@@ -84,11 +84,11 @@ function FloorPlanPage() {
   const [fExhibitor, setFExhibitor] = useState(ALL);
   const [fOperator, setFOperator] = useState(ALL);
 
-  const { data: plans = [] } = useSuspenseQuery(floorPlansQuery(eventId));
+  const { data: plans = [] } = useQuery(floorPlansQuery(eventId));
   const plan = plans.find((p) => p.id === planId) ?? plans[0] ?? null;
-  const { data: markers = [] } = useSuspenseQuery(boothMarkersQuery(plan?.id ?? ""));
+  const { data: markers = [] } = useQuery(boothMarkersQuery(plan?.id ?? ""));
   const { data: fileUrl } = useQuery(floorPlanFileQuery(plan?.storage_path ?? ""));
-  const { data: openIssues = [] } = useSuspenseQuery(openIssuesQuery(eventId));
+  const { data: openIssues = [] } = useQuery(openIssuesQuery(eventId));
 
   useRealtimeRefresh(
     ["tickets", "booth_markers", "delivery_updates", "floor_plans"],
