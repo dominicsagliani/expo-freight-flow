@@ -20,7 +20,19 @@ export const membershipQuery = () =>
           .eq("user_id", user.id),
         supabase.from("profiles").select("id, full_name, email").eq("id", user.id).maybeSingle(),
       ]);
-      const rows = unwrap(roles);
+      let rows = unwrap(roles);
+      // A user with no company yet may have pending invitations for their confirmed email.
+      if (!rows.some((r) => r.organization_id)) {
+        const { data: accepted } = await supabase.rpc("accept_my_invitations");
+        if (accepted && accepted > 0) {
+          rows = unwrap(
+            await supabase
+              .from("user_roles")
+              .select("id, role, organization_id, exhibitor_id, operator_id, organization:organizations(id, name)")
+              .eq("user_id", user.id),
+          );
+        }
+      }
       const primary = rows.find((r) => r.organization_id) ?? rows[0] ?? null;
       return {
         userId: user.id,
@@ -278,4 +290,44 @@ export const salesRequestsQuery = () =>
       ]);
       return { requests: unwrap(reqs), grants: unwrap(grants) };
     },
+  });
+
+export const deliveryUpdatesQuery = (ticketId: string) =>
+  queryOptions({
+    queryKey: ["delivery_updates", ticketId],
+    queryFn: async () =>
+      unwrap(
+        await supabase
+          .from("delivery_updates")
+          .select("id, kind, note, location, created_at, created_by, freight:freight_items(id, freight_code)")
+          .eq("ticket_id", ticketId)
+          .order("created_at", { ascending: false }),
+      ),
+  });
+
+export const jobAssignmentsQuery = (ticketId: string) =>
+  queryOptions({
+    queryKey: ["job_assignments", ticketId],
+    queryFn: async () =>
+      unwrap(
+        await supabase
+          .from("job_assignments")
+          .select("id, assigned_at, released_at, release_reason, operator:operators(id, full_name), equipment:equipment(id, unit_number)")
+          .eq("ticket_id", ticketId)
+          .order("assigned_at", { ascending: false }),
+      ),
+  });
+
+export const invitationsQuery = (orgId: string | null) =>
+  queryOptions({
+    queryKey: ["invitations", orgId],
+    enabled: !!orgId,
+    queryFn: async () =>
+      unwrap(
+        await supabase
+          .from("invitations")
+          .select("id, email, role, status, created_at, expires_at, exhibitor:exhibitors(company_name), operator:operators(full_name)")
+          .eq("organization_id", orgId!)
+          .order("created_at", { ascending: false }),
+      ),
   });

@@ -86,4 +86,15 @@ export const ACTIVITY_LABEL: Record<string, string> = {
   freight_scanned: "Freight scanned",
   freight_registered: "Freight registered",
   freight_status_changed: "Freight updated",
+  delivery_update: "Delivery update",
 };
+
+export const DELIVERY_UPDATE_LABEL = {
+  picked_up: "Picked up",
+  in_transit: "In transit",
+  at_booth: "At booth",
+  delivered: "Delivered",
+  exception: "Problem reported",
+  note: "Note",
+} as const;
+export type DeliveryUpdateKind = keyof typeof DELIVERY_UPDATE_LABEL;
