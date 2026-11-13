@@ -75,6 +75,7 @@
   --color-status-cancelled: var(--status-cancelled);
   --color-status-cancelled-soft: var(--status-cancelled-soft);
   --color-status-hold: var(--status-hold);
+  --color-status-nofreight: var(--status-nofreight);
   --color-status-hold-soft: var(--status-hold-soft);
   --color-priority-urgent: var(--priority-urgent);
   --color-priority-urgent-soft: var(--priority-urgent-soft);
@@ -129,6 +130,7 @@
   --status-cancelled: oklch(0.52 0.02 255);
   --status-cancelled-soft: oklch(0.94 0.006 255);
   --status-hold: oklch(0.56 0.19 25);
+  --status-nofreight: oklch(0.55 0.17 330);
   --status-hold-soft: oklch(0.95 0.03 25);
   --priority-urgent: oklch(0.55 0.2 25);
   --priority-urgent-soft: oklch(0.95 0.035 25);

@@ -109,8 +109,16 @@ function FloorPlanPage() {
   const ticketsFor = (exhibitorId: string | null) =>
     exhibitorId ? eventTickets.filter((t) => t.exhibitor_id === exhibitorId) : [];
 
+  const freightExhibitors = useMemo(
+    () => new Set(freight.filter((f) => f.event_id === eventId).map((f) => f.exhibitor_id)),
+    [freight, eventId],
+  );
   const statusOf = (m: BoothMarker): BoothStatus =>
-    boothStatus(ticketsFor(m.exhibitor_id), !!m.exhibitor_id && issueExhibitors.has(m.exhibitor_id));
+    boothStatus(
+      ticketsFor(m.exhibitor_id),
+      !!m.exhibitor_id && issueExhibitors.has(m.exhibitor_id),
+      !m.exhibitor_id || freightExhibitors.has(m.exhibitor_id),
+    );
 
   const matches = (m: BoothMarker) => {
     if (fStatus !== ALL && statusOf(m) !== fStatus) return false;
