@@ -699,6 +699,7 @@ export type Database = {
           certification_expires: string | null
           certification_number: string | null
           created_at: string
+          equipment_id: string | null
           full_name: string
           id: string
           organization_id: string
@@ -710,6 +711,7 @@ export type Database = {
           certification_expires?: string | null
           certification_number?: string | null
           created_at?: string
+          equipment_id?: string | null
           full_name: string
           id?: string
           organization_id: string
@@ -721,6 +723,7 @@ export type Database = {
           certification_expires?: string | null
           certification_number?: string | null
           created_at?: string
+          equipment_id?: string | null
           full_name?: string
           id?: string
           organization_id?: string
@@ -729,6 +732,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "operators_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "operators_organization_id_fkey"
             columns: ["organization_id"]
@@ -1654,6 +1664,10 @@ export type Database = {
           full_name: string
           operator_id: string
         }[]
+      }
+      forklift_go_online: {
+        Args: { _equipment: string; _event: string }
+        Returns: string
       }
       forklift_lock: { Args: never; Returns: undefined }
       forklift_operators: {

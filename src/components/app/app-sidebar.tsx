@@ -5,7 +5,6 @@ import {
   CalendarDays,
   ClipboardList,
   CreditCard,
-  HardHat,
   LayoutDashboard,
   Package,
   Receipt,
@@ -42,7 +41,6 @@ const operations: NavItem[] = [
   { title: "My Jobs & Scan", url: "/operator", icon: ScanLine, roles: ["operator", ...STAFF] },
   { title: "Forklift Mode", url: "/forklift", icon: Forklift, roles: ["operator", ...STAFF] },
   { title: "Dispatch", url: "/dispatch", icon: RouteIcon, roles: STAFF },
-  { title: "Operators", url: "/operators", icon: HardHat, roles: STAFF },
   { title: "Fleet inventory", url: "/equipment", icon: Forklift, roles: STAFF },
 ];
 
