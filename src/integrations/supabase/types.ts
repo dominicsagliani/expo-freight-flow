@@ -996,6 +996,10 @@ export type Database = {
           assigned_equipment_id: string | null
           assigned_operator_id: string | null
           booth_number: string | null
+          calculated_charge: number | null
+          charge_adjusted_at: string | null
+          charge_adjusted_by: string | null
+          charge_adjustment_reason: string | null
           charge_amount: number | null
           completed_at: string | null
           completion_notes: string | null
@@ -1004,6 +1008,7 @@ export type Database = {
           event_id: string
           exhibitor_id: string
           id: string
+          labor_hours: number | null
           organization_id: string
           priority: Database["public"]["Enums"]["ticket_priority"]
           requested_at: string
@@ -1020,6 +1025,10 @@ export type Database = {
           assigned_equipment_id?: string | null
           assigned_operator_id?: string | null
           booth_number?: string | null
+          calculated_charge?: number | null
+          charge_adjusted_at?: string | null
+          charge_adjusted_by?: string | null
+          charge_adjustment_reason?: string | null
           charge_amount?: number | null
           completed_at?: string | null
           completion_notes?: string | null
@@ -1028,6 +1037,7 @@ export type Database = {
           event_id: string
           exhibitor_id: string
           id?: string
+          labor_hours?: number | null
           organization_id: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requested_at?: string
@@ -1044,6 +1054,10 @@ export type Database = {
           assigned_equipment_id?: string | null
           assigned_operator_id?: string | null
           booth_number?: string | null
+          calculated_charge?: number | null
+          charge_adjusted_at?: string | null
+          charge_adjusted_by?: string | null
+          charge_adjustment_reason?: string | null
           charge_amount?: number | null
           completed_at?: string | null
           completion_notes?: string | null
@@ -1052,6 +1066,7 @@ export type Database = {
           event_id?: string
           exhibitor_id?: string
           id?: string
+          labor_hours?: number | null
           organization_id?: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requested_at?: string
@@ -1159,6 +1174,18 @@ export type Database = {
     }
     Functions: {
       accept_my_invitations: { Args: never; Returns: number }
+      calc_ticket_charge: {
+        Args: {
+          _completed: string
+          _event: string
+          _labor: number
+          _org: string
+          _service: Database["public"]["Enums"]["service_type"]
+          _started: string
+          _ticket: string
+        }
+        Returns: number
+      }
       can_view_ticket: { Args: { _ticket: string }; Returns: boolean }
       can_work_ticket: { Args: { _ticket: string }; Returns: boolean }
       compute_ticket_charge: { Args: { _ticket: string }; Returns: number }

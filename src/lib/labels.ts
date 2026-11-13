@@ -87,6 +87,9 @@ export const ACTIVITY_LABEL: Record<string, string> = {
   freight_registered: "Freight registered",
   freight_status_changed: "Freight updated",
   delivery_update: "Delivery update",
+  labor_hours_set: "Labor hours entered",
+  charge_adjusted: "Charge adjusted",
+  charge_reset: "Charge reset to calculated",
 };
 
 export const DELIVERY_UPDATE_LABEL = {

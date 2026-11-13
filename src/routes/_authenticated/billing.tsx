@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { eventsQuery, isAdmin, isStaff, membershipQuery, rateCardsQuery, ticketsQuery } from "@/lib/queries";
+import { exhibitorsQuery, eventsQuery, isAdmin, isStaff, membershipQuery, rateCardsQuery, ticketsQuery } from "@/lib/queries";
 import { SERVICE_LABEL } from "@/lib/labels";
 import { fmtDateTime } from "@/lib/format";
 import { RATE_UNIT_LABEL, fmtMoney, toCsv, type RateUnit } from "@/lib/billing";
@@ -30,6 +30,7 @@ export const Route = createFileRoute("/_authenticated/billing")({
       queryClient.ensureQueryData(ticketsQuery()),
       queryClient.ensureQueryData(eventsQuery()),
       queryClient.ensureQueryData(rateCardsQuery()),
+      queryClient.ensureQueryData(exhibitorsQuery()),
     ]),
   component: Billing,
 });
@@ -41,7 +42,9 @@ function Billing() {
   const { data: tickets } = useSuspenseQuery(ticketsQuery());
   const { data: events } = useSuspenseQuery(eventsQuery());
   const { data: cards } = useSuspenseQuery(rateCardsQuery());
+  const { data: exhibitors } = useSuspenseQuery(exhibitorsQuery());
   const [eventId, setEventId] = useState(ALL);
+  const [exhibitorId, setExhibitorId] = useState(ALL);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
@@ -50,10 +53,11 @@ function Billing() {
       tickets
         .filter((t) => t.status === "completed" && t.completed_at)
         .filter((t) => eventId === ALL || t.event_id === eventId)
+        .filter((t) => exhibitorId === ALL || t.exhibitor_id === exhibitorId)
         .filter((t) => !from || t.completed_at!.slice(0, 10) >= from)
         .filter((t) => !to || t.completed_at!.slice(0, 10) <= to)
         .sort((a, b) => b.completed_at!.localeCompare(a.completed_at!)),
-    [tickets, eventId, from, to],
+    [tickets, eventId, exhibitorId, from, to],
   );
   const total = rows.reduce((s, t) => s + Number(t.charge_amount ?? 0), 0);
   const group = (key: (t: (typeof rows)[number]) => string) => {
@@ -69,12 +73,15 @@ function Billing() {
 
   const download = () => {
     const csv = toCsv([
-      ["Ticket", "Event", "Exhibitor", "Booth", "Service", "Completed", "Charge"],
-      ...rows.map((t) => [t.ticket_number, t.event?.name, t.exhibitor?.company_name, t.booth_number, SERVICE_LABEL[t.service_type], t.completed_at, Number(t.charge_amount ?? 0).toFixed(2)]),
+      ["Ticket", "Event", "Exhibitor", "Booth", "Service", "Completed", "Labor hours", "Calculated", "Charge", "Adjustment reason"],
+      ...rows.map((t) => [t.ticket_number, t.event?.name, t.exhibitor?.company_name, t.booth_number, SERVICE_LABEL[t.service_type], t.completed_at, t.labor_hours, t.calculated_charge == null ? "" : Number(t.calculated_charge).toFixed(2), Number(t.charge_amount ?? 0).toFixed(2), t.charge_adjustment_reason]),
+      ["", "", "", "", "", "", "", "Total", total.toFixed(2), ""],
     ]);
+    const ex = exhibitors.find((e) => e.id === exhibitorId);
+    const slug = ex ? `-${ex.company_name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}` : "";
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
-    a.href = url; a.download = `expohaul-billing-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+    a.href = url; a.download = `expohaul-billing${slug}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -95,6 +102,18 @@ function Billing() {
             </SelectContent>
           </Select>
         </div>
+        {isStaff(m) && (
+          <div className="grid gap-1.5">
+            <Label>Exhibitor</Label>
+            <Select value={exhibitorId} onValueChange={setExhibitorId}>
+              <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>All exhibitors</SelectItem>
+                {exhibitors.map((e) => <SelectItem key={e.id} value={e.id}>{e.company_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="grid gap-1.5"><Label>From</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
         <div className="grid gap-1.5"><Label>To</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
       </div>
@@ -120,6 +139,7 @@ function Billing() {
                   <th className="px-4 py-2.5 font-semibold">Exhibitor · Booth</th>
                   <th className="px-4 py-2.5 font-semibold">Service</th>
                   <th className="px-4 py-2.5 font-semibold">Completed</th>
+                  <th className="px-4 py-2.5 text-right font-semibold">Hours</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Charge</th>
                 </tr>
               </thead>
@@ -130,7 +150,8 @@ function Billing() {
                     <td className="px-4 py-3"><div className="font-medium">{t.exhibitor?.company_name}</div><div className="text-xs text-muted-foreground">{t.event?.name} · Booth {t.booth_number ?? "—"}</div></td>
                     <td className="px-4 py-3">{SERVICE_LABEL[t.service_type]}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{fmtDateTime(t.completed_at)}</td>
-                    <td className="px-4 py-3 text-right font-medium tabular-nums">{fmtMoney(t.charge_amount)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{t.labor_hours ?? "—"}</td>
+                    <td className="px-4 py-3 text-right font-medium tabular-nums">{fmtMoney(t.charge_amount)}{t.charge_adjusted_at && <div className="text-xs font-normal text-muted-foreground" title={t.charge_adjustment_reason ?? ""}>Adjusted</div>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -213,7 +234,8 @@ function RateCards({ cards, events, editable }: { cards: Card[]; events: { id: s
         )}
       </div>
       {cards.map((c) => (
-        <Panel key={c.id} title={<>{c.name} <span className="ml-2 text-xs font-normal text-muted-foreground">{c.event ? c.event.name : c.is_default ? "Default" : ""}</span></>}>
+        <Panel key={c.id} title={<>{c.name} <span className="ml-2 text-xs font-normal text-muted-foreground">{c.event ? c.event.name : c.is_default ? "Default" : ""}</span></>}
+          action={editable ? <HourlyRate card={c} /> : undefined}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b border-border bg-surface text-left">
@@ -267,5 +289,27 @@ function RateRow({ r, editable }: { r: Card["service_rates"][number]; editable: 
       <td className="px-4 py-2"><Input className="h-8 w-28" type="number" min="0" step="0.01" value={min} onChange={(e) => setMin(e.target.value)} aria-label="Minimum charge" /></td>
       <td className="px-4 py-2 text-right"><Button size="sm" variant="outline" disabled={!dirty} onClick={save}>Save</Button></td>
     </tr>
+  );
+}
+
+function HourlyRate({ card }: { card: Card }) {
+  const qc = useQueryClient();
+  const hourly = card.service_rates.filter((r) => r.unit === "per_hour");
+  const [rate, setRate] = useState(hourly[0] ? String(hourly[0].rate) : "");
+  const apply = async () => {
+    const n = Number(rate);
+    if (rate === "" || !(n >= 0)) { toast.error("Enter an hourly rate of zero or more"); return; }
+    if (hourly.length === 0) { toast.error("No services on this card are billed per hour. Change a service's unit to 'per hour' first."); return; }
+    const { error } = await supabase.from("service_rates").update({ rate: n }).in("id", hourly.map((r) => r.id));
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Hourly rate set to ${fmtMoney(n)} for ${hourly.length} service${hourly.length > 1 ? "s" : ""}`);
+    qc.invalidateQueries({ queryKey: ["rate_cards"] });
+  };
+  return (
+    <div className="flex items-center gap-2">
+      <Label htmlFor={`hr-${card.id}`} className="text-xs font-normal text-muted-foreground">Hourly labor rate</Label>
+      <Input id={`hr-${card.id}`} className="h-8 w-24" type="number" min="0" step="0.01" value={rate} onChange={(e) => setRate(e.target.value)} />
+      <Button size="sm" variant="outline" className="h-8" onClick={apply}>Apply</Button>
+    </div>
   );
 }

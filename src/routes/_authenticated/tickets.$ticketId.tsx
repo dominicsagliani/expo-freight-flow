@@ -1,12 +1,13 @@
 import { TicketPhotos } from "@/components/app/ticket-photos";
 import { AssignmentHistory, DeliveryUpdates } from "@/components/app/delivery-updates";
 import { fmtMoney } from "@/lib/billing";
+import { TicketCharge } from "@/components/app/ticket-charge";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle2, ScanLine } from "lucide-react";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ArrivalBadge, PriorityBadge, TicketStatusBadge } from "@/components/app/badges";
-import { deliveryUpdatesQuery, isStaff, jobAssignmentsQuery, membershipQuery, ticketActivityQuery, ticketQuery } from "@/lib/queries";
+import { deliveryUpdatesQuery, isAdmin, isStaff, jobAssignmentsQuery, membershipQuery, ticketActivityQuery, ticketQuery } from "@/lib/queries";
 import { ACTIVITY_LABEL, DELIVERY_UPDATE_LABEL, type DeliveryUpdateKind, type ActivityDetails, FREIGHT_TYPE_LABEL, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
 import { fmtDateTime, fmtDims, fmtWeight } from "@/lib/format";
 
@@ -40,6 +41,14 @@ function detailText(action: string, details: unknown) {
   if (action === "delivery_update") {
     const x = d as unknown as { kind?: string; note?: string };
     return [DELIVERY_UPDATE_LABEL[x.kind as DeliveryUpdateKind], x.note].filter(Boolean).join(" — ");
+  }
+  if (action === "labor_hours_set") {
+    const x = d as unknown as { from?: number | null; to?: number | null };
+    return `${x.from ?? "—"} → ${x.to ?? "—"} hrs`;
+  }
+  if (action === "charge_adjusted" || action === "charge_reset") {
+    const x = d as unknown as { from?: number | null; to?: number | null; reason?: string };
+    return [`${fmtMoney(x.from)} → ${fmtMoney(x.to)}`, x.reason].filter(Boolean).join(" — ");
   }
   if (action === "ticket_created" && d.service_type) return SERVICE_LABEL[d.service_type as keyof typeof SERVICE_LABEL];
   return "";
@@ -78,7 +87,6 @@ function TicketDetail() {
             <Item label="Requested" value={fmtDateTime(t.requested_at)} />
             <Item label="On-site contact" value={[t.exhibitor?.contact_name, t.exhibitor?.contact_phone].filter(Boolean).join(" · ")} />
             <Item label="Completed" value={fmtDateTime(t.completed_at)} />
-            <Item label="Charge" value={t.status === "completed" ? fmtMoney(t.charge_amount) : "Calculated on completion"} />
             <Item label="Operator · Equipment" value={[t.operator?.full_name, t.equipment?.unit_number].filter(Boolean).join(" · ") || "Not assigned"} />
             <div className="sm:col-span-2">
               <Item label="Special instructions" value={t.special_instructions ?? "None"} />
@@ -88,6 +96,10 @@ function TicketDetail() {
                 <Item label="Completion notes" value={t.completion_notes} />
               </div>
             )}
+          </Panel>
+
+          <Panel title="Labor & charge" bodyClassName="p-4">
+            <TicketCharge t={t} canEditHours={isStaff(m) && t.status !== "cancelled"} canAdjust={isAdmin(m)} />
           </Panel>
 
           <Panel

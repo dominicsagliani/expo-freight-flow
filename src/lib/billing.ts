@@ -3,11 +3,12 @@ export type RateUnit = "per_cwt" | "per_piece" | "per_hour" | "flat";
 /** Mirrors the database charge rule used when a ticket is completed. */
 export function computeCharge(
   rate: { unit: RateUnit; rate: number; minimum_charge: number },
-  work: { weightLbs: number; pieces: number; hours: number },
+  work: { weightLbs: number; pieces: number; hours: number; laborHours?: number | null },
 ) {
   let amt: number;
   if (rate.unit === "per_cwt") amt = Math.ceil(work.weightLbs / 100) * rate.rate;
   else if (rate.unit === "per_piece") amt = work.pieces * rate.rate;
+  else if (rate.unit === "per_hour" && work.laborHours != null) amt = work.laborHours * rate.rate;
   else if (rate.unit === "per_hour") amt = Math.max(0.5, Math.ceil(work.hours * 2) / 2) * rate.rate;
   else amt = rate.rate;
   return Math.round(Math.max(amt, rate.minimum_charge) * 100) / 100;
