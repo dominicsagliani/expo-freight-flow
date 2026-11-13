@@ -2,6 +2,7 @@ import { TicketPhotos } from "@/components/app/ticket-photos";
 import { AssignmentHistory, DeliveryUpdates } from "@/components/app/delivery-updates";
 import { fmtMoney } from "@/lib/billing";
 import { TicketCharge } from "@/components/app/ticket-charge";
+import { ServicePayment } from "@/components/app/service-payment";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle2, ScanLine } from "lucide-react";
@@ -100,6 +101,9 @@ function TicketDetail() {
 
           <Panel title="Labor & charge" bodyClassName="p-4">
             <TicketCharge t={t} canEditHours={isStaff(m) && t.status !== "cancelled"} canAdjust={isAdmin(m)} />
+          </Panel>
+          <Panel title="Payment" bodyClassName="p-4">
+            <ServicePayment t={t} canManage={isStaff(m)} />
           </Panel>
 
           <Panel

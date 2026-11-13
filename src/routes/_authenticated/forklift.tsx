@@ -16,6 +16,7 @@ import { SERVICE_LABEL } from "@/lib/labels";
 import { fmtDuration, ISSUE_TYPES, PAUSE_REASONS, sessionSeconds, type IssueType } from "@/lib/work-session";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { EQUIPMENT_CLASSES, FUEL_TYPES } from "@/lib/fleet";
+import { useAutoInvoice } from "@/components/app/service-payment";
 
 export const Route = createFileRoute("/_authenticated/forklift")({
   head: () => ({
@@ -54,6 +55,7 @@ async function uploadPhoto(ticketId: string, file: File, extra: { freight_id?: s
 }
 
 function ForkliftMode() {
+  const autoInvoice = useAutoInvoice();
   const qc = useQueryClient();
   const [forklift, setForklift] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -165,7 +167,7 @@ function ForkliftMode() {
     if (!current) return;
     if (callIn) {
       if (!confirm(`Complete request ${current.ticket_number}?`)) return;
-      if (await rpc(() => supabase.rpc("op_complete_call_in", { _ticket: current.id }), "Request completed")) { setSelected(null); refresh(); }
+      if (await rpc(() => supabase.rpc("op_complete_call_in", { _ticket: current.id }), "Request completed")) { autoInvoice(current.id); setSelected(null); refresh(); }
       return;
     }
     setView("scan");
@@ -316,6 +318,7 @@ function ForkliftMode() {
 }
 
 function ScanScreen({ job, forklift, onDone, onCompleted }: { job: { id: string; booth_number: string | null }; forklift: string; onDone: () => void; onCompleted: () => void }) {
+  const autoInvoice = useAutoInvoice();
   const [mode, setMode] = useState<"pickup" | "deliver">("pickup");
   const [result, setResult] = useState<ScanResult | null>(null);
   const [pending, setPending] = useState<string | null>(null);
@@ -339,6 +342,7 @@ function ScanScreen({ job, forklift, onDone, onCompleted }: { job: { id: string;
       try { await uploadPhoto(job.id, extra.photo, { freight_id: r.freight_id }); } catch (e) { toast.error((e as Error).message); }
     }
     setPending(null); setResult(r);
+    if (r.ok && r.job_completed) autoInvoice(job.id);
     if (!r.job_completed) onDone();
   };
   const onScan = (raw: string) => {

@@ -862,18 +862,24 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          payment_instructions: string | null
+          payment_link_url: string | null
           slug: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          payment_instructions?: string | null
+          payment_link_url?: string | null
           slug?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          payment_instructions?: string | null
+          payment_link_url?: string | null
           slug?: string | null
         }
         Relationships: []
@@ -1413,8 +1419,11 @@ export type Database = {
           exhibitor_id: string
           id: string
           intake_key: string | null
+          invoice_sent_at: string | null
           labor_hours: number | null
           organization_id: string
+          paid_at: string | null
+          paid_marked_by: string | null
           priority: Database["public"]["Enums"]["ticket_priority"]
           request_source: string
           requested_at: string
@@ -1447,8 +1456,11 @@ export type Database = {
           exhibitor_id: string
           id?: string
           intake_key?: string | null
+          invoice_sent_at?: string | null
           labor_hours?: number | null
           organization_id: string
+          paid_at?: string | null
+          paid_marked_by?: string | null
           priority?: Database["public"]["Enums"]["ticket_priority"]
           request_source?: string
           requested_at?: string
@@ -1481,8 +1493,11 @@ export type Database = {
           exhibitor_id?: string
           id?: string
           intake_key?: string | null
+          invoice_sent_at?: string | null
           labor_hours?: number | null
           organization_id?: string
+          paid_at?: string | null
+          paid_marked_by?: string | null
           priority?: Database["public"]["Enums"]["ticket_priority"]
           request_source?: string
           requested_at?: string
@@ -1813,6 +1828,10 @@ export type Database = {
           _org: string
           _ticket: string
         }
+        Returns: undefined
+      }
+      mark_ticket_paid: {
+        Args: { _paid: boolean; _ticket: string }
         Returns: undefined
       }
       my_operator_on_ticket: { Args: { _ticket: string }; Returns: string }
