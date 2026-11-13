@@ -49,7 +49,7 @@ export const suggestAddresses = createServerFn({ method: "POST" })
 export const getAddressDetails = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({ placeId: z.string().regex(/^[A-Za-z0-9_-]{5,300}$/), sessionToken: z.string().uuid() }).parse(d),
+    z.object({ placeId: z.string().regex(/^[A-Za-z0-9_=-]{5,500}$/), sessionToken: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data }): Promise<AddressDetails> => {
     const res = await fetch(
