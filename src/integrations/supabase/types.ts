@@ -82,6 +82,67 @@ export type Database = {
           },
         ]
       }
+      booth_markers: {
+        Row: {
+          booth_number: string
+          created_at: string
+          exhibitor_id: string | null
+          floor_plan_id: string
+          hall: string | null
+          id: string
+          organization_id: string
+          updated_at: string
+          x_pct: number
+          y_pct: number
+        }
+        Insert: {
+          booth_number: string
+          created_at?: string
+          exhibitor_id?: string | null
+          floor_plan_id: string
+          hall?: string | null
+          id?: string
+          organization_id: string
+          updated_at?: string
+          x_pct: number
+          y_pct: number
+        }
+        Update: {
+          booth_number?: string
+          created_at?: string
+          exhibitor_id?: string | null
+          floor_plan_id?: string
+          hall?: string | null
+          id?: string
+          organization_id?: string
+          updated_at?: string
+          x_pct?: number
+          y_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booth_markers_exhibitor_id_fkey"
+            columns: ["exhibitor_id"]
+            isOneToOne: false
+            referencedRelation: "exhibitors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booth_markers_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booth_markers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_updates: {
         Row: {
           created_at: string
@@ -393,6 +454,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "exhibitors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      floor_plans: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_id: string
+          id: string
+          mime_type: string
+          name: string
+          organization_id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_id: string
+          id?: string
+          mime_type: string
+          name: string
+          organization_id: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_id?: string
+          id?: string
+          mime_type?: string
+          name?: string
+          organization_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "floor_plans_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "floor_plans_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
