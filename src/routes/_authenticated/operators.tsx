@@ -1,10 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Plus, Pencil, Trash2, Forklift, Smartphone } from "lucide-react";
+import type { Tables } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { PageHeader, Panel, ComingNext } from "@/components/app/page-header";
-import { equipmentQuery, operatorsQuery } from "@/lib/queries";
+import { PageHeader, Panel } from "@/components/app/page-header";
+import { equipmentQuery, operatorsQuery, membershipQuery, isStaff, isAdmin } from "@/lib/queries";
 import { fmtDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/operators")({
@@ -19,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/operators")({
     ],
   }),
   loader: ({ context: { queryClient } }) =>
-    Promise.all([queryClient.ensureQueryData(operatorsQuery()), queryClient.ensureQueryData(equipmentQuery())]),
+    Promise.all([queryClient.ensureQueryData(operatorsQuery()), queryClient.ensureQueryData(equipmentQuery()), queryClient.ensureQueryData(membershipQuery())]),
   component: OperatorsPage,
 });
 
@@ -29,11 +34,29 @@ const EQ_STATUS = { available: "Available", in_use: "In use", maintenance: "Main
 function OperatorsPage() {
   const { data: operators } = useSuspenseQuery(operatorsQuery());
   const { data: equipment } = useSuspenseQuery(equipmentQuery());
+  const { data: membership } = useSuspenseQuery(membershipQuery());
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState<Tables<"operators"> | "new" | null>(null);
+  const canEdit = isStaff(membership);
+  const canDelete = isAdmin(membership);
+  const remove = async (o: Tables<"operators">) => {
+    if (!confirm(`Delete ${o.full_name}? This cannot be undone.`)) return;
+    await supabase.from("event_operators").delete().eq("operator_id", o.id);
+    const { error, count } = await supabase.from("operators").delete({ count: "exact" }).eq("id", o.id);
+    if (error) {
+      toast.error(error.code === "23503"
+        ? `${o.full_name} has job history, so they can't be deleted. Set them to "Off shift" instead.`
+        : error.message);
+    } else if (!count) toast.error("Only company admins can delete operators.");
+    else toast.success(`${o.full_name} deleted`);
+    qc.invalidateQueries({ queryKey: ["operators"] });
+    qc.invalidateQueries({ queryKey: ["event-operators"] });
+  };
   return (
     <div className="grid gap-6">
       <PageHeader eyebrow="Workforce" title="Operators" description="Certified forklift operators and the equipment fleet." />
       <div className="grid gap-6 xl:grid-cols-2">
-        <Panel title={`Operators (${operators.length})`}>
+        <Panel title={`Operators (${operators.length})`} action={canEdit ? <Button size="sm" onClick={() => setEditing("new")}><Plus className="size-4" /> Add operator</Button> : undefined}>
           <ul className="divide-y divide-border">
             {operators.map((o) => (
               <li key={o.id} className="flex items-center gap-3 px-4 py-3">
@@ -45,8 +68,11 @@ function OperatorsPage() {
                   </div>
                 </div>
                 <span className="text-xs text-muted-foreground">{OP_STATUS[o.status]}</span>
+                {canEdit && <button aria-label={`Edit ${o.full_name}`} className="text-muted-foreground hover:text-foreground" onClick={() => setEditing(o)}><Pencil className="size-4" /></button>}
+                {canDelete && <button aria-label={`Delete ${o.full_name}`} className="text-muted-foreground hover:text-destructive" onClick={() => remove(o)}><Trash2 className="size-4" /></button>}
               </li>
             ))}
+            {operators.length === 0 && <li className="px-4 py-6 text-sm text-muted-foreground">No operators yet.</li>}
           </ul>
         </Panel>
         <ForkliftAccess operators={operators} />
@@ -65,11 +91,27 @@ function OperatorsPage() {
           </ul>
         </Panel>
       </div>
-      <ComingNext
-        phase="Phase 3"
-        title="Operator portal"
-        items={["Mobile job list for each operator", "Scan freight QR codes to confirm identity", "Start and complete jobs with notes", "Upload completion photos"]}
-      />
+      <Panel title="Operator portal">
+        <div className="grid gap-4 p-4 sm:grid-cols-2">
+          <Link to="/forklift" className="flex gap-3 rounded-lg border border-border p-4 hover:border-primary">
+            <Forklift className="size-6 shrink-0 text-teal" />
+            <div>
+              <div className="font-medium">Forklift Mode (shared tablet)</div>
+              <p className="text-sm text-muted-foreground">Drivers pick their name, enter their 6-digit PIN, choose a machine and receive live queue jobs, scan freight, pause and complete.</p>
+            </div>
+          </Link>
+          <Link to="/operator" className="flex gap-3 rounded-lg border border-border p-4 hover:border-primary">
+            <Smartphone className="size-6 shrink-0 text-teal" />
+            <div>
+              <div className="font-medium">My jobs (personal phone)</div>
+              <p className="text-sm text-muted-foreground">Job list for operators with their own login: scan freight QR codes, start and complete jobs with notes, upload completion photos.</p>
+            </div>
+          </Link>
+        </div>
+      </Panel>
+      {editing && membership.organizationId && (
+        <OperatorDialog op={editing === "new" ? null : editing} orgId={membership.organizationId} onClose={() => setEditing(null)} />
+      )}
     </div>
   );
 }
@@ -130,5 +172,55 @@ function ForkliftAccess({ operators }: { operators: { id: string; full_name: str
         </ul>
       </div>
     </Panel>
+  );
+}
+
+function OperatorDialog({ op, orgId, onClose }: { op: Tables<"operators"> | null; orgId: string; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [f, setF] = useState({
+    full_name: op?.full_name ?? "", phone: op?.phone ?? "",
+    certification_number: op?.certification_number ?? "", certification_expires: op?.certification_expires ?? "",
+    status: op?.status ?? ("available" as Tables<"operators">["status"]),
+  });
+  const [busy, setBusy] = useState(false);
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!f.full_name.trim()) return toast.error("Name is required");
+    setBusy(true);
+    const patch = { ...f, full_name: f.full_name.trim(), phone: f.phone || null, certification_number: f.certification_number || null, certification_expires: f.certification_expires || null };
+    const { error } = op
+      ? await supabase.from("operators").update(patch).eq("id", op.id)
+      : await supabase.from("operators").insert({ ...patch, organization_id: orgId });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success(op ? "Operator updated" : "Operator added");
+    qc.invalidateQueries({ queryKey: ["operators"] });
+    onClose();
+  };
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{op ? "Edit operator" : "Add operator"}</DialogTitle></DialogHeader>
+        <form onSubmit={save} className="grid gap-3">
+          <label className="grid gap-1 text-sm">Full name<Input value={f.full_name} onChange={set("full_name")} required /></label>
+          <label className="grid gap-1 text-sm">Phone<Input value={f.phone} onChange={set("phone")} /></label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-1 text-sm">Certification #<Input value={f.certification_number} onChange={set("certification_number")} /></label>
+            <label className="grid gap-1 text-sm">Cert. expires<Input type="date" value={f.certification_expires} onChange={set("certification_expires")} /></label>
+          </div>
+          <label className="grid gap-1 text-sm">Status
+            <select className="h-9 rounded-md border border-input bg-background px-2 text-sm" value={f.status} onChange={set("status")}>
+              {Object.entries(OP_STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </label>
+          <p className="text-xs text-muted-foreground">New operators create their own 6-digit PIN the first time they sign in to Forklift Mode. Register them for an event below.</p>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={busy}>{op ? "Save" : "Add operator"}</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
