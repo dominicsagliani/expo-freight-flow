@@ -38,8 +38,11 @@ function ExhibitorsPage() {
   const [q, setQ] = useState("");
 
   const eventOptions = events.filter((e) => e.status !== "closed").map((e) => ({ id: e.id, name: e.name }));
+  const contactName = (x: (typeof exhibitors)[number]) =>
+    [x.first_name, x.last_name].filter(Boolean).join(" ") || x.contact_name || null;
+
   const filtered = exhibitors.filter((x) =>
-    [x.company_name, x.contact_name, x.contact_email, ...x.event_exhibitors.map((b) => b.booth_number)]
+    [x.company_name, contactName(x), x.contact_email, ...x.event_exhibitors.map((b) => b.booth_number)]
       .filter(Boolean)
       .some((v) => v!.toLowerCase().includes(q.toLowerCase())),
   );
@@ -99,7 +102,7 @@ function ExhibitorsPage() {
                   <tr key={x.id} className="align-top hover:bg-muted/40">
                     <td className="px-4 py-3 font-medium">{x.company_name}</td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      <div className="text-foreground">{x.contact_name ?? "—"}</div>
+                      <div className="text-foreground">{contactName(x) ?? "—"}</div>
                       <div className="text-xs">{x.contact_email}</div>
                       <div className="text-xs">{x.contact_phone}</div>
                     </td>

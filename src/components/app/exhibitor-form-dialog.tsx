@@ -13,7 +13,8 @@ import { AddressAutocomplete } from "./address-autocomplete";
 
 const schema = z.object({
   company_name: z.string().trim().min(2, "Company name is required").max(160),
-  contact_name: z.string().trim().max(120).optional(),
+  first_name: z.string().trim().max(80).optional(),
+  last_name: z.string().trim().max(80).optional(),
   contact_email: z.union([z.literal(""), z.string().trim().email("Enter a valid email")]).optional(),
   contact_phone: z.string().trim().max(40).optional(),
   billing_address: z.string().trim().max(240).optional(),
@@ -34,7 +35,8 @@ export function ExhibitorFormDialog({
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     company_name: exhibitor?.company_name ?? "",
-    contact_name: exhibitor?.contact_name ?? "",
+    first_name: exhibitor?.first_name ?? "",
+    last_name: exhibitor?.last_name ?? "",
     contact_email: exhibitor?.contact_email ?? "",
     contact_phone: exhibitor?.contact_phone ?? "",
     billing_address: exhibitor?.billing_address ?? "",
@@ -49,9 +51,12 @@ export function ExhibitorFormDialog({
       const parsed = schema.safeParse(form);
       if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Check the form");
       const v = parsed.data;
+      const fullName = [v.first_name, v.last_name].filter(Boolean).join(" ");
       const row = {
         company_name: v.company_name,
-        contact_name: v.contact_name || null,
+        first_name: v.first_name || null,
+        last_name: v.last_name || null,
+        contact_name: fullName || null,
         contact_email: v.contact_email || null,
         contact_phone: v.contact_phone || null,
         billing_address: v.billing_address || null,
@@ -106,13 +111,16 @@ export function ExhibitorFormDialog({
             <Input value={form.company_name} onChange={set("company_name")} required />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Contact name">
-              <Input value={form.contact_name} onChange={set("contact_name")} />
+            <Field label="First name">
+              <Input value={form.first_name} onChange={set("first_name")} />
             </Field>
-            <Field label="Phone">
-              <Input value={form.contact_phone} onChange={set("contact_phone")} />
+            <Field label="Last name">
+              <Input value={form.last_name} onChange={set("last_name")} />
             </Field>
           </div>
+          <Field label="Phone">
+            <Input value={form.contact_phone} onChange={set("contact_phone")} />
+          </Field>
           <Field label="Email">
             <Input type="email" value={form.contact_email} onChange={set("contact_email")} />
           </Field>
