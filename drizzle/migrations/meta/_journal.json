@@ -64,6 +64,13 @@
       "when": 1794532577647,
       "tag": "0008_forklift_work_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794534444437,
+      "tag": "0009_forklift_operator_pins",
+      "breakpoints": true
     }
   ]
 }

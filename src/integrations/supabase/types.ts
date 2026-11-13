@@ -236,6 +236,52 @@ export type Database = {
           },
         ]
       }
+      event_operators: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          event_id: string
+          operator_id: string
+          organization_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          event_id: string
+          operator_id: string
+          organization_id: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          event_id?: string
+          operator_id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_operators_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_operators_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_operators_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           address: string | null
@@ -561,6 +607,77 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_pins: {
+        Row: {
+          failed_attempts: number
+          locked_until: string | null
+          operator_id: string
+          pin_hash: string
+          set_at: string
+        }
+        Insert: {
+          failed_attempts?: number
+          locked_until?: string | null
+          operator_id: string
+          pin_hash: string
+          set_at?: string
+        }
+        Update: {
+          failed_attempts?: number
+          locked_until?: string | null
+          operator_id?: string
+          pin_hash?: string
+          set_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_pins_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: true
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_unlocks: {
+        Row: {
+          event_id: string | null
+          expires_at: string
+          operator_id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          event_id?: string | null
+          expires_at: string
+          operator_id: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string | null
+          expires_at?: string
+          operator_id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_unlocks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_unlocks_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
             referencedColumns: ["id"]
           },
         ]
@@ -1415,6 +1532,27 @@ export type Database = {
       compute_ticket_charge: { Args: { _ticket: string }; Returns: number }
       create_my_organization: { Args: { _name: string }; Returns: string }
       exhibitor_event_ids: { Args: never; Returns: string[] }
+      forklift_current: {
+        Args: never
+        Returns: {
+          event_id: string
+          full_name: string
+          operator_id: string
+        }[]
+      }
+      forklift_lock: { Args: never; Returns: undefined }
+      forklift_operators: {
+        Args: { _event: string }
+        Returns: {
+          full_name: string
+          has_pin: boolean
+          id: string
+        }[]
+      }
+      forklift_unlock: {
+        Args: { _event: string; _operator: string; _pin: string }
+        Returns: Json
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
@@ -1468,6 +1606,13 @@ export type Database = {
       }
       operator_exhibitor_ids: { Args: never; Returns: string[] }
       operator_freight_ids: { Args: never; Returns: string[] }
+      operator_pin_status: {
+        Args: never
+        Returns: {
+          has_pin: boolean
+          operator_id: string
+        }[]
+      }
       operator_start_job: { Args: { _ticket: string }; Returns: undefined }
       operator_ticket_ids: { Args: never; Returns: string[] }
       org_entitlement: {
@@ -1483,6 +1628,7 @@ export type Database = {
         Args: { _org: string; check_env?: string }
         Returns: boolean
       }
+      reset_operator_pin: { Args: { _operator: string }; Returns: undefined }
       resolve_issue: { Args: { _update: string }; Returns: undefined }
       session_hourly_rate: { Args: { _ticket: string }; Returns: number }
       session_hours: {
