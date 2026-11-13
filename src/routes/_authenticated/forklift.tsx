@@ -15,6 +15,7 @@ import { parseScanToken } from "@/lib/scan-token";
 import { SERVICE_LABEL } from "@/lib/labels";
 import { fmtDuration, ISSUE_TYPES, PAUSE_REASONS, sessionSeconds, type IssueType } from "@/lib/work-session";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
+import { EQUIPMENT_CLASSES, FUEL_TYPES } from "@/lib/fleet";
 
 export const Route = createFileRoute("/_authenticated/forklift")({
   head: () => ({
@@ -60,7 +61,6 @@ function ForkliftMode() {
   const [tab, setTab] = useState<"current" | "next" | "done">("current");
   const [now, setNow] = useState(Date.now());
 
-  useEffect(() => { setForklift(localStorage.getItem(FORKLIFT_KEY)); }, []);
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
   useRealtimeRefresh(["tickets", "work_sessions", "ticket_freight"], [["forklift-jobs"]]);
 
@@ -69,18 +69,52 @@ function ForkliftMode() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("forklift_current");
       if (error) throw new Error(error.message);
-      return (data ?? []).map((d) => ({ id: d.operator_id, full_name: d.full_name }));
+      return (data ?? []).map((d) => ({ id: d.operator_id, full_name: d.full_name, event_id: d.event_id }));
     },
   });
   const switchOperator = async () => {
+    const { error } = await supabase.rpc("fleet_release");
+    if (error) { toast.error(error.message); return; }
     await supabase.rpc("forklift_lock");
+    setForklift(null);
     setSelected(null); setView("home");
     qc.invalidateQueries({ queryKey: ["forklift-me"] });
   };
   const { data: equipment = [] } = useQuery({
     queryKey: ["forklift-equipment"],
-    queryFn: async () => (await supabase.from("equipment").select("id, unit_number, status").order("unit_number")).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("equipment").select("*").is("retired_at", null).order("unit_number");
+      if (error) throw new Error(error.message); return data ?? [];
+    },
+    refetchInterval: 15_000,
   });
+  const { data: queueState } = useQuery({
+    queryKey: ["forklift-queue", me?.[0]?.id], enabled: !!me?.[0]?.id,
+    queryFn: async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return null;
+      const { data, error } = await supabase.from("queue_drivers").select("equipment_id, ready, operator_id").eq("user_id", auth.user.id).maybeSingle();
+      if (error) throw new Error(error.message); return data;
+    },
+  });
+  useEffect(() => { setForklift(queueState?.equipment_id ?? null); }, [queueState]);
+  useEffect(() => {
+    if (!forklift || !me?.[0]?.id) return;
+    let active = true;
+    const poll = async () => {
+      const { error } = await supabase.rpc("queue_poll", {});
+      if (!active) return;
+      if (error) { toast.error(error.message); return; }
+      qc.invalidateQueries({ queryKey: ["forklift-jobs"] });
+    };
+    void poll(); const interval = setInterval(poll, 10_000);
+    return () => { active = false; clearInterval(interval); };
+  }, [forklift, me?.[0]?.id, qc]);
+  const chooseForklift = async (id: string) => {
+    const { error } = await supabase.rpc("fleet_select", { _equipment: id });
+    if (error) { toast.error(error.message); return; }
+    setForklift(id); qc.invalidateQueries({ queryKey: ["forklift-queue"] });
+  };
   const myIds = useMemo(() => (me ?? []).map((m) => m.id), [me]);
   const { data: jobs = [] } = useQuery({
     queryKey: ["forklift-jobs", myIds],
@@ -90,6 +124,7 @@ function ForkliftMode() {
       const ids = (crew ?? []).map((c) => c.ticket_id);
       const filter = `assigned_operator_id.in.(${myIds.join(",")})${ids.length ? `,id.in.(${ids.join(",")})` : ""}`;
       const { data, error } = await supabase.from("tickets").select(JOB_SELECT).or(filter)
+        .eq("event_id", me?.[0]?.event_id ?? "")
         .in("status", ["assigned", "in_progress", "completed"]).order("requested_at");
       if (error) throw new Error(error.message);
       return data;
@@ -127,7 +162,9 @@ function ForkliftMode() {
     if (!(await rpc(() => supabase.rpc("op_complete_session", { _session: mySession.id }), "Work session complete"))) return;
     const othersOpen = current.work_sessions.some((s) => s.status !== "completed" && s.id !== mySession.id);
     if (!othersOpen && delivered === tf.length && myIds.includes(current.assigned_operator_id ?? "")) {
-      await rpc(() => supabase.rpc("operator_complete_job", { _ticket: current.id }), "Job completed");
+      if (await rpc(() => supabase.rpc("operator_complete_job", { _ticket: current.id }), "Job completed")) {
+        await supabase.rpc("queue_poll", {}); setSelected(null); refresh();
+      }
     }
   };
 
@@ -142,12 +179,15 @@ function ForkliftMode() {
           <h1 className="text-3xl font-bold">Which forklift are you on?</h1>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             {equipment.map((e) => (
-              <button key={e.id} disabled={e.status === "maintenance"}
-                onClick={() => { localStorage.setItem(FORKLIFT_KEY, e.id); setForklift(e.id); }}
-                className="min-h-28 rounded-xl border-2 border-primary-foreground/20 bg-primary-foreground/5 p-4 text-left text-2xl font-bold disabled:opacity-40">
+              <Button key={e.id} disabled={e.status === "maintenance"}
+                onClick={() => chooseForklift(e.id)} variant="outline"
+                className="h-auto min-h-36 flex-col items-start whitespace-normal rounded-lg border-2 border-primary-foreground/20 bg-primary-foreground/5 p-4 text-left text-xl font-bold text-primary-foreground disabled:opacity-40">
                 {e.unit_number}
+                <div className="text-base font-normal">{e.model || e.description}</div>
+                <div className="text-sm font-normal">{EQUIPMENT_CLASSES[e.equipment_class as keyof typeof EQUIPMENT_CLASSES]} · {FUEL_TYPES[e.fuel_type as keyof typeof FUEL_TYPES]}</div>
+                <div className="text-base">{e.capacity_lbs?.toLocaleString() ?? "Unknown"} lb</div>
                 <div className="text-base font-normal text-primary-foreground/70">{e.status === "maintenance" ? "Maintenance" : e.status === "in_use" ? "In use" : "Available"}</div>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -158,10 +198,19 @@ function ForkliftMode() {
   const header = (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-primary-foreground/15 px-5 py-3 text-lg">
       <span className="font-bold">{me?.[0]?.full_name ?? "Operator"}</span>
-      <button className="rounded-md bg-accent px-3 py-1 font-mono font-bold text-accent-foreground"
-        onClick={() => { localStorage.removeItem(FORKLIFT_KEY); setForklift(null); }}>{forkliftName ?? "Forklift"}</button>
+      <Button variant="teal" className="font-mono font-bold"
+        onClick={async () => {
+          const { error } = await supabase.rpc("fleet_release");
+          if (error) { toast.error(error.message); return; }
+          setForklift(null); qc.invalidateQueries({ queryKey: ["forklift-queue"] });
+        }}>{forkliftName ?? "Forklift"}</Button>
       <span className="text-primary-foreground/70">{current?.event?.name ?? "No active event"}</span>
-      <button className="ml-auto rounded-md border border-primary-foreground/30 px-3 py-1 text-base" onClick={switchOperator}>Switch operator</button>
+      <Button variant="inverse" className="ml-auto" onClick={switchOperator}>Switch operator</Button>
+      <Button variant="inverse" onClick={async () => {
+        const { error } = await supabase.rpc("queue_poll", { _ready: !queueState?.ready });
+        if (error) toast.error(error.message);
+        qc.invalidateQueries({ queryKey: ["forklift-queue"] }); refresh();
+      }}>{queueState?.ready ? <Pause /> : <Play />}{queueState?.ready ? "Pause queue" : "Resume queue"}</Button>
     </div>
   );
 
@@ -210,7 +259,7 @@ function ForkliftMode() {
   return (
     <Shell onExit>
       {header}
-      <div className="flex gap-2 px-5 pt-4">
+      <div className="flex flex-wrap gap-2 px-5 pt-4">
         {([["current", "Current job"], ["next", `Next jobs (${next.length})`], ["done", `Completed (${done.length})`]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)}
             className={`rounded-lg px-4 py-3 text-lg font-semibold ${tab === k ? "bg-primary-foreground text-primary" : "bg-primary-foreground/10"}`}>{l}</button>
@@ -298,7 +347,7 @@ function OperatorLogin({ onUnlocked }: { onUnlocked: () => void }) {
     queryKey: ["forklift-events"],
     queryFn: async () => (await supabase.from("events").select("id, name, status").neq("status", "closed").order("start_date")).data ?? [],
   });
-  useEffect(() => { if (!eventId && events.length === 1) setEventId(events[0]!.id); }, [events, eventId]);
+  useEffect(() => { if (!eventId && events.length === 1 && events[0]) setEventId(events[0].id); }, [events, eventId]);
   const { data: ops = [] } = useQuery({
     queryKey: ["forklift-operators", eventId],
     enabled: !!eventId,

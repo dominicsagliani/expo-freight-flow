@@ -16,6 +16,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticated/dispatch'
+import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
 import { Route as AuthenticatedExhibitorsRouteImport } from './routes/_authenticated/exhibitors'
 import { Route as AuthenticatedForkliftRouteImport } from './routes/_authenticated/forklift'
 import { Route as AuthenticatedFreightRouteImport } from './routes/_authenticated/freight'
@@ -65,6 +66,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedDispatchRoute = AuthenticatedDispatchRouteImport.update({
   id: '/dispatch',
   path: '/dispatch',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEquipmentRoute = AuthenticatedEquipmentRouteImport.update({
+  id: '/equipment',
+  path: '/equipment',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedExhibitorsRoute = AuthenticatedExhibitorsRouteImport.update({
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dispatch': typeof AuthenticatedDispatchRoute
+  '/equipment': typeof AuthenticatedEquipmentRoute
   '/exhibitors': typeof AuthenticatedExhibitorsRoute
   '/forklift': typeof AuthenticatedForkliftRoute
   '/freight': typeof AuthenticatedFreightRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dispatch': typeof AuthenticatedDispatchRoute
+  '/equipment': typeof AuthenticatedEquipmentRoute
   '/exhibitors': typeof AuthenticatedExhibitorsRoute
   '/forklift': typeof AuthenticatedForkliftRoute
   '/freight': typeof AuthenticatedFreightRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/dispatch': typeof AuthenticatedDispatchRoute
+  '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
   '/_authenticated/exhibitors': typeof AuthenticatedExhibitorsRoute
   '/_authenticated/forklift': typeof AuthenticatedForkliftRoute
   '/_authenticated/freight': typeof AuthenticatedFreightRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/dispatch'
+    | '/equipment'
     | '/exhibitors'
     | '/forklift'
     | '/freight'
@@ -262,6 +272,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/dispatch'
+    | '/equipment'
     | '/exhibitors'
     | '/forklift'
     | '/freight'
@@ -287,6 +298,7 @@ export interface FileRouteTypes {
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/dispatch'
+    | '/_authenticated/equipment'
     | '/_authenticated/exhibitors'
     | '/_authenticated/forklift'
     | '/_authenticated/freight'
@@ -362,6 +374,13 @@ declare module '@tanstack/react-router' {
       path: '/dispatch'
       fullPath: '/dispatch'
       preLoaderRoute: typeof AuthenticatedDispatchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/equipment': {
+      id: '/_authenticated/equipment'
+      path: '/equipment'
+      fullPath: '/equipment'
+      preLoaderRoute: typeof AuthenticatedEquipmentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/exhibitors': {
@@ -483,6 +502,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDispatchRoute: typeof AuthenticatedDispatchRoute
+  AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
   AuthenticatedExhibitorsRoute: typeof AuthenticatedExhibitorsRoute
   AuthenticatedForkliftRoute: typeof AuthenticatedForkliftRoute
   AuthenticatedFreightRoute: typeof AuthenticatedFreightRoute
@@ -504,6 +524,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDispatchRoute: AuthenticatedDispatchRoute,
+  AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
   AuthenticatedExhibitorsRoute: AuthenticatedExhibitorsRoute,
   AuthenticatedForkliftRoute: AuthenticatedForkliftRoute,
   AuthenticatedFreightRoute: AuthenticatedFreightRoute,

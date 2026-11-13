@@ -43,6 +43,7 @@ const operations: NavItem[] = [
   { title: "Forklift Mode", url: "/forklift", icon: Forklift, roles: ["operator", ...STAFF] },
   { title: "Dispatch", url: "/dispatch", icon: RouteIcon, roles: STAFF },
   { title: "Operators", url: "/operators", icon: HardHat, roles: STAFF },
+  { title: "Fleet inventory", url: "/equipment", icon: Forklift, roles: STAFF },
 ];
 
 const admin: NavItem[] = [

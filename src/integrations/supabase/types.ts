@@ -154,8 +154,12 @@ export type Database = {
           capacity_lbs: number | null
           created_at: string
           description: string | null
+          equipment_class: string
+          fuel_type: string
           id: string
+          model: string | null
           organization_id: string
+          retired_at: string | null
           status: Database["public"]["Enums"]["equipment_status"]
           unit_number: string
         }
@@ -163,8 +167,12 @@ export type Database = {
           capacity_lbs?: number | null
           created_at?: string
           description?: string | null
+          equipment_class?: string
+          fuel_type?: string
           id?: string
+          model?: string | null
           organization_id: string
+          retired_at?: string | null
           status?: Database["public"]["Enums"]["equipment_status"]
           unit_number: string
         }
@@ -172,8 +180,12 @@ export type Database = {
           capacity_lbs?: number | null
           created_at?: string
           description?: string | null
+          equipment_class?: string
+          fuel_type?: string
           id?: string
+          model?: string | null
           organization_id?: string
+          retired_at?: string | null
           status?: Database["public"]["Enums"]["equipment_status"]
           unit_number?: string
         }
@@ -822,6 +834,68 @@ export type Database = {
         }
         Relationships: []
       }
+      queue_drivers: {
+        Row: {
+          equipment_id: string
+          event_id: string
+          heartbeat_at: string
+          operator_id: string
+          organization_id: string
+          ready: boolean
+          ready_since: string
+          user_id: string
+        }
+        Insert: {
+          equipment_id: string
+          event_id: string
+          heartbeat_at?: string
+          operator_id: string
+          organization_id: string
+          ready?: boolean
+          ready_since?: string
+          user_id: string
+        }
+        Update: {
+          equipment_id?: string
+          event_id?: string
+          heartbeat_at?: string
+          operator_id?: string
+          organization_id?: string
+          ready?: boolean
+          ready_since?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queue_drivers_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: true
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_drivers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_drivers_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: true
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_drivers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_cards: {
         Row: {
           created_at: string
@@ -1223,6 +1297,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["ticket_priority"]
           requested_at: string
           requested_by: string | null
+          required_equipment_class: string
           service_type: Database["public"]["Enums"]["service_type"]
           special_instructions: string | null
           started_at: string | null
@@ -1252,6 +1327,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requested_at?: string
           requested_by?: string | null
+          required_equipment_class?: string
           service_type: Database["public"]["Enums"]["service_type"]
           special_instructions?: string | null
           started_at?: string | null
@@ -1281,6 +1357,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requested_at?: string
           requested_by?: string | null
+          required_equipment_class?: string
           service_type?: Database["public"]["Enums"]["service_type"]
           special_instructions?: string | null
           started_at?: string | null
@@ -1532,6 +1609,8 @@ export type Database = {
       compute_ticket_charge: { Args: { _ticket: string }; Returns: number }
       create_my_organization: { Args: { _name: string }; Returns: string }
       exhibitor_event_ids: { Args: never; Returns: string[] }
+      fleet_release: { Args: never; Returns: undefined }
+      fleet_select: { Args: { _equipment: string }; Returns: undefined }
       forklift_current: {
         Args: never
         Returns: {
@@ -1628,6 +1707,12 @@ export type Database = {
         Args: { _org: string; check_env?: string }
         Returns: boolean
       }
+      queue_compatible: {
+        Args: { _equipment: string; _ticket: string }
+        Returns: boolean
+      }
+      queue_dispatch: { Args: { _event: string }; Returns: undefined }
+      queue_poll: { Args: { _ready?: boolean }; Returns: string }
       reset_operator_pin: { Args: { _operator: string }; Returns: undefined }
       resolve_issue: { Args: { _update: string }; Returns: undefined }
       session_hourly_rate: { Args: { _ticket: string }; Returns: number }
