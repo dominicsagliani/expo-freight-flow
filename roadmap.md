@@ -21,7 +21,7 @@
 - [x] Rate cards, charge calculation, billing review + export
 
 ## Requested
-- [ ] Mission Control: rapid call-in tickets, event-scoped live fleet, safe next-available assignment and operator service completion
+- [x] Mission Control: rapid call-in tickets, event-scoped live fleet, safe next-available assignment and operator service completion
 - [x] Fleet inventory with exclusive driver selection and capacity-aware automatic live queue
 - [ ] Short brand launch video for LinkedIn / X / Product Hunt
 - [x] Collect customer payments: plans & billing page, test-mode checkout, subscription records
