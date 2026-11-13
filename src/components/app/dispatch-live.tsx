@@ -8,7 +8,7 @@ import { fmtAgo } from "@/lib/format";
 import { fmtDuration, ISSUE_LABEL, sessionSeconds } from "@/lib/work-session";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
-export function DispatchLive() {
+export function DispatchLive({ eventId }: { eventId: string }) {
   const qc = useQueryClient();
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
@@ -20,7 +20,7 @@ export function DispatchLive() {
       const { data, error } = await supabase.from("work_sessions")
         .select(`id, status, started_at, ended_at, paused_at, paused_seconds,
           equipment:equipment(unit_number), operator:operators(full_name),
-          ticket:tickets(id, ticket_number, booth_number, destination, exhibitor:exhibitors(company_name), ticket_freight(picked_up_at, delivered_at))`)
+          ticket:tickets(id, event_id, ticket_number, booth_number, destination, exhibitor:exhibitors(company_name), ticket_freight(picked_up_at, delivered_at))`)
         .neq("status", "completed").order("started_at");
       if (error) throw new Error(error.message);
       return data;
@@ -30,7 +30,7 @@ export function DispatchLive() {
     queryKey: ["open-issues"],
     queryFn: async () => {
       const { data, error } = await supabase.from("delivery_updates")
-        .select("id, issue_type, note, created_at, ticket:tickets(id, ticket_number, booth_number), freight:freight_items(freight_code)")
+        .select("id, issue_type, note, created_at, ticket:tickets(id, event_id, ticket_number, booth_number), freight:freight_items(freight_code)")
         .eq("kind", "issue").is("resolved_at", null).order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
       return data;
@@ -40,18 +40,20 @@ export function DispatchLive() {
     const { error } = await supabase.rpc("resolve_issue", { _update: id });
     if (error) toast.error(error.message); else { toast.success("Issue resolved"); qc.invalidateQueries({ queryKey: ["open-issues"] }); }
   };
+  const eventSessions = sessions.filter(s => s.ticket?.event_id === eventId);
+  const eventIssues = issues.filter(i => i.ticket?.event_id === eventId);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-      <section className="rounded-lg border border-border bg-surface">
+      <section className="border-y border-border">
         <header className="flex items-center gap-2 border-b border-border px-3 py-2.5">
           <span className="size-2 rounded-full bg-status-progress" />
           <h2 className="text-sm font-semibold">Active forklifts</h2>
           <span className="ml-auto text-xs text-muted-foreground">live</span>
         </header>
-        {sessions.length === 0 && <p className="px-3 py-6 text-center text-xs text-muted-foreground">No forklift timers running</p>}
+        {eventSessions.length === 0 && <p className="px-3 py-6 text-center text-xs text-muted-foreground">No forklift timers running</p>}
         <div className="divide-y divide-border">
-          {sessions.map((s) => {
+          {eventSessions.map((s) => {
             const tf = s.ticket?.ticket_freight ?? [];
             return (
               <div key={s.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-2 text-sm">
@@ -71,15 +73,15 @@ export function DispatchLive() {
           })}
         </div>
       </section>
-      <section className="rounded-lg border border-border bg-surface">
+      <section className="border-y border-border">
         <header className="flex items-center gap-2 border-b border-border px-3 py-2.5">
           <span className="size-2 rounded-full bg-destructive" />
           <h2 className="text-sm font-semibold">Reported issues</h2>
-          <span className="ml-auto text-xs tabular-nums text-muted-foreground">{issues.length}</span>
+          <span className="ml-auto text-xs tabular-nums text-muted-foreground">{eventIssues.length}</span>
         </header>
-        {issues.length === 0 && <p className="px-3 py-6 text-center text-xs text-muted-foreground">No open issues</p>}
+        {eventIssues.length === 0 && <p className="px-3 py-6 text-center text-xs text-muted-foreground">No open issues</p>}
         <div className="divide-y divide-border">
-          {issues.map((i) => (
+          {eventIssues.map((i) => (
             <div key={i.id} className="flex items-start gap-2 px-3 py-2 text-sm">
               <div className="min-w-0 flex-1">
                 <div className="font-medium text-destructive">{ISSUE_LABEL[i.issue_type ?? "other"] ?? "Issue"}</div>

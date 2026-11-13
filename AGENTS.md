@@ -30,6 +30,7 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project rules (ExpoHaul)
+- Call-in intake uses an idempotent staff-only database RPC that creates and dispatches atomically; service-only requests need no freight, load requests require known capacity-safe weight for automatic routing, and no-freight completion closes sessions before advancing the queue. Why: rapid desk intake must not duplicate jobs, invent freight or bypass timing and load safety.
 
 - Fleet reservations and auto-dispatch use authenticated database RPCs with event locks, exclusive operator/machine reservations and short heartbeats; only registered PIN-unlocked drivers receive compatible known-weight tickets. Why: prevents duplicate assignments and unsafe or cross-event routing; assignment never starts billable time.
 
