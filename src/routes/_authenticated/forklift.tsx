@@ -176,49 +176,23 @@ function ForkliftMode() {
     setView("scan");
   };
 
-  if (me && me.length === 0) {
-    return <Shell onExit><OperatorLogin onUnlocked={() => qc.invalidateQueries({ queryKey: ["forklift-me"] })} /></Shell>;
-  }
-
-  if (!forklift) {
-    return (
-      <Shell onExit>
-        <div className="grid gap-6 p-6">
-          <h1 className="text-3xl font-bold">Which forklift are you on?</h1>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {equipment.map((e) => (
-              <Button key={e.id} disabled={e.status === "maintenance"}
-                onClick={() => chooseForklift(e.id)} variant="outline"
-                className="h-auto min-h-36 flex-col items-start whitespace-normal rounded-lg border-2 border-primary-foreground/20 bg-primary-foreground/5 p-4 text-left text-xl font-bold text-primary-foreground disabled:opacity-40">
-                {e.unit_number}
-                <div className="text-base font-normal">{e.model || e.description}</div>
-                <div className="text-sm font-normal">{EQUIPMENT_CLASSES[e.equipment_class as keyof typeof EQUIPMENT_CLASSES]} · {FUEL_TYPES[e.fuel_type as keyof typeof FUEL_TYPES]}</div>
-                <div className="text-base">{e.capacity_lbs?.toLocaleString() ?? "Unknown"} lb</div>
-                <div className="text-base font-normal text-primary-foreground/70">{e.status === "maintenance" ? "Maintenance" : e.status === "in_use" ? "In use" : "Available"}</div>
-              </Button>
-            ))}
-          </div>
-        </div>
-      </Shell>
-    );
+  if (!me || me.length === 0 || !forklift) {
+    return <Shell onExit><GoOnline equipment={equipment} onOnline={(id) => {
+      setForklift(id);
+      qc.invalidateQueries({ queryKey: ["forklift-me"] }); qc.invalidateQueries({ queryKey: ["forklift-queue"] });
+    }} /></Shell>;
   }
 
   const header = (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-primary-foreground/15 px-5 py-3 text-lg">
-      <span className="font-bold">{me?.[0]?.full_name ?? "Operator"}</span>
-      <Button variant="teal" className="font-mono font-bold"
-        onClick={async () => {
-          const { error } = await supabase.rpc("fleet_release");
-          if (error) { toast.error(error.message); return; }
-          setForklift(null); qc.invalidateQueries({ queryKey: ["forklift-queue"] });
-        }}>{forkliftName ?? "Forklift"}</Button>
+      <span className="font-mono text-xl font-bold">{forkliftName ?? "Forklift"}</span>
       <span className="text-primary-foreground/70">{current?.event?.name ?? "No active event"}</span>
-      <Button variant="inverse" className="ml-auto" onClick={switchOperator}>Switch operator</Button>
+      <Button variant="inverse" className="ml-auto" onClick={switchOperator}>Go offline</Button>
       <Button variant="inverse" onClick={async () => {
         const { error } = await supabase.rpc("queue_poll", { _ready: !queueState?.ready });
         if (error) toast.error(error.message);
         qc.invalidateQueries({ queryKey: ["forklift-queue"] }); refresh();
-      }}>{queueState?.ready ? <Pause /> : <Play />}{queueState?.ready ? "Pause queue" : "Resume queue"}</Button>
+      }}>{queueState?.ready ? <Pause /> : <Play />}{queueState?.ready ? "Take a break" : "Available for jobs"}</Button>
     </div>
   );
 
@@ -342,90 +316,6 @@ function ForkliftMode() {
         </div>
       )}
     </Shell>
-  );
-}
-
-function OperatorLogin({ onUnlocked }: { onUnlocked: () => void }) {
-  const [eventId, setEventId] = useState("");
-  const [operatorId, setOperatorId] = useState("");
-  const [pin, setPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const { data: events = [] } = useQuery({
-    queryKey: ["forklift-events"],
-    queryFn: async () => (await supabase.from("events").select("id, name, status").neq("status", "closed").order("start_date")).data ?? [],
-  });
-  useEffect(() => { if (!eventId && events.length === 1 && events[0]) setEventId(events[0].id); }, [events, eventId]);
-  const { data: ops = [] } = useQuery({
-    queryKey: ["forklift-operators", eventId],
-    enabled: !!eventId,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("forklift_operators", { _event: eventId });
-      if (error) throw new Error(error.message);
-      return data ?? [];
-    },
-  });
-  const op = ops.find((o) => o.id === operatorId);
-  const creating = op && !op.has_pin;
-
-  const submit = async (value: string) => {
-    if (creating && confirmPin === null) { setConfirmPin(value); setPin(""); return; }
-    if (creating && confirmPin !== value) { toast.error("PINs don't match — start again"); setConfirmPin(null); setPin(""); return; }
-    setBusy(true);
-    const { data, error } = await supabase.rpc("forklift_unlock", { _event: eventId, _operator: operatorId, _pin: value });
-    setBusy(false); setPin(""); setConfirmPin(null);
-    const res = data as { ok: boolean; error?: string; created?: boolean } | null;
-    if (error || !res?.ok) { toast.error(error?.message ?? res?.error ?? "Could not unlock"); return; }
-    toast.success(res.created ? "PIN saved — you're signed in" : `Welcome, ${op?.full_name}`);
-    onUnlocked();
-  };
-  const press = (d: string) => {
-    if (busy) return;
-    const v = (pin + d).slice(0, 6);
-    setPin(v);
-    if (v.length === 6) void submit(v);
-  };
-  const sel = "min-h-16 w-full rounded-xl border-2 border-primary-foreground/20 bg-primary-foreground/5 px-4 text-2xl text-primary-foreground [&>option]:text-foreground";
-
-  return (
-    <div className="mx-auto grid w-full max-w-md gap-5 p-6">
-      <h1 className="text-3xl font-bold">Operator sign-in</h1>
-      <label className="grid gap-2 text-lg">Event
-        <select className={sel} value={eventId} onChange={(e) => { setEventId(e.target.value); setOperatorId(""); setPin(""); setConfirmPin(null); }}>
-          <option value="">Choose event…</option>
-          {events.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
-        </select>
-      </label>
-      {eventId && (
-        <label className="grid gap-2 text-lg">Operator
-          <select className={sel} value={operatorId} onChange={(e) => { setOperatorId(e.target.value); setPin(""); setConfirmPin(null); }}>
-            <option value="">Choose your name…</option>
-            {ops.map((o) => <option key={o.id} value={o.id}>{o.full_name}</option>)}
-          </select>
-          {ops.length === 0 && <span className="text-base text-primary-foreground/70">No operators registered for this event. Ask dispatch to add you on the Operators page.</span>}
-        </label>
-      )}
-      {op && (
-        <div className="grid gap-4">
-          <p className="text-center text-xl">
-            {creating ? (confirmPin === null ? "Create your 6-digit PIN" : "Enter the PIN again to confirm") : "Enter your 6-digit PIN"}
-          </p>
-          <div className="flex justify-center gap-3" aria-label={`${pin.length} of 6 digits entered`}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <span key={i} className={`size-5 rounded-full border-2 border-primary-foreground/60 ${i < pin.length ? "bg-accent" : ""}`} />
-            ))}
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {["1","2","3","4","5","6","7","8","9"].map((d) => (
-              <button key={d} onClick={() => press(d)} className="min-h-20 rounded-xl bg-primary-foreground/10 text-3xl font-bold">{d}</button>
-            ))}
-            <button onClick={() => setPin("")} className="min-h-20 rounded-xl bg-primary-foreground/5 text-lg">Clear</button>
-            <button onClick={() => press("0")} className="min-h-20 rounded-xl bg-primary-foreground/10 text-3xl font-bold">0</button>
-            <button onClick={() => setPin(pin.slice(0, -1))} className="min-h-20 rounded-xl bg-primary-foreground/5 text-lg">Delete</button>
-          </div>
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -601,6 +491,51 @@ function Shell({ children, onBack, onExit }: { children: React.ReactNode; onBack
         {onExit && <Link to="/operator" className="text-base underline">Exit forklift mode</Link>}
       </div>
       {children}
+    </div>
+  );
+}
+
+function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_number: string; model: string | null; description: string | null; equipment_class: string; fuel_type: string; capacity_lbs: number | null; status: string }[]; onOnline: (id: string) => void }) {
+  const [eventId, setEventId] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const { data: events = [] } = useQuery({
+    queryKey: ["forklift-events"],
+    queryFn: async () => (await supabase.from("events").select("id, name, status").neq("status", "closed").order("start_date")).data ?? [],
+  });
+  useEffect(() => { if (!eventId && events[0]) setEventId(events[0].id); }, [events, eventId]);
+  const go = async (id: string) => {
+    if (!eventId) { toast.error("Choose an event first"); return; }
+    setBusy(id);
+    const { error } = await supabase.rpc("forklift_go_online", { _event: eventId, _equipment: id });
+    setBusy(null);
+    if (error) { toast.error(error.message); return; }
+    toast.success("You're online — jobs will come to this forklift");
+    onOnline(id);
+  };
+  return (
+    <div className="grid gap-6 p-6">
+      <h1 className="text-3xl font-bold">Which forklift is this?</h1>
+      <label className="grid max-w-md gap-2 text-lg">Event
+        <select value={eventId} onChange={(e) => setEventId(e.target.value)}
+          className="h-14 rounded-lg bg-primary-foreground px-3 text-lg text-primary">
+          {events.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+        </select>
+      </label>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        {equipment.map((e) => {
+          const blocked = e.status !== "available";
+          return (
+            <Button key={e.id} disabled={blocked || !!busy} onClick={() => go(e.id)} variant="outline"
+              className="h-auto min-h-36 flex-col items-start whitespace-normal rounded-lg border-2 border-primary-foreground/20 bg-primary-foreground/5 p-4 text-left text-xl font-bold text-primary-foreground disabled:opacity-40">
+              {e.unit_number}
+              <div className="text-base font-normal">{e.model || e.description}</div>
+              <div className="text-sm font-normal">{EQUIPMENT_CLASSES[e.equipment_class as keyof typeof EQUIPMENT_CLASSES]} · {FUEL_TYPES[e.fuel_type as keyof typeof FUEL_TYPES]}</div>
+              <div className="text-base">{e.capacity_lbs?.toLocaleString() ?? "Unknown"} lb</div>
+              <div className="text-base font-normal text-primary-foreground/70">{busy === e.id ? "Going online…" : e.status === "maintenance" ? "Maintenance" : e.status === "in_use" ? "In use" : "Available — tap to go online"}</div>
+            </Button>
+          );
+        })}
+      </div>
     </div>
   );
 }
