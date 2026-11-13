@@ -28,7 +28,7 @@ function LabelPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("freight_items")
-        .select("freight_code, qr_token, booth_number, pieces, freight_type, event:events(name)")
+        .select("freight_code, qr_token, booth_number, pieces, freight_type, event:events(name), exhibitor:exhibitors(company_name, contact_name)")
         .eq("id", freightId)
         .single();
       if (error) throw new Error(error.message);
