@@ -26,3 +26,5 @@
       (live payments need the go-live steps in the Payments tab)
 
 - [x] Plan entitlements, upgrades/downgrades, failed-payment grace, pilot approvals
+
+- [x] Backend foundation: own workspace per contractor on sign-up, team invitations, assignment history, delivery updates with notes, per-item photo links
