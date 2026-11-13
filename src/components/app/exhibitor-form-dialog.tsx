@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Field } from "./event-form-dialog";
+import { AddressAutocomplete } from "./address-autocomplete";
 
 const schema = z.object({
   company_name: z.string().trim().min(2, "Company name is required").max(160),
@@ -116,7 +117,12 @@ export function ExhibitorFormDialog({
             <Input type="email" value={form.contact_email} onChange={set("contact_email")} />
           </Field>
           <Field label="Billing address">
-            <Input value={form.billing_address} onChange={set("billing_address")} />
+            <AddressAutocomplete
+              value={form.billing_address}
+              onChange={(v) => setForm((f) => ({ ...f, billing_address: v }))}
+              placeholder="Start typing an address"
+              onSelect={(d) => setForm((f) => ({ ...f, billing_address: d.formatted }))}
+            />
           </Field>
           {!exhibitor && (
             <div className="grid gap-4 rounded-md border border-border bg-surface p-3 sm:grid-cols-[1fr_8rem]">
