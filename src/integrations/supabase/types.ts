@@ -1289,15 +1289,19 @@ export type Database = {
           completion_notes: string | null
           created_at: string
           destination: string | null
+          estimated_weight_lbs: number | null
           event_id: string
           exhibitor_id: string
           id: string
+          intake_key: string | null
           labor_hours: number | null
           organization_id: string
           priority: Database["public"]["Enums"]["ticket_priority"]
+          request_source: string
           requested_at: string
           requested_by: string | null
           required_equipment_class: string
+          service_only: boolean
           service_type: Database["public"]["Enums"]["service_type"]
           special_instructions: string | null
           started_at: string | null
@@ -1319,15 +1323,19 @@ export type Database = {
           completion_notes?: string | null
           created_at?: string
           destination?: string | null
+          estimated_weight_lbs?: number | null
           event_id: string
           exhibitor_id: string
           id?: string
+          intake_key?: string | null
           labor_hours?: number | null
           organization_id: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
+          request_source?: string
           requested_at?: string
           requested_by?: string | null
           required_equipment_class?: string
+          service_only?: boolean
           service_type: Database["public"]["Enums"]["service_type"]
           special_instructions?: string | null
           started_at?: string | null
@@ -1349,15 +1357,19 @@ export type Database = {
           completion_notes?: string | null
           created_at?: string
           destination?: string | null
+          estimated_weight_lbs?: number | null
           event_id?: string
           exhibitor_id?: string
           id?: string
+          intake_key?: string | null
           labor_hours?: number | null
           organization_id?: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
+          request_source?: string
           requested_at?: string
           requested_by?: string | null
           required_equipment_class?: string
+          service_only?: boolean
           service_type?: Database["public"]["Enums"]["service_type"]
           special_instructions?: string | null
           started_at?: string | null
@@ -1607,7 +1619,24 @@ export type Database = {
       can_view_ticket: { Args: { _ticket: string }; Returns: boolean }
       can_work_ticket: { Args: { _ticket: string }; Returns: boolean }
       compute_ticket_charge: { Args: { _ticket: string }; Returns: number }
+      create_call_in: {
+        Args: {
+          _class: string
+          _event: string
+          _exhibitor: string
+          _key: string
+          _location: string
+          _notes: string
+          _priority: Database["public"]["Enums"]["ticket_priority"]
+          _service: Database["public"]["Enums"]["service_type"]
+          _service_only: boolean
+          _source: string
+          _weight: number
+        }
+        Returns: string
+      }
       create_my_organization: { Args: { _name: string }; Returns: string }
+      dispatch_next_available: { Args: { _event: string }; Returns: undefined }
       exhibitor_event_ids: { Args: never; Returns: string[] }
       fleet_release: { Args: never; Returns: undefined }
       fleet_select: { Args: { _equipment: string }; Returns: undefined }
@@ -1657,6 +1686,10 @@ export type Database = {
         Returns: undefined
       }
       my_operator_on_ticket: { Args: { _ticket: string }; Returns: string }
+      op_complete_call_in: {
+        Args: { _notes?: string; _ticket: string }
+        Returns: undefined
+      }
       op_complete_session: { Args: { _session: string }; Returns: undefined }
       op_pause_session: {
         Args: { _reason: string; _session: string }
