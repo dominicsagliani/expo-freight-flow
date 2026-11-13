@@ -1,3 +1,4 @@
+import { Forklift } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Building2,
@@ -39,6 +40,7 @@ const operations: NavItem[] = [
   { title: "Freight Management", url: "/freight", icon: Package },
   { title: "Material Handling Tickets", url: "/tickets", icon: ClipboardList },
   { title: "My Jobs & Scan", url: "/operator", icon: ScanLine, roles: ["operator", ...STAFF] },
+  { title: "Forklift Mode", url: "/forklift", icon: Forklift, roles: ["operator", ...STAFF] },
   { title: "Dispatch", url: "/dispatch", icon: RouteIcon, roles: STAFF },
   { title: "Operators", url: "/operators", icon: HardHat, roles: STAFF },
 ];
