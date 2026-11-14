@@ -184,6 +184,18 @@ export const operatorsQuery = () =>
     queryFn: async () => unwrap(await supabase.from("operators").select("*").order("full_name")),
   });
 
+export const workersQuery = () => queryOptions({
+  queryKey: ["workers"],
+  queryFn: async () => unwrap(await supabase.from("operators").select("*").is("equipment_id", null).is("retired_at", null).order("full_name")),
+});
+
+export const driverRosterQuery = (eventId: string) => queryOptions({
+  queryKey: ["driver-roster", eventId],
+  enabled: !!eventId,
+  queryFn: async () => unwrap(await supabase.rpc("driver_roster", { _event: eventId })),
+  refetchInterval: 15_000,
+});
+
 export const equipmentQuery = () =>
   queryOptions({
     queryKey: ["equipment"],

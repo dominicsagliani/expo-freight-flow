@@ -17,6 +17,7 @@ import { fmtDuration, ISSUE_TYPES, PAUSE_REASONS, sessionSeconds, type IssueType
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { EQUIPMENT_CLASSES, FUEL_TYPES } from "@/lib/fleet";
 import { useAutoInvoice } from "@/components/app/service-payment";
+import { driverRosterQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/_authenticated/forklift")({
   head: () => ({
@@ -32,7 +33,6 @@ export const Route = createFileRoute("/_authenticated/forklift")({
   component: ForkliftMode,
 });
 
-const FORKLIFT_KEY = "expohaul.forklift";
 const JOB_SELECT = `id, ticket_number, status, priority, service_type, booth_number, destination, special_instructions,
   assigned_operator_id, completed_at, request_source, service_only, estimated_weight_lbs,
   event:events(name), exhibitor:exhibitors(company_name),
@@ -81,6 +81,8 @@ function ForkliftMode() {
     setForklift(null);
     setSelected(null); setView("home");
     qc.invalidateQueries({ queryKey: ["forklift-me"] });
+    qc.removeQueries({ queryKey: ["forklift-jobs"] });
+    qc.removeQueries({ queryKey: ["forklift-queue"] });
   };
   const { data: equipment = [] } = useQuery({
     queryKey: ["forklift-equipment"],
@@ -183,6 +185,7 @@ function ForkliftMode() {
   const header = (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-primary-foreground/15 px-5 py-3 text-lg">
       <span className="font-mono text-xl font-bold">{forkliftName ?? "Forklift"}</span>
+      <span className="min-w-0 break-words font-semibold">{me[0]?.full_name}</span>
       <span className="rounded-md bg-status-completed px-2 py-1 text-sm font-bold uppercase tracking-wide text-primary-foreground">Online</span>
       <span className="text-primary-foreground/70">{current?.event?.name ?? "No active event"}</span>
       <Button variant="destructive" className="ml-auto uppercase tracking-wide" onClick={switchOperator}><XCircle className="size-5" />Offline</Button>
@@ -497,6 +500,8 @@ function Shell({ children, onBack, onExit }: { children: React.ReactNode; onBack
 
 function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_number: string; model: string | null; description: string | null; equipment_class: string; fuel_type: string; capacity_lbs: number | null; status: string }[]; onOnline: (id: string) => void }) {
   const [eventId, setEventId] = useState("");
+  const [driverId, setDriverId] = useState("");
+  const { data: drivers = [], error: rosterError } = useQuery(driverRosterQuery(eventId));
   const [busy, setBusy] = useState<string | null>(null);
   const { data: events = [] } = useQuery({
     queryKey: ["forklift-events"],
@@ -504,9 +509,9 @@ function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_numbe
   });
   useEffect(() => { if (!eventId && events[0]) setEventId(events[0].id); }, [events, eventId]);
   const go = async (id: string) => {
-    if (!eventId) { toast.error("Choose an event first"); return; }
+    if (!eventId || !drivers.some(d => d.id === driverId)) { toast.error("Choose your event and name first"); return; }
     setBusy(id);
-    const { error } = await supabase.rpc("forklift_go_online", { _event: eventId, _equipment: id });
+    const { error } = await supabase.rpc("driver_go_online", { _event: eventId, _equipment: id, _driver: driverId });
     setBusy(null);
     if (error) { toast.error(error.message); return; }
     toast.success("You're online — jobs will come to this forklift");
@@ -514,18 +519,27 @@ function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_numbe
   };
   return (
     <div className="grid gap-6 p-6">
-      <h1 className="text-3xl font-bold">Which forklift is this?</h1>
+      <h1 className="text-3xl font-bold">Driver sign-in</h1>
       <label className="grid max-w-md gap-2 text-lg">Event
-        <select value={eventId} onChange={(e) => setEventId(e.target.value)}
+        <select value={eventId} onChange={(e) => { setEventId(e.target.value); setDriverId(""); }}
           className="h-14 rounded-lg bg-primary-foreground px-3 text-lg text-primary">
           {events.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
         </select>
       </label>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+      <label className="grid max-w-md gap-2 text-lg">Driver
+        <select value={driverId} onChange={e => setDriverId(e.target.value)} className="h-14 rounded-lg bg-primary-foreground px-3 text-lg text-primary">
+          <option value="">Select your name</option>
+          {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name}</option>)}
+        </select>
+      </label>
+      {rosterError && <p role="alert" className="text-lg">{rosterError.message}</p>}
+      {!rosterError && !!eventId && !drivers.length && <p className="text-lg">No workers registered. Contact your company admin.</p>}
+      <h2 className="text-2xl font-bold">Choose your forklift</h2>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         {equipment.map((e) => {
           const blocked = e.status !== "available";
           return (
-            <Button key={e.id} disabled={blocked || !!busy} onClick={() => go(e.id)} variant="outline"
+            <Button key={e.id} disabled={blocked || !!busy || !driverId} onClick={() => go(e.id)} variant="outline"
               className="h-auto min-h-36 flex-col items-start whitespace-normal rounded-lg border-2 border-primary-foreground/20 bg-primary-foreground/5 p-4 text-left text-xl font-bold text-primary-foreground disabled:opacity-40">
               {e.unit_number}
               <div className="text-base font-normal">{e.model || e.description}</div>
