@@ -46,7 +46,6 @@ async def main():
             return
         await page.goto('http://localhost:8080/forklift')
         await page.wait_for_timeout(10000)
-        print((await page.locator('body').inner_text())[:2000]); await page.screenshot(path='/tmp/browser/workers/failure.png')
         await page.get_by_role('combobox').nth(1).select_option(label='Verified WorkerTest')
         lift=page.get_by_role('button').filter(has_text='FL-01').first
         await lift.click()
