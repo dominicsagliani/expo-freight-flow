@@ -15,31 +15,35 @@ async def main():
         page = await context.new_page()
         await page.goto('http://localhost:8080')
         await page.evaluate('([k,v]) => localStorage.setItem(k,v)', [auth['storage_key'],json.dumps(auth['session'])])
-        await page.goto('http://localhost:8080/operators')
-        await page.get_by_role('button',name='Add worker',exact=True).wait_for()
-        if await page.get_by_role('button',name='Delete Verified WorkerTest').count():
-            await page.get_by_role('button',name='Delete Verified WorkerTest').click()
-            await page.get_by_role('button',name='Delete worker',exact=True).click()
-            await page.get_by_role('button',name='Edit Verified WorkerTest').wait_for(state='detached')
-        await page.get_by_role('button',name='Add worker',exact=True).click()
-        await page.get_by_label('First name',exact=True).fill('Preview')
-        await page.get_by_label('Last name',exact=True).fill('WorkerTest')
-        await page.get_by_role('dialog').get_by_role('button',name='Add worker',exact=True).click()
-        await page.get_by_role('button',name='Edit Preview WorkerTest').click()
-        await page.get_by_label('First name',exact=True).fill('Verified')
-        await page.get_by_role('button',name='Save worker',exact=True).click()
-        await page.get_by_role('button',name='Edit Verified WorkerTest').wait_for()
-        await page.screenshot(path='/tmp/browser/workers/list.png')
-        result = await page.evaluate('''async () => {
-          const {supabase: db}=await import('/src/integrations/supabase/client.ts');
-          const w=(await db.from('operators').select('*').eq('full_name','Verified WorkerTest').is('retired_at',null).single()).data;
-          if(!w) throw Error('Worker missing');
-          const invalid=await db.rpc('manage_worker',{_org:w.organization_id,_first:'',_last:'Test'});
-          const wrong=await db.rpc('manage_worker',{_org:'00000000-0000-4000-8000-000000000099',_first:'Other',_last:'Tenant'});
-          return {worker:w.id,invalidDenied:!!invalid.error,otherOrgDenied:!!wrong.error};
-        }''')
-        assert result['invalidDenied'], 'Both first and last names are required'
-        assert result['otherOrgDenied'], 'Worker management must remain admin- and tenant-scoped'
+        if os.environ.get('WORKER_TEST_STAGE') == 'crud':
+            await page.goto('http://localhost:8080/operators')
+            await page.get_by_role('button',name='Add worker',exact=True).wait_for()
+            if await page.get_by_role('button',name='Delete Verified WorkerTest').count():
+                await page.get_by_role('button',name='Delete Verified WorkerTest').click()
+                await page.get_by_role('button',name='Delete worker',exact=True).click()
+                await page.get_by_role('button',name='Edit Verified WorkerTest').wait_for(state='detached')
+            await page.get_by_role('button',name='Add worker',exact=True).click()
+            await page.get_by_label('First name',exact=True).fill('Preview')
+            await page.get_by_label('Last name',exact=True).fill('WorkerTest')
+            await page.get_by_role('dialog').get_by_role('button',name='Add worker',exact=True).click()
+            await page.get_by_role('button',name='Edit Preview WorkerTest').click()
+            await page.get_by_label('First name',exact=True).fill('Verified')
+            await page.get_by_role('button',name='Save worker',exact=True).click()
+            await page.get_by_role('button',name='Edit Verified WorkerTest').wait_for()
+            await page.screenshot(path='/tmp/browser/workers/list.png')
+            result = await page.evaluate('''async () => {
+              const {supabase: db}=await import('/src/integrations/supabase/client.ts');
+              const w=(await db.from('operators').select('*').eq('full_name','Verified WorkerTest').is('retired_at',null).single()).data;
+              if(!w) throw Error('Worker missing');
+              const invalid=await db.rpc('manage_worker',{_org:w.organization_id,_first:'',_last:'Test'});
+              const wrong=await db.rpc('manage_worker',{_org:'00000000-0000-4000-8000-000000000099',_first:'Other',_last:'Tenant'});
+              return {worker:w.id,invalidDenied:!!invalid.error,otherOrgDenied:!!wrong.error};
+            }''')
+            assert result['invalidDenied'], 'Both first and last names are required'
+            assert result['otherOrgDenied'], 'Worker management must remain admin- and tenant-scoped'
+            await browser.close()
+            print('PASS: worker create/edit, names required, tenant denied')
+            return
         await browser.close()
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(viewport={"width":1280,"height":1800})
