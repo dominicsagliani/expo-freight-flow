@@ -21,7 +21,7 @@
 - [x] Rate cards, charge calculation, billing review + export
 
 ## Requested
-- [ ] Names-only worker management, individual-device driver selection, exclusive forklift reservations and personal Forklift Mode dashboard
+- [x] Names-only worker management, individual-device driver selection, exclusive forklift reservations and personal Forklift Mode dashboard
 - [x] Add confirmed admin event deletion and reset all drivers by cancelling unfinished jobs while preserving completed billing
 - [x] Scan-in starts driver timing; final scan-out stops timing, completes freight jobs and totals customer charges
 - [x] Mission Control: rapid call-in tickets, event-scoped live fleet, safe next-available assignment and operator service completion
