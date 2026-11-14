@@ -527,7 +527,7 @@ function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_numbe
         </select>
       </label>
       <label className="grid max-w-md gap-2 text-lg">Driver
-        <select value={driverId} onChange={e => setDriverId(e.target.value)} className="h-14 rounded-lg bg-primary-foreground px-3 text-lg text-primary">
+        <select aria-label="Driver" value={driverId} onChange={e => setDriverId(e.target.value)} className="h-14 rounded-lg bg-primary-foreground px-3 text-lg text-primary">
           <option value="">Select your name</option>
           {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name}</option>)}
         </select>
