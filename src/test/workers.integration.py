@@ -47,7 +47,7 @@ async def main():
         await page.goto('http://localhost:8080/forklift')
         await page.wait_for_timeout(10000)
         print((await page.locator('body').inner_text())[:2000]); await page.screenshot(path='/tmp/browser/workers/failure.png')
-        await page.get_by_label('Driver',exact=True).select_option(label='Verified WorkerTest')
+        await page.get_by_role('combobox').nth(1).select_option(label='Verified WorkerTest')
         lift=page.get_by_role('button').filter(has_text='FL-01').first
         await lift.click()
         await page.get_by_role('button',name='Offline',exact=True).wait_for()
@@ -69,7 +69,7 @@ async def main():
         await page.set_viewport_size({'width':390,'height':844})
         await page.screenshot(path='/tmp/browser/workers/mobile.png')
         await page.get_by_role('button',name='Offline',exact=True).click()
-        await page.get_by_label('Driver',exact=True).wait_for()
+        await page.get_by_role('combobox').nth(1).wait_for()
         await page.set_viewport_size({'width':1280,'height':1800})
         await page.goto('http://localhost:8080/operators')
         await page.get_by_role('button',name='Delete Verified WorkerTest').click()
@@ -83,8 +83,8 @@ async def main():
         await page.evaluate('([k,v]) => localStorage.setItem(k,v)', [auth['storage_key'],json.dumps(auth['session'])])
         await page.goto('http://localhost:8080/forklift')
         await page.screenshot(path='/tmp/browser/workers/selection.png')
-        await page.get_by_label('Driver',exact=True).wait_for()
-        assert await page.get_by_label('Driver',exact=True).locator('option').filter(has_text='Verified WorkerTest').count()==0
+        await page.get_by_role('combobox').nth(1).wait_for()
+        assert await page.get_by_role('combobox').nth(1).locator('option').filter(has_text='Verified WorkerTest').count()==0
         print('PASS: worker create/edit/remove, required names, tenant denial, named dashboard, one reservation per machine, online deletion blocked, removed worker absent')
         await browser.close()
 
