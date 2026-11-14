@@ -815,10 +815,13 @@ export type Database = {
           certification_number: string | null
           created_at: string
           equipment_id: string | null
+          first_name: string | null
           full_name: string
           id: string
+          last_name: string | null
           organization_id: string
           phone: string | null
+          retired_at: string | null
           status: Database["public"]["Enums"]["operator_status"]
           user_id: string | null
         }
@@ -827,10 +830,13 @@ export type Database = {
           certification_number?: string | null
           created_at?: string
           equipment_id?: string | null
+          first_name?: string | null
           full_name: string
           id?: string
+          last_name?: string | null
           organization_id: string
           phone?: string | null
+          retired_at?: string | null
           status?: Database["public"]["Enums"]["operator_status"]
           user_id?: string | null
         }
@@ -839,10 +845,13 @@ export type Database = {
           certification_number?: string | null
           created_at?: string
           equipment_id?: string | null
+          first_name?: string | null
           full_name?: string
           id?: string
+          last_name?: string | null
           organization_id?: string
           phone?: string | null
+          retired_at?: string | null
           status?: Database["public"]["Enums"]["operator_status"]
           user_id?: string | null
         }
@@ -1784,6 +1793,17 @@ export type Database = {
       create_my_organization: { Args: { _name: string }; Returns: string }
       delete_event: { Args: { _event: string }; Returns: undefined }
       dispatch_next_available: { Args: { _event: string }; Returns: undefined }
+      driver_go_online: {
+        Args: { _driver: string; _equipment: string; _event: string }
+        Returns: string
+      }
+      driver_roster: {
+        Args: { _event: string }
+        Returns: {
+          full_name: string
+          id: string
+        }[]
+      }
       exhibitor_event_ids: { Args: never; Returns: string[] }
       fleet_release: { Args: never; Returns: undefined }
       fleet_select: { Args: { _equipment: string }; Returns: undefined }
@@ -1835,6 +1855,16 @@ export type Database = {
           _ticket: string
         }
         Returns: undefined
+      }
+      manage_worker: {
+        Args: {
+          _first?: string
+          _last?: string
+          _org: string
+          _remove?: boolean
+          _worker?: string
+        }
+        Returns: string
       }
       mark_ticket_paid: {
         Args: { _paid: boolean; _ticket: string }
