@@ -40,6 +40,7 @@ async def main():
         }''')
         assert result['invalidDenied'], 'Both first and last names are required'
         assert result['otherOrgDenied'], 'Worker management must remain admin- and tenant-scoped'
+        page = await context.new_page()
         await page.goto('http://localhost:8080/forklift')
         await page.screenshot(path='/tmp/browser/workers/selection.png')
         await page.wait_for_timeout(10000)
@@ -73,6 +74,7 @@ async def main():
         await page.get_by_role('button',name='Delete Verified WorkerTest').click()
         await page.get_by_role('button',name='Delete worker',exact=True).click()
         await page.get_by_role('button',name='Edit Verified WorkerTest').wait_for(state='detached')
+        page = await context.new_page()
         await page.goto('http://localhost:8080/forklift')
         await page.screenshot(path='/tmp/browser/workers/selection.png')
         await page.get_by_label('Driver',exact=True).wait_for()
