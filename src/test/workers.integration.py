@@ -36,6 +36,7 @@ async def main():
         assert result['invalidDenied'], 'Both first and last names are required'
         assert result['otherOrgDenied'], 'Worker management must remain admin- and tenant-scoped'
         await page.goto('http://localhost:8080/forklift')
+        await page.screenshot(path='/tmp/browser/workers/selection.png')
         await page.get_by_label('Driver',exact=True).select_option(label='Verified WorkerTest')
         lift=page.get_by_role('button').filter(has_text='FL-01').first
         await lift.click()
@@ -65,6 +66,7 @@ async def main():
         await page.get_by_role('button',name='Delete worker',exact=True).click()
         await page.get_by_role('button',name='Edit Verified WorkerTest').wait_for(state='detached')
         await page.goto('http://localhost:8080/forklift')
+        await page.screenshot(path='/tmp/browser/workers/selection.png')
         await page.get_by_label('Driver',exact=True).wait_for()
         assert await page.get_by_label('Driver',exact=True).locator('option').filter(has_text='Verified WorkerTest').count()==0
         print('PASS: worker create/edit/remove, required names, tenant denial, named dashboard, one reservation per machine, online deletion blocked, removed worker absent')
