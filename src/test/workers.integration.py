@@ -16,6 +16,11 @@ async def main():
         await page.goto('http://localhost:8080')
         await page.evaluate('([k,v]) => localStorage.setItem(k,v)', [auth['storage_key'],json.dumps(auth['session'])])
         await page.goto('http://localhost:8080/operators')
+        await page.get_by_role('button',name='Add worker',exact=True).wait_for()
+        if await page.get_by_role('button',name='Delete Verified WorkerTest').count():
+            await page.get_by_role('button',name='Delete Verified WorkerTest').click()
+            await page.get_by_role('button',name='Delete worker',exact=True).click()
+            await page.get_by_role('button',name='Edit Verified WorkerTest').wait_for(state='detached')
         await page.get_by_role('button',name='Add worker',exact=True).click()
         await page.get_by_label('First name',exact=True).fill('Preview')
         await page.get_by_label('Last name',exact=True).fill('WorkerTest')
@@ -37,6 +42,9 @@ async def main():
         assert result['otherOrgDenied'], 'Worker management must remain admin- and tenant-scoped'
         await page.goto('http://localhost:8080/forklift')
         await page.screenshot(path='/tmp/browser/workers/selection.png')
+        await page.wait_for_timeout(10000)
+        if await page.get_by_role('button',name='Offline',exact=True).count():
+            await page.get_by_role('button',name='Offline',exact=True).click()
         await page.get_by_label('Driver',exact=True).select_option(label='Verified WorkerTest')
         lift=page.get_by_role('button').filter(has_text='FL-01').first
         await lift.click()
