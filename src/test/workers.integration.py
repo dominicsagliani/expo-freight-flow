@@ -44,17 +44,8 @@ async def main():
             await browser.close()
             print('PASS: worker create/edit, names required, tenant denied')
             return
-        await browser.close()
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(viewport={"width":1280,"height":1800})
-        page = await context.new_page()
-        await page.goto('http://localhost:8080')
-        await page.evaluate('([k,v]) => localStorage.setItem(k,v)', [auth['storage_key'],json.dumps(auth['session'])])
         await page.goto('http://localhost:8080/forklift')
-        await page.screenshot(path='/tmp/browser/workers/selection.png')
         await page.wait_for_timeout(10000)
-        if await page.get_by_role('button',name='Offline',exact=True).count():
-            await page.get_by_role('button',name='Offline',exact=True).click()
         await page.get_by_label('Driver',exact=True).select_option(label='Verified WorkerTest')
         lift=page.get_by_role('button').filter(has_text='FL-01').first
         await lift.click()
