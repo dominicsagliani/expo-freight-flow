@@ -42,8 +42,7 @@ function LabelPage() {
   useEffect(() => {
     if (!f || !autoprint || printed.current) return;
     printed.current = true;
-    const t = setTimeout(() => window.print(), 400);
-    return () => { clearTimeout(t); printed.current = false; };
+    setTimeout(() => window.print(), 400);
   }, [f, autoprint]);
   if (error) return <p className="text-sm text-muted-foreground">This freight item isn't available.</p>;
   if (!f) return null;
