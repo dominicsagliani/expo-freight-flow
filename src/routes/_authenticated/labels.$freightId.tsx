@@ -1,4 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
+
+const autoPrinted = new Set<string>();
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/labels/$freightId")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { autoprint?: number } => (s["autoprint"] ? { autoprint: 1 } : {}),
   component: LabelPage,
 });
 
@@ -35,6 +39,12 @@ function LabelPage() {
       return data;
     },
   });
+  const { autoprint } = Route.useSearch();
+  useEffect(() => {
+    if (!f || !autoprint || autoPrinted.has(freightId)) return;
+    autoPrinted.add(freightId);
+    setTimeout(() => window.print(), 400);
+  }, [f, autoprint, freightId]);
   if (error) return <p className="text-sm text-muted-foreground">This freight item isn't available.</p>;
   if (!f) return null;
   const l = labelFields(f);

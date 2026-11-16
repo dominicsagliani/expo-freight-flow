@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -25,7 +26,9 @@ export function FreightFormDialog({
   trigger: ReactNode;
 }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [autoPrint, setAutoPrint] = useState(true);
   const [eventId, setEventId] = useState(events[0]?.id ?? "");
   const [exhibitorId, setExhibitorId] = useState(lockedExhibitorId ?? "");
   const [type, setType] = useState<FreightType>("pallet");
@@ -43,7 +46,7 @@ export function FreightFormDialog({
       const weight = Number(f.weight);
       if (!Number.isInteger(pieces) || pieces < 1) throw new Error("Pieces must be a whole number of at least 1");
       if (!(weight > 0)) throw new Error("Enter a weight greater than 0");
-      const { error } = await supabase.from("freight_items").insert({
+      const { data, error } = await supabase.from("freight_items").insert({
         organization_id: events.find((e) => e.id === eventId)!.organization_id,
         event_id: eventId,
         exhibitor_id: exhibitorId,
@@ -57,11 +60,13 @@ export function FreightFormDialog({
         height_in: num(f.h),
         arrival_status: canSetStatus ? status : "expected",
         storage_location: canSetStatus ? f.location.trim() || null : null,
-      });
+      }).select("id").single();
       if (error) throw error;
+      return data.id as string;
     },
-    onSuccess: () => {
+    onSuccess: (id) => {
       toast.success("Freight registered");
+      if (canSetStatus && autoPrint) navigate({ to: "/labels/$freightId", params: { freightId: id }, search: { autoprint: 1 } });
       qc.invalidateQueries({ queryKey: ["freight"] });
       qc.invalidateQueries({ queryKey: ["activity"] });
       setOpen(false);
@@ -122,6 +127,12 @@ export function FreightFormDialog({
             </div>
           )}
           <p className="text-xs text-muted-foreground">A unique freight ID and a private QR code are generated automatically.</p>
+          {canSetStatus && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={autoPrint} onChange={(e) => setAutoPrint(e.target.checked)} className="size-4 accent-primary" />
+              Print label automatically after saving
+            </label>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={save.isPending}>{save.isPending ? "Saving…" : "Register freight"}</Button>
