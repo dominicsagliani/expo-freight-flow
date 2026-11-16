@@ -127,6 +127,12 @@ export function FreightFormDialog({
             </div>
           )}
           <p className="text-xs text-muted-foreground">A unique freight ID and a private QR code are generated automatically.</p>
+          {canSetStatus && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={autoPrint} onChange={(e) => setAutoPrint(e.target.checked)} className="size-4 accent-primary" />
+              Print label automatically after saving
+            </label>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={save.isPending}>{save.isPending ? "Saving…" : "Register freight"}</Button>
