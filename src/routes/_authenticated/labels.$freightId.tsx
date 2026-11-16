@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/labels/$freightId")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>): { autoprint?: number } => (s.autoprint ? { autoprint: 1 } : {}),
+  validateSearch: (s: Record<string, unknown>): { autoprint?: number } => (s["autoprint"] ? { autoprint: 1 } : {}),
   component: LabelPage,
 });
 
