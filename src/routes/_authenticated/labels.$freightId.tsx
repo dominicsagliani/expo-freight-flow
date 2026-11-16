@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+
+const autoPrinted = new Set<string>();
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,12 +40,11 @@ function LabelPage() {
     },
   });
   const { autoprint } = Route.useSearch();
-  const printed = useRef(false);
   useEffect(() => {
-    if (!f || !autoprint || printed.current) return;
-    printed.current = true;
+    if (!f || !autoprint || autoPrinted.has(freightId)) return;
+    autoPrinted.add(freightId);
     setTimeout(() => window.print(), 400);
-  }, [f, autoprint]);
+  }, [f, autoprint, freightId]);
   if (error) return <p className="text-sm text-muted-foreground">This freight item isn't available.</p>;
   if (!f) return null;
   const l = labelFields(f);
