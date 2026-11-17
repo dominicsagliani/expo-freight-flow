@@ -312,7 +312,7 @@ function ForkliftMode() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <BigButton onClick={accept} disabled={current.status !== "assigned"}><ClipboardCheck className="size-8" />Accept job</BigButton>
-              {callIn ? <BigButton tone="accent" disabled={!!mySession} onClick={() => rpc(() => supabase.rpc("op_start_session", { _ticket: current.id, _equipment: forklift }), "Work timer started")}><Play className="size-8" />Start work</BigButton> : <BigButton tone="accent" onClick={() => setView("scan")}><ScanLine className="size-8" />Scan freight</BigButton>}
+              {callIn ? <BigButton tone="accent" disabled={!!mySession} onClick={() => rpc(() => supabase.rpc("op_start_session", { _ticket: current.id, _equipment: forklift }), "Work timer started")}><Play className="size-8" />Start work</BigButton> : <BigButton tone="accent" onClick={() => { setScanTicket(current.id); setView("scan"); }}><ScanLine className="size-8" />Scan freight</BigButton>}
               <BigButton onClick={() => setView("freight")}><Package className="size-8" />View freight</BigButton>
               {callIn && <BigButton tone="success" onClick={completeDelivery} disabled={!mySession}><CheckCircle2 className="size-8" />Complete request</BigButton>}
               {mySession?.status === "paused" ? (
