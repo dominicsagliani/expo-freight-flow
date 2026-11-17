@@ -204,6 +204,13 @@
       "when": 1794883210665,
       "tag": "0028_equipment_forklift_photos",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794885305492,
+      "tag": "0029_venue_organizer_roles_hold_crew_issues_schema",
+      "breakpoints": true
     }
   ]
 }
