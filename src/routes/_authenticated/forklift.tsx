@@ -19,6 +19,7 @@ import { EQUIPMENT_CLASSES, FUEL_TYPES } from "@/lib/fleet";
 import { useAutoInvoice } from "@/components/app/service-payment";
 import { driverRosterQuery } from "@/lib/queries";
 import { FreightQueueScanner } from "@/components/app/freight-queue-scanner";
+import { EquipmentPhoto } from "@/components/app/equipment-photo";
 
 export const Route = createFileRoute("/_authenticated/forklift")({
   head: () => ({
@@ -518,7 +519,7 @@ function Shell({ children, onBack, onExit }: { children: React.ReactNode; onBack
   );
 }
 
-function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_number: string; model: string | null; description: string | null; equipment_class: string; fuel_type: string; capacity_lbs: number | null; status: string }[]; onOnline: (id: string) => void }) {
+function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_number: string; model: string | null; description: string | null; equipment_class: string; fuel_type: string; capacity_lbs: number | null; status: string; photo_path: string | null }[]; onOnline: (id: string) => void }) {
   const [eventId, setEventId] = useState("");
   const [driverId, setDriverId] = useState("");
   const { data: drivers = [], error: rosterError } = useQuery(driverRosterQuery(eventId));
@@ -538,16 +539,16 @@ function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_numbe
     onOnline(id);
   };
   return (
-    <div className="grid gap-6 p-6">
+    <div className="grid min-w-0 gap-6 p-4 sm:p-6">
       <h1 className="text-3xl font-bold">Driver sign-in</h1>
-      <label className="grid max-w-md gap-2 text-lg">Event
+      <label className="grid w-full min-w-0 max-w-md gap-2 text-lg">Event
         <select value={eventId} onChange={(e) => { setEventId(e.target.value); setDriverId(""); }}
-          className="h-14 rounded-lg bg-primary-foreground px-3 text-lg text-primary">
+          className="h-14 w-full min-w-0 rounded-lg bg-primary-foreground px-3 text-lg text-primary">
           {events.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
         </select>
       </label>
-      <label className="grid max-w-md gap-2 text-lg">Driver
-        <select aria-label="Driver" value={driverId} onChange={e => setDriverId(e.target.value)} className="h-14 rounded-lg bg-primary-foreground px-3 text-lg text-primary">
+      <label className="grid w-full min-w-0 max-w-md gap-2 text-lg">Driver
+        <select aria-label="Driver" value={driverId} onChange={e => setDriverId(e.target.value)} className="h-14 w-full min-w-0 rounded-lg bg-primary-foreground px-3 text-lg text-primary">
           <option value="">Select your name</option>
           {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name}</option>)}
         </select>
@@ -555,12 +556,13 @@ function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_numbe
       {rosterError && <p role="alert" className="text-lg">{rosterError.message}</p>}
       {!rosterError && !!eventId && !drivers.length && <p className="text-lg">No workers registered. Contact your company admin.</p>}
       <h2 className="text-2xl font-bold">Choose your forklift</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         {equipment.map((e) => {
           const blocked = e.status !== "available";
           return (
             <Button key={e.id} disabled={blocked || !!busy || !driverId} onClick={() => go(e.id)} variant="outline"
-              className="h-auto min-h-36 flex-col items-start whitespace-normal rounded-lg border-2 border-primary-foreground/20 bg-primary-foreground/5 p-4 text-left text-xl font-bold text-primary-foreground disabled:opacity-40">
+              className="h-auto min-h-36 w-full min-w-0 flex-col items-start whitespace-normal rounded-lg border-2 border-primary-foreground/20 bg-primary-foreground/5 p-4 text-left text-xl font-bold text-primary-foreground disabled:opacity-40">
+              <EquipmentPhoto photoPath={e.photo_path} unitNumber={e.unit_number} className="h-40 w-full rounded-md" />
               {e.unit_number}
               <div className="text-base font-normal">{e.model || e.description}</div>
               <div className="text-sm font-normal">{EQUIPMENT_CLASSES[e.equipment_class as keyof typeof EQUIPMENT_CLASSES]} · {FUEL_TYPES[e.fuel_type as keyof typeof FUEL_TYPES]}</div>

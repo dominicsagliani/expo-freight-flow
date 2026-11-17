@@ -197,6 +197,13 @@
       "when": 1794880978625,
       "tag": "0027_bol_preserve_original_filename",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1794883210665,
+      "tag": "0028_equipment_forklift_photos",
+      "breakpoints": true
     }
   ]
 }
