@@ -244,6 +244,10 @@ function ForkliftMode() {
   return (
     <Shell onExit>
       {header}
+      <div className="px-5 pt-4">
+        <BigButton tone="accent" onClick={() => setQueueScanOpen(true)}><ScanLine className="size-8" />Scan freight to queue</BigButton>
+        <p className="mt-2 text-center text-base text-primary-foreground/70">Automatically sends the job to the next available compatible forklift.</p>
+      </div>
       <div className="flex flex-wrap gap-2 px-5 pt-4">
         {([["current", "Current job"], ["next", `Next jobs (${next.length})`], ["done", `Completed (${done.length})`]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)}
