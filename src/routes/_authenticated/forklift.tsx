@@ -518,7 +518,7 @@ function Shell({ children, onBack, onExit }: { children: React.ReactNode; onBack
   );
 }
 
-function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_number: string; model: string | null; description: string | null; equipment_class: string; fuel_type: string; capacity_lbs: number | null; status: string }[]; onOnline: (id: string) => void }) {
+function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_number: string; model: string | null; description: string | null; equipment_class: string; fuel_type: string; capacity_lbs: number | null; status: string; photo_path: string | null }[]; onOnline: (id: string) => void }) {
   const [eventId, setEventId] = useState("");
   const [driverId, setDriverId] = useState("");
   const { data: drivers = [], error: rosterError } = useQuery(driverRosterQuery(eventId));
