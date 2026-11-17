@@ -178,6 +178,23 @@ export const freightQuery = () =>
       ),
   });
 
+export const billsOfLadingQuery = () =>
+  queryOptions({
+    queryKey: ["bills_of_lading"],
+    queryFn: async () => {
+      const rows = unwrap(
+        await supabase
+          .from("bills_of_lading")
+          .select("*, event:events(id, name), exhibitor:exhibitors(id, company_name), freight:freight_items(id, freight_code, arrival_status, bol_crate_number)")
+          .order("created_at", { ascending: false }),
+      );
+      if (rows.length === 0) return [];
+      const { data, error } = await supabase.storage.from("bol-documents").createSignedUrls(rows.map((row) => row.storage_path), 3600);
+      if (error) throw new Error(error.message);
+      return rows.map((row, index) => ({ ...row, documentUrl: data?.[index]?.signedUrl ?? null }));
+    },
+  });
+
 export const operatorsQuery = () =>
   queryOptions({
     queryKey: ["operators"],
