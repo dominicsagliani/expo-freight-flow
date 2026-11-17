@@ -61,6 +61,7 @@ function ForkliftMode() {
   const [forklift, setForklift] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [view, setView] = useState<View>("home");
+  const [scanTicket, setScanTicket] = useState<string | null>(null);
   const [queueScanOpen, setQueueScanOpen] = useState(false);
   const [tab, setTab] = useState<"current" | "next" | "done">("current");
   const [now, setNow] = useState(Date.now());
