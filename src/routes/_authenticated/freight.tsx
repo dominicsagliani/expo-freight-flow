@@ -59,7 +59,7 @@ function FreightPage() {
         }
       />
       {isStaff(m) && <BolList />}
-      <Panel title={`Registered freight (${freight.length})`}>
+      <Panel title={`Registered freight (${freight.length})`} className="min-w-0">
         {freight.length === 0 ? (
           <EmptyState title="No freight registered" />
         ) : (
