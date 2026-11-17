@@ -4,7 +4,7 @@ import fallbackForklift from "@/assets/hero-forklift-hall.jpg";
 import { cn } from "@/lib/utils";
 
 export function EquipmentPhoto({ photoPath, unitNumber, className }: {
-  photoPath?: string | null;
+  photoPath?: string | null | undefined;
   unitNumber: string;
   className?: string;
 }) {
