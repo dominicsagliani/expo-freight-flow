@@ -130,7 +130,7 @@ function OperatorPage() {
           {dash.done.map((t) => (
             <Link key={t.id} to="/tickets/$ticketId" params={{ ticketId: t.id }} className="flex items-center justify-between gap-2 p-4 text-sm hover:opacity-80">
               <span><span className="font-mono font-semibold">{t.ticket_number}</span> · {t.exhibitor?.company_name} · Booth {t.booth_number ?? "—"}</span>
-              <span className="text-xs text-muted-foreground">{t.ticket_freight.length} crates</span>
+              <span className="text-xs text-muted-foreground">{t.ticket_freight.length} {t.ticket_freight.length === 1 ? "crate" : "crates"}</span>
             </Link>
           ))}
         </Panel>
