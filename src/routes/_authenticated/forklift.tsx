@@ -137,6 +137,7 @@ function ForkliftMode() {
   const open = jobs.filter((j) => j.status !== "completed");
   const done = jobs.filter((j) => j.status === "completed" && j.completed_at && new Date(j.completed_at).toDateString() === today);
   const current = open.find((j) => j.id === selected) ?? open.find((j) => j.status === "in_progress") ?? open[0];
+  const scanJob = jobs.find((j) => j.id === scanTicket) ?? current;
   const next = open.filter((j) => j.id !== current?.id);
   const mySession = current?.work_sessions.find((s) => s.status !== "completed" && s.equipment_id === forklift);
   const tf = current?.ticket_freight ?? [];
