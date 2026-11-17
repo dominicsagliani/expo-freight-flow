@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
-import { AlertTriangle, FileScan, FileText, Plus, QrCode as QrIcon, Search } from "lucide-react";
+import { AlertTriangle, FileScan, MapPin, FileText, Plus, QrCode as QrIcon, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { OpenFreightIssues, ReportFreightIssueDialog } from "@/components/app/freight-issues";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { FreightStatusEditor } from "@/components/app/freight-status-editor";
 import { FreightFormDialog } from "@/components/app/freight-form-dialog";
 import { BolFormDialog } from "@/components/app/bol-form-dialog";
 import { BolList } from "@/components/app/bol-list";
+import { StageCrateDialog, StagingSummary, useLatestStaging } from "@/components/app/freight-staging";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ArrivalBadge } from "@/components/app/badges";
@@ -44,16 +45,17 @@ function FreightPage() {
   const canRegister = isStaff(m) || (m.role === "exhibitor" && !!m.exhibitorId);
   const openEvents = events.filter((e) => e.status !== "closed");
   const operatorish = isStaff(m) || m.role === "operator";
+  const staging = useLatestStaging(operatorish);
   const [q, setQ] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
   const shown = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return freight;
     return freight.filter((f) =>
-      [f.freight_code, f.exhibitor?.company_name, f.booth_number, f.description, f.storage_location, f.bol?.pro_number, f.bol?.carrier_name, f.event?.name]
+      [f.freight_code, f.exhibitor?.company_name, f.booth_number, f.description, f.storage_location, f.bol?.pro_number, f.bol?.carrier_name, f.event?.name, f.bol_id, staging.get(f.id)?.area, staging.get(f.id)?.landmark, staging.get(f.id)?.location_note]
         .some((v) => v?.toLowerCase().includes(t)),
     );
-  }, [freight, q]);
+  }, [freight, q, staging]);
   const tile = "flex h-full w-full flex-col items-start gap-1 rounded-md border border-border bg-card p-4 text-left shadow-card transition-colors hover:border-teal";
   return (
     <div className="grid min-w-0 gap-6">
@@ -129,7 +131,11 @@ function FreightPage() {
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{fmtWeight(f.weight_lbs)}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{fmtDims(f.length_in, f.width_in, f.height_in)}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{f.storage_location ?? "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      <div>{f.storage_location ?? "—"}</div>
+                      <StagingSummary row={staging.get(f.id)} />
+                      {isStaff(m) && m.organizationId && <StageCrateDialog freightId={f.id} freightCode={f.freight_code} orgId={m.organizationId} trigger={<Button variant="outline" size="sm" className="mt-1"><MapPin />{staging.get(f.id) ? "Move" : "Stage"}</Button>} />}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <ArrivalBadge status={f.arrival_status} />

@@ -19,6 +19,7 @@ import { CallInDialog } from "@/components/app/call-in-dialog";
 import { driverState, REQUEST_SOURCES } from "@/lib/dispatch";
 import { FleetRadar } from "@/components/app/fleet-radar";
 import { DockQueue } from "@/components/app/dock-queue";
+import { AwaitingDelivery } from "@/components/app/awaiting-delivery";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
@@ -68,6 +69,7 @@ function Dispatch() {
   const { data: tickets } = useSuspenseQuery({ ...ticketsQuery(), refetchInterval: 15_000 });
   const { data: operators } = useSuspenseQuery({ ...operatorsQuery(), refetchInterval: 15_000 });
   const { data: equipment } = useSuspenseQuery(equipmentQuery());
+  const { data: freight } = useSuspenseQuery(freightQuery());
   const { data: queue = [] } = useQuery({ queryKey: ["queue-drivers"], refetchInterval: 10_000, queryFn: async () => {
     const { data, error } = await supabase.from("queue_drivers").select("user_id, event_id, operator_id, equipment_id, ready, ready_since, heartbeat_at, operator:operators(full_name), equipment:equipment(unit_number, equipment_class, capacity_lbs, fuel_type), event:events(name)");
     if (error) throw new Error(error.message); return data ?? [];
@@ -104,6 +106,7 @@ function Dispatch() {
       </div>
       <DockQueue eventId={eventId} tickets={eventTickets} />
       {staff && <div className="-mb-3 flex justify-end"><Button size="sm" variant="outline" onClick={dispatch} disabled={sending || !event || event.status === "closed"}><Send />{sending ? "Checking…" : "Dispatch waiting"}</Button></div>}
+      {staff && <AwaitingDelivery eventId={eventId} freight={freight} />}
       <FleetRadar drivers={drivers} now={now} />
       <DispatchLive eventId={eventId} />
       {event && callOpen && <CallInDialog key={eventId} eventId={eventId} eventName={event.name} open={callOpen} onOpenChange={setCallOpen} />}

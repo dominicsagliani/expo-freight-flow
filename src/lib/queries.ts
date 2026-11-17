@@ -181,6 +181,8 @@ export const freightQuery = () =>
       ),
   });
 
+export type FreightListItem = Awaited<ReturnType<NonNullable<ReturnType<typeof freightQuery>["queryFn"]>>>[number];
+
 export const billsOfLadingQuery = () =>
   queryOptions({
     queryKey: ["bills_of_lading"],

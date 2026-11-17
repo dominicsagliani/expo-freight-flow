@@ -777,6 +777,70 @@ export type Database = {
           },
         ]
       }
+      freight_staging: {
+        Row: {
+          area: string
+          event_id: string | null
+          freight_id: string
+          id: string
+          landmark: string | null
+          location_note: string | null
+          organization_id: string
+          photo_path: string | null
+          staged_at: string
+          staged_by: string | null
+          staged_by_name: string | null
+        }
+        Insert: {
+          area: string
+          event_id?: string | null
+          freight_id: string
+          id?: string
+          landmark?: string | null
+          location_note?: string | null
+          organization_id: string
+          photo_path?: string | null
+          staged_at?: string
+          staged_by?: string | null
+          staged_by_name?: string | null
+        }
+        Update: {
+          area?: string
+          event_id?: string | null
+          freight_id?: string
+          id?: string
+          landmark?: string | null
+          location_note?: string | null
+          organization_id?: string
+          photo_path?: string | null
+          staged_at?: string
+          staged_by?: string | null
+          staged_by_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freight_staging_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "freight_staging_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freight_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "freight_staging_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -2004,6 +2068,15 @@ export type Database = {
       create_my_organization: { Args: { _name: string }; Returns: string }
       delete_event: { Args: { _event: string }; Returns: undefined }
       dispatch_next_available: { Args: { _event: string }; Returns: undefined }
+      dispatch_staged_crates: {
+        Args: {
+          _destination?: string
+          _freight: string[]
+          _notes?: string
+          _priority?: Database["public"]["Enums"]["ticket_priority"]
+        }
+        Returns: string
+      }
       driver_go_online: {
         Args: { _driver: string; _equipment: string; _event: string }
         Returns: string

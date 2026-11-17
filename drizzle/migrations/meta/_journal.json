@@ -225,6 +225,13 @@
       "when": 1794885558770,
       "tag": "0031_hold_rpc_flag_reset",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1794951513067,
+      "tag": "0032_bone_yard_staging_and_crate_dispatch",
+      "breakpoints": true
     }
   ]
 }
