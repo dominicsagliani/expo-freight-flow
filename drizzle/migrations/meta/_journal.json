@@ -162,6 +162,13 @@
       "when": 1794614720455,
       "tag": "0022_worker_roster_driver_selection",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794878357990,
+      "tag": "0023_scan_freight_forced_queue",
+      "breakpoints": true
     }
   ]
 }

@@ -37,3 +37,4 @@
 - [x] Hourly labor rates per event, dispatcher labor hours, auto charge, exhibitor billing report, admin charge adjustments
 - [x] Interactive event floor plans: PDF/PNG/JPG upload per event, zoom/pan viewer, admin booth marker placement, status-colored markers, filters, booth detail panel with jobs/freight/delivery history, live refresh
 - [x] Pay at time of service: contractor payment link in Settings, auto-emailed pay-now receipt on job completion, resend + mark paid on job page
+- [ ] Scan-to-queue: scanning freight creates/reuses its delivery job, force-dispatches the next compatible available forklift, and shows the job in that driver's personal queue
