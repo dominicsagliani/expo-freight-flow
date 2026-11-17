@@ -26,6 +26,7 @@ import { Route as AuthenticatedOperatorsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPlanRequestsRouteImport } from './routes/_authenticated/plan-requests'
 import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedBolLabelsBolIdRouteImport } from './routes/_authenticated/bol-labels.$bolId'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
 import { Route as AuthenticatedLabelsFreightIdRouteImport } from './routes/_authenticated/labels.$freightId'
@@ -121,6 +122,12 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBolLabelsBolIdRoute =
+  AuthenticatedBolLabelsBolIdRouteImport.update({
+    id: '/bol-labels/$bolId',
+    path: '/bol-labels/$bolId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEventsIndexRoute =
   AuthenticatedEventsIndexRouteImport.update({
     id: '/events/',
@@ -191,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/plan-requests': typeof AuthenticatedPlanRequestsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/bol-labels/$bolId': typeof AuthenticatedBolLabelsBolIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
   '/scan/$token': typeof AuthenticatedScanTokenRoute
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
   '/plan-requests': typeof AuthenticatedPlanRequestsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/bol-labels/$bolId': typeof AuthenticatedBolLabelsBolIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
   '/scan/$token': typeof AuthenticatedScanTokenRoute
@@ -247,6 +256,7 @@ export interface FileRoutesById {
   '/_authenticated/plan-requests': typeof AuthenticatedPlanRequestsRoute
   '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/bol-labels/$bolId': typeof AuthenticatedBolLabelsBolIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
   '/_authenticated/scan/$token': typeof AuthenticatedScanTokenRoute
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/plan-requests'
     | '/plans'
     | '/settings'
+    | '/bol-labels/$bolId'
     | '/events/$eventId'
     | '/labels/$freightId'
     | '/scan/$token'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/plan-requests'
     | '/plans'
     | '/settings'
+    | '/bol-labels/$bolId'
     | '/events/$eventId'
     | '/labels/$freightId'
     | '/scan/$token'
@@ -331,6 +343,7 @@ export interface FileRouteTypes {
     | '/_authenticated/plan-requests'
     | '/_authenticated/plans'
     | '/_authenticated/settings'
+    | '/_authenticated/bol-labels/$bolId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/labels/$freightId'
     | '/_authenticated/scan/$token'
@@ -472,6 +485,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bol-labels/$bolId': {
+      id: '/_authenticated/bol-labels/$bolId'
+      path: '/bol-labels/$bolId'
+      fullPath: '/bol-labels/$bolId'
+      preLoaderRoute: typeof AuthenticatedBolLabelsBolIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/events/': {
       id: '/_authenticated/events/'
       path: '/events'
@@ -552,6 +572,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlanRequestsRoute: typeof AuthenticatedPlanRequestsRoute
   AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedBolLabelsBolIdRoute: typeof AuthenticatedBolLabelsBolIdRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
   AuthenticatedLabelsFreightIdRoute: typeof AuthenticatedLabelsFreightIdRoute
   AuthenticatedScanTokenRoute: typeof AuthenticatedScanTokenRoute
@@ -575,6 +596,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlanRequestsRoute: AuthenticatedPlanRequestsRoute,
   AuthenticatedPlansRoute: AuthenticatedPlansRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedBolLabelsBolIdRoute: AuthenticatedBolLabelsBolIdRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
   AuthenticatedLabelsFreightIdRoute: AuthenticatedLabelsFreightIdRoute,
   AuthenticatedScanTokenRoute: AuthenticatedScanTokenRoute,
