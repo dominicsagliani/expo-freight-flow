@@ -39,4 +39,4 @@
 - [x] Pay at time of service: contractor payment link in Settings, auto-emailed pay-now receipt on job completion, resend + mark paid on job page
 - [x] Scan-to-queue: scanning freight creates/reuses its delivery job, force-dispatches the next compatible available forklift, and shows the job in that driver's personal queue
 - [x] BOL receiving: private PDF/photo upload, manually verified shipment details, one BOL linked to multiple unique crates, automatic batch label printing, saved-document dashboard and reprinting
-- [ ] AI BOL extraction: securely read private PDFs/photos, prefill shipment and crate details for staff review, and test the real upload-to-extraction flow without auto-saving freight
+- [x] AI BOL extraction: securely read private PDFs/photos, prefill shipment and crate details for staff review, and test the real upload-to-extraction flow without auto-saving freight
