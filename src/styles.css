@@ -196,6 +196,15 @@
 @media print {
   @page { size: 4in 3in; margin: 0; }
   body * { visibility: hidden; }
+  main { position: static !important; }
   .print-label, .print-label * { visibility: visible; }
-  .print-label { position: fixed; inset: 0; margin: 0; border-radius: 0; box-shadow: none; }
+  .print-label { position: fixed; inset: 0; width: 4in; max-width: none; margin: 0; border-radius: 0; box-shadow: none; }
+  .print-label-sheet { position: absolute; inset: 0; display: block; width: 4in; margin: 0; padding: 0; }
+  .print-label-sheet .print-label {
+    position: relative;
+    inset: auto;
+    break-after: page;
+    page-break-after: always;
+  }
+  .print-label-sheet .print-label:last-child { break-after: auto; page-break-after: auto; }
 }

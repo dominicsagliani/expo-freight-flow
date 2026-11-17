@@ -82,6 +82,97 @@ export type Database = {
           },
         ]
       }
+      bills_of_lading: {
+        Row: {
+          booth_number: string | null
+          carrier_name: string | null
+          consignee_name: string | null
+          created_at: string
+          declared_pieces: number
+          description: string | null
+          event_id: string
+          exhibitor_id: string
+          file_size_bytes: number
+          id: string
+          intake_key: string
+          mime_type: string
+          organization_id: string
+          original_filename: string
+          pro_number: string | null
+          received_by: string | null
+          shipper_name: string | null
+          special_instructions: string | null
+          storage_path: string
+          total_weight_lbs: number | null
+        }
+        Insert: {
+          booth_number?: string | null
+          carrier_name?: string | null
+          consignee_name?: string | null
+          created_at?: string
+          declared_pieces: number
+          description?: string | null
+          event_id: string
+          exhibitor_id: string
+          file_size_bytes: number
+          id?: string
+          intake_key?: string
+          mime_type: string
+          organization_id: string
+          original_filename: string
+          pro_number?: string | null
+          received_by?: string | null
+          shipper_name?: string | null
+          special_instructions?: string | null
+          storage_path: string
+          total_weight_lbs?: number | null
+        }
+        Update: {
+          booth_number?: string | null
+          carrier_name?: string | null
+          consignee_name?: string | null
+          created_at?: string
+          declared_pieces?: number
+          description?: string | null
+          event_id?: string
+          exhibitor_id?: string
+          file_size_bytes?: number
+          id?: string
+          intake_key?: string
+          mime_type?: string
+          organization_id?: string
+          original_filename?: string
+          pro_number?: string | null
+          received_by?: string | null
+          shipper_name?: string | null
+          special_instructions?: string | null
+          storage_path?: string
+          total_weight_lbs?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bills_of_lading_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bills_of_lading_exhibitor_id_fkey"
+            columns: ["exhibitor_id"]
+            isOneToOne: false
+            referencedRelation: "exhibitors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bills_of_lading_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booth_markers: {
         Row: {
           booth_number: string
@@ -519,6 +610,8 @@ export type Database = {
         Row: {
           arrival_status: Database["public"]["Enums"]["arrival_status"]
           arrived_at: string | null
+          bol_crate_number: number | null
+          bol_id: string | null
           booth_number: string | null
           created_at: string
           created_by: string | null
@@ -541,6 +634,8 @@ export type Database = {
         Insert: {
           arrival_status?: Database["public"]["Enums"]["arrival_status"]
           arrived_at?: string | null
+          bol_crate_number?: number | null
+          bol_id?: string | null
           booth_number?: string | null
           created_at?: string
           created_by?: string | null
@@ -563,6 +658,8 @@ export type Database = {
         Update: {
           arrival_status?: Database["public"]["Enums"]["arrival_status"]
           arrived_at?: string | null
+          bol_crate_number?: number | null
+          bol_id?: string | null
           booth_number?: string | null
           created_at?: string
           created_by?: string | null
@@ -583,6 +680,13 @@ export type Database = {
           width_in?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "freight_items_bol_id_fkey"
+            columns: ["bol_id"]
+            isOneToOne: false
+            referencedRelation: "bills_of_lading"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "freight_items_event_id_fkey"
             columns: ["event_id"]
@@ -1931,6 +2035,28 @@ export type Database = {
       }
       queue_dispatch: { Args: { _event: string }; Returns: undefined }
       queue_poll: { Args: { _ready?: boolean }; Returns: string }
+      receive_bill_of_lading: {
+        Args: {
+          _booth: string
+          _carrier: string
+          _consignee: string
+          _crates: Json
+          _declared_pieces: number
+          _description: string
+          _event: string
+          _exhibitor: string
+          _file_size: number
+          _filename: string
+          _intake_key: string
+          _mime: string
+          _pro: string
+          _shipper: string
+          _special: string
+          _storage_path: string
+          _total_weight: number
+        }
+        Returns: Json
+      }
       reset_operator_pin: { Args: { _operator: string }; Returns: undefined }
       reset_org_drivers: { Args: { _org: string }; Returns: number }
       resolve_issue: { Args: { _update: string }; Returns: undefined }

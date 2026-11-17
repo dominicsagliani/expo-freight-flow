@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, QrCode as QrIcon } from "lucide-react";
+import { FileScan, FileText, Plus, QrCode as QrIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FreightStatusEditor } from "@/components/app/freight-status-editor";
 import { FreightFormDialog } from "@/components/app/freight-form-dialog";
+import { BolFormDialog } from "@/components/app/bol-form-dialog";
+import { BolList } from "@/components/app/bol-list";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ArrivalBadge } from "@/components/app/badges";
-import { eventExhibitorsQuery, eventsQuery, freightQuery, isStaff, membershipQuery } from "@/lib/queries";
+import { billsOfLadingQuery, eventExhibitorsQuery, eventsQuery, freightQuery, isStaff, membershipQuery } from "@/lib/queries";
 import { FREIGHT_TYPE_LABEL } from "@/lib/labels";
 import { fmtDateTime, fmtDims, fmtWeight } from "@/lib/format";
 
@@ -26,6 +28,7 @@ export const Route = createFileRoute("/_authenticated/freight")({
       queryClient.ensureQueryData(freightQuery()),
       queryClient.ensureQueryData(eventsQuery()),
       queryClient.ensureQueryData(eventExhibitorsQuery()),
+      queryClient.ensureQueryData(billsOfLadingQuery()),
     ]),
   component: FreightPage,
 });
@@ -36,22 +39,27 @@ function FreightPage() {
   const { data: events } = useSuspenseQuery(eventsQuery());
   const { data: booths } = useSuspenseQuery(eventExhibitorsQuery());
   const canRegister = isStaff(m) || (m.role === "exhibitor" && !!m.exhibitorId);
+  const openEvents = events.filter((e) => e.status !== "closed");
   return (
-    <div className="grid gap-6">
+    <div className="grid min-w-0 gap-6">
       <PageHeader eyebrow="Freight identification" title="Freight Management" description="Every crate and pallet on file for your events."
         actions={
-          canRegister ? (
-            <FreightFormDialog
-              events={events.filter((e) => e.status !== "closed")}
-              booths={booths}
-              lockedExhibitorId={m.role === "exhibitor" ? m.exhibitorId : null}
-              canSetStatus={isStaff(m)}
-              trigger={<Button variant="teal"><Plus /> Register freight</Button>}
-            />
-          ) : null
+          <>
+            {isStaff(m) && <BolFormDialog events={openEvents} booths={booths} trigger={<Button variant="teal"><FileScan /> BOL check-in</Button>} />}
+            {canRegister && (
+              <FreightFormDialog
+                events={openEvents}
+                booths={booths}
+                lockedExhibitorId={m.role === "exhibitor" ? m.exhibitorId : null}
+                canSetStatus={isStaff(m)}
+                trigger={<Button variant="outline"><Plus /> Register freight</Button>}
+              />
+            )}
+          </>
         }
       />
-      <Panel title={`Registered freight (${freight.length})`}>
+      {isStaff(m) && <BolList />}
+      <Panel title={`Registered freight (${freight.length})`} className="min-w-0">
         {freight.length === 0 ? (
           <EmptyState title="No freight registered" />
         ) : (
@@ -82,6 +90,7 @@ function FreightPage() {
                       <div className="text-xs text-muted-foreground">
                         {FREIGHT_TYPE_LABEL[f.freight_type]} · {f.pieces} pc
                       </div>
+                      {f.bol_id && <div className="mt-1 flex items-center gap-1 text-xs text-status-progress"><FileText className="size-3" /> BOL attached{f.bol_crate_number ? ` · Crate ${f.bol_crate_number}` : ""}</div>}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{fmtWeight(f.weight_lbs)}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{fmtDims(f.length_in, f.width_in, f.height_in)}</td>
