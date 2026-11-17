@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 from PIL import Image, ImageDraw
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, expect
 
 WORK = Path('/tmp/browser/bol-receiving')
 WORK.mkdir(parents=True, exist_ok=True)
@@ -45,16 +45,18 @@ async def main():
             await camera_input.set_input_files(str(PHOTO))
             await dialog.get_by_text(PHOTO.name, exact=True).wait_for()
             await dialog.get_by_alt_text('Bill of Lading preview').wait_for()
-            await dialog.get_by_text('Ready — document uploads when you check in', exact=True).wait_for()
+            await expect(dialog.get_by_role('button', name='Remove', exact=True)).to_be_enabled(timeout=180000)
             await dialog.get_by_role('button', name='Remove', exact=True).click()
             await dialog.get_by_text('No document selected. You can remove or replace it before check-in.', exact=True).wait_for()
             await dialog.locator('input[accept*="application/pdf"]').set_input_files(str(PHOTO))
             await dialog.get_by_alt_text('Bill of Lading preview').wait_for()
+            await expect(dialog.get_by_role('button', name='Replace document', exact=True)).to_be_enabled(timeout=180000)
             async with page.expect_file_chooser() as chooser:
                 await dialog.get_by_role('button', name='Replace document', exact=True).click()
             await (await chooser.value).set_files(str(PDF))
             await dialog.get_by_text(PDF.name, exact=True).wait_for()
             await dialog.locator('object[aria-label="Bill of Lading PDF preview"]').wait_for()
+            await expect(dialog.get_by_role('button', name='Read with AI', exact=True)).to_be_enabled(timeout=180000)
 
             combos = dialog.get_by_role('combobox')
             await combos.nth(1).click()
