@@ -26,6 +26,7 @@ async def main():
 
         if not await page.get_by_role('button', name='Offline', exact=True).count():
             await page.wait_for_timeout(3000)
+            print('EVENT RESULT', await page.evaluate("""async () => { const {supabase:db}=await import('/src/integrations/supabase/client.ts'); const auth=await db.auth.getUser(); const events=await db.from('events').select('id,name,status').neq('status','closed'); return {user:auth.data.user?.id,events}; }"""))
             print('DRIVER OPTIONS', await page.locator('select').all_inner_texts())
             await page.screenshot(path=str(SCREENSHOTS / 'driver-options.png'))
             await page.get_by_label('Driver', exact=True).select_option(label='Dominic Sagliani')
