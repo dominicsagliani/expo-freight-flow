@@ -183,6 +183,13 @@
       "when": 1794878809527,
       "tag": "0025_scan_freight_queue_lookup_fix",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794880910710,
+      "tag": "0026_bol_receiving_shipments",
+      "breakpoints": true
     }
   ]
 }
