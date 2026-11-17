@@ -31,7 +31,7 @@ function OperatorPage() {
   const [open, setOpen] = useState(false);
   useRealtimeRefresh(["tickets", "ticket_freight"], [["operator-jobs"]]);
 
-  const { data: jobs = [] } = useQuery({
+  const { data: dash = { open: [], done: [] } } = useQuery({
     queryKey: ["operator-jobs"],
     refetchInterval: 10_000,
     queryFn: async () => {
@@ -45,7 +45,15 @@ function OperatorPage() {
         ...(roles ?? []).map((role) => role.operator_id),
         ...(current ?? []).map((operator) => operator.operator_id),
       ].filter(Boolean))] as string[];
-      if (!ids.length) return [];
+      if (!ids.length) return { open: [], done: [] };
+      const since = new Date(); since.setHours(0, 0, 0, 0);
+      const { data: done } = await supabase
+        .from("tickets")
+        .select("id, ticket_number, booth_number, completed_at, exhibitor:exhibitors(company_name), ticket_freight(freight_id)")
+        .in("assigned_operator_id", ids)
+        .eq("status", "completed")
+        .gte("completed_at", since.toISOString())
+        .order("completed_at", { ascending: false });
       const { data, error } = await supabase
         .from("tickets")
         .select("id, ticket_number, booth_number, status, priority, service_type, destination, exhibitor:exhibitors(company_name), equipment:equipment!tickets_assigned_equipment_id_fkey(unit_number), ticket_freight(freight_id, picked_up_at, delivered_at)")
@@ -53,13 +61,31 @@ function OperatorPage() {
         .in("status", OPEN_STATUSES)
         .order("requested_at");
       if (error) throw new Error(error.message);
-      return data;
+      return { open: data ?? [], done: done ?? [] };
     },
   });
 
+  const jobs = dash.open;
+  const allCrates = jobs.flatMap((j) => j.ticket_freight);
+  const loaded = allCrates.filter((f) => f.picked_up_at && !f.delivered_at).length;
+  const doneCrates = dash.done.reduce((n, t) => n + t.ticket_freight.length, 0);
+  const stats = [
+    { label: "Open jobs", value: jobs.length },
+    { label: "Crates on forks", value: loaded },
+    { label: "Jobs done today", value: dash.done.length },
+    { label: "Crates delivered today", value: doneCrates },
+  ];
   return (
     <div className="mx-auto grid max-w-xl gap-6">
-      <PageHeader eyebrow="Driver" title="My delivery queue" description="Your next stops, in dispatch order. New jobs appear here automatically." />
+      <PageHeader eyebrow="Driver" title="My dashboard" description="Your jobs, crates and progress. New jobs appear here automatically." />
+      <div className="grid grid-cols-2 gap-3">
+        {stats.map((s) => (
+          <div key={s.label} className="rounded-lg border bg-card p-4">
+            <div className="text-2xl font-bold">{s.value}</div>
+            <div className="text-xs text-muted-foreground">{s.label}</div>
+          </div>
+        ))}
+      </div>
       <Button size="lg" className="h-14 text-base" onClick={() => setOpen(true)}>
         <ScanLine className="mr-2 size-5" /> Scan freight to queue
       </Button>
@@ -78,11 +104,37 @@ function OperatorPage() {
                 <PriorityBadge priority={job.priority} /> {SERVICE_LABEL[job.service_type]}{job.destination ? ` → ${job.destination}` : ""} · {job.ticket_freight.length} freight
               </div>
             </Link>
+            {job.ticket_freight.length > 0 && (() => {
+              const total = job.ticket_freight.length;
+              const delivered = job.ticket_freight.filter((f) => f.delivered_at).length;
+              const picked = job.ticket_freight.filter((f) => f.picked_up_at).length;
+              return (
+                <div className="grid gap-1">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{picked}/{total} picked up</span><span>{delivered}/{total} delivered</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${(delivered / total) * 100}%` }} />
+                  </div>
+                </div>
+              );
+            })()}
             {job.status === "in_progress" && <TicketPhotos ticketId={job.id} canUpload />}
             <OperatorJobActions ticketId={job.id} status={job.status} />
           </div>
         ))}
       </Panel>
+
+      {dash.done.length > 0 && (
+        <Panel title="Completed today" bodyClassName="divide-y">
+          {dash.done.map((t) => (
+            <Link key={t.id} to="/tickets/$ticketId" params={{ ticketId: t.id }} className="flex items-center justify-between gap-2 p-4 text-sm hover:opacity-80">
+              <span><span className="font-mono font-semibold">{t.ticket_number}</span> · {t.exhibitor?.company_name} · Booth {t.booth_number ?? "—"}</span>
+              <span className="text-xs text-muted-foreground">{t.ticket_freight.length} crates</span>
+            </Link>
+          ))}
+        </Panel>
+      )}
 
       <FreightQueueScanner
         open={open}

@@ -43,7 +43,7 @@ const operations: NavItem[] = [
   { title: "Exhibitors", url: "/exhibitors", icon: Building2, roles: STAFF },
   { title: "Freight Management", url: "/freight", icon: Package, roles: WORK },
   { title: "Material Handling Tickets", url: "/tickets", icon: ClipboardList, roles: WORK },
-  { title: "My Jobs & Scan", url: "/operator", icon: ScanLine, roles: ["operator", ...STAFF] },
+  { title: "My Driver Dashboard", url: "/operator", icon: ScanLine, roles: ["operator", ...STAFF] },
   { title: "Forklift Mode", url: "/forklift", icon: Forklift, roles: ["operator", ...STAFF] },
   { title: "Dispatch", url: "/dispatch", icon: RouteIcon, roles: STAFF },
   { title: "Floor plan", url: "/floor-plan", icon: Map, roles: STAFF },
