@@ -25,6 +25,9 @@ async def main():
         await page.goto('http://localhost:8080/forklift', wait_until='domcontentloaded')
 
         if not await page.get_by_role('button', name='Offline', exact=True).count():
+            await page.wait_for_timeout(3000)
+            print('DRIVER OPTIONS', await page.locator('select').all_inner_texts())
+            await page.screenshot(path=str(SCREENSHOTS / 'driver-options.png'))
             await page.get_by_label('Driver', exact=True).select_option(label='Dominic Sagliani')
             await page.get_by_role('button').filter(has_text='FL-01').first.click()
         await page.get_by_role('button', name='Offline', exact=True).wait_for()
