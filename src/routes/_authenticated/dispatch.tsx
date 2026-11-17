@@ -146,7 +146,7 @@ function JobCard({ t, operators, equipment, staff }: {
   const setHold = async (hold: boolean) => {
     const reason = hold ? prompt(`Why is ${t.ticket_number} on hold? (optional)`) : null;
     if (hold && reason === null) return;
-    const { error } = await supabase.rpc("set_ticket_hold", { _ticket: t.id, _hold: hold, _reason: reason ?? undefined });
+    const { error } = await supabase.rpc("set_ticket_hold", { _ticket: t.id, _hold: hold, ...(reason ? { _reason: reason } : {}) });
     if (error) { toast.error(error.message); return; }
     toast.success(hold ? "Job on hold — it won't be auto-assigned" : "Hold released — job is back in the queue");
     qc.invalidateQueries({ queryKey: ["tickets"] });
