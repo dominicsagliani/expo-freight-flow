@@ -8,7 +8,7 @@
         "@ai-sdk/openai": "^4.0.118",
         "@hookform/resolvers": "^5.2.2",
         "@lovable.dev/cloud-auth-js": "^1.2.0",
-        "@lovable.dev/email-js": "0.7.0",
+        "@lovable.dev/email-js": "0.8.0",
         "@lovable.dev/webhooks-js": "0.0.3",
         "@radix-ui/react-accordion": "^1.2.12",
         "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -272,7 +272,7 @@
 
     "@lovable.dev/cloud-auth-js": ["@lovable.dev/cloud-auth-js@1.2.5", "", {}, "sha512-9U6Lvx9DFWyit6/nx/1rg3BeaEwaaBK4/9MvSU37xh+FHpUcg3vfAjtv/DAUDM8Myp0b5lg99f3sHug5I67fwQ=="],
 
-    "@lovable.dev/email-js": ["@lovable.dev/email-js@0.7.0", "", { "dependencies": { "@lovable.dev/webhooks-js": "0.0.3" }, "peerDependencies": { "@react-email/render": ">=1.0.0", "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["@react-email/render", "react", "react-dom"] }, "sha512-tcSV86W8Bx7p5y2ODg5C+DeJTGs0k/UWye32OOFITPGz0lMV4CTujlmLC74tk4gl3O6Uqo3fQnqeircuzme3IQ=="],
+    "@lovable.dev/email-js": ["@lovable.dev/email-js@0.8.0", "", { "dependencies": { "@lovable.dev/webhooks-js": "0.0.3" }, "peerDependencies": { "@react-email/render": ">=1.0.0", "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["@react-email/render", "react", "react-dom"] }, "sha512-O4SRb9Oajjpk1fuNbFKYRUh6+PmD8pjRI3R664ZV+lpmfhwaDvr5SYdu92clB0dC2n9IVdlv6DTjXi74pM4PJQ=="],
 
     "@lovable.dev/vite-tanstack-config": ["@lovable.dev/vite-tanstack-config@2.27.1", "", { "dependencies": { "@tanstack/devtools-vite": "^0.8.1", "lightningcss": "^1.30.0" }, "peerDependencies": { "@tailwindcss/vite": ">=4.0.0", "@tanstack/react-start": ">=1.100.0", "@vitejs/plugin-react": ">=4.0.0", "nitro": ">=3.0.260603-beta", "vite": ">=5.0.0 <9.0.0", "vite-tsconfig-paths": ">=6.0.0" }, "optionalPeers": ["nitro"] }, "sha512-200v7wa1/YeE5mrI+Q4dFNcYkCZQxp6o1jKzUVQQBXyZ3BHLPJ0+ghVSmneFGmpKAAGWpCmDLklTpoM6PZ6utw=="],
 
