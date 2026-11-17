@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileScan, FileText, Plus, QrCode as QrIcon } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { AlertTriangle, FileScan, FileText, Plus, QrCode as QrIcon, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { OpenFreightIssues, ReportFreightIssueDialog } from "@/components/app/freight-issues";
 import { Button } from "@/components/ui/button";
 import { FreightStatusEditor } from "@/components/app/freight-status-editor";
 import { FreightFormDialog } from "@/components/app/freight-form-dialog";
@@ -40,6 +43,18 @@ function FreightPage() {
   const { data: booths } = useSuspenseQuery(eventExhibitorsQuery());
   const canRegister = isStaff(m) || (m.role === "exhibitor" && !!m.exhibitorId);
   const openEvents = events.filter((e) => e.status !== "closed");
+  const operatorish = isStaff(m) || m.role === "operator";
+  const [q, setQ] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+  const shown = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return freight;
+    return freight.filter((f) =>
+      [f.freight_code, f.exhibitor?.company_name, f.booth_number, f.description, f.storage_location, f.bol?.pro_number, f.bol?.carrier_name, f.event?.name]
+        .some((v) => v?.toLowerCase().includes(t)),
+    );
+  }, [freight, q]);
+  const tile = "flex h-full w-full flex-col items-start gap-1 rounded-md border border-border bg-card p-4 text-left shadow-card transition-colors hover:border-teal";
   return (
     <div className="grid min-w-0 gap-6">
       <PageHeader eyebrow="Freight identification" title="Freight Management" description="Every crate and pallet on file for your events."
@@ -58,10 +73,30 @@ function FreightPage() {
           </>
         }
       />
+      {isStaff(m) && (
+        <section aria-label="Receiving" className="grid gap-3 sm:grid-cols-3">
+          <BolFormDialog events={openEvents} booths={booths} trigger={
+            <button type="button" className={tile}><FileScan className="size-6 text-teal" /><span className="font-display text-base font-semibold">New freight check-in</span><span className="text-xs text-muted-foreground">Upload the BOL, create crates and print labels</span></button>
+          } />
+          <button type="button" className={tile} onClick={() => { searchRef.current?.focus(); searchRef.current?.scrollIntoView({ block: "center", behavior: "smooth" }); }}>
+            <Search className="size-6 text-teal" /><span className="font-display text-base font-semibold">Find existing freight</span><span className="text-xs text-muted-foreground">Search by exhibitor, booth, crate ID or PRO</span>
+          </button>
+          {m.organizationId && <ReportFreightIssueDialog freight={freight} orgId={m.organizationId} trigger={
+            <button type="button" className={tile}><AlertTriangle className="size-6 text-destructive" /><span className="font-display text-base font-semibold">Report freight issue</span><span className="text-xs text-muted-foreground">Damage, missing pieces or wrong booth, with a photo</span></button>
+          } />}
+        </section>
+      )}
+      {operatorish && <OpenFreightIssues canResolve={isStaff(m)} />}
       {isStaff(m) && <BolList />}
-      <Panel title={`Registered freight (${freight.length})`} className="min-w-0">
-        {freight.length === 0 ? (
-          <EmptyState title="No freight registered" />
+      <Panel title={`Registered freight (${q ? `${shown.length} of ${freight.length}` : freight.length})`} className="min-w-0">
+        <div className="border-b border-border p-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find my crate — exhibitor, booth, crate ID, PRO, location…" aria-label="Find freight" className="pl-8" />
+          </div>
+        </div>
+        {shown.length === 0 ? (
+          <EmptyState title={q ? "No freight matches that search" : "No freight registered"} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -78,7 +113,7 @@ function FreightPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {freight.map((f) => (
+                {shown.map((f) => (
                   <tr key={f.id}>
                     <td className="px-4 py-3 font-mono text-xs font-medium">{f.freight_code}</td>
                     <td className="px-4 py-3">
@@ -90,7 +125,7 @@ function FreightPage() {
                       <div className="text-xs text-muted-foreground">
                         {FREIGHT_TYPE_LABEL[f.freight_type]} · {f.pieces} pc
                       </div>
-                      {f.bol_id && <div className="mt-1 flex items-center gap-1 text-xs text-status-progress"><FileText className="size-3" /> BOL attached{f.bol_crate_number ? ` · Crate ${f.bol_crate_number}` : ""}</div>}
+                      {f.bol_id && <div className="mt-1 flex items-center gap-1 text-xs text-status-progress"><FileText className="size-3" /> BOL attached{f.bol_crate_number ? ` · Crate ${f.bol_crate_number}` : ""}{f.bol?.pro_number ? ` · PRO ${f.bol.pro_number}` : ""}</div>}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{fmtWeight(f.weight_lbs)}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{fmtDims(f.length_in, f.width_in, f.height_in)}</td>
