@@ -51,7 +51,7 @@ export async function extractBolWithAi({ apiKey, pages, exhibitors }: {
       instructions,
       Output.object({ schema: extractionSchema }),
     );
-    const extracted = await result.output;
+    const extracted = await result.output as z.infer<typeof extractionSchema>;
     return { ok: true, result: {
       exhibitorId: extracted.exhibitor_id,
       carrierName: extracted.carrier_name,

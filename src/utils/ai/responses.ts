@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, type ModelMessage, type Output as OutputInterface } from "ai";
+import { streamText, type ModelMessage, type OutputInterface } from "ai";
 import { createLovableAiGatewayRunIdFetch } from "./run-id.ts";
 
 export function createResponsesCall(
