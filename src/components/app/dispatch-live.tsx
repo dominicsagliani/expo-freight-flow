@@ -99,34 +99,55 @@ export function DispatchLive({ eventId }: { eventId: string }) {
   );
 }
 
-/** Lets dispatch add extra operators (each on their own forklift) to a ticket. */
-export function CrewPicker({ ticketId, operators, assignedId }: { ticketId: string; operators: { id: string; full_name: string }[]; assignedId: string | null }) {
+/** Lets dispatch add up to two extra driver + forklift pairs (three forklifts total) to a job. */
+export function CrewPicker({ ticketId, operators, equipment, assignedId, assignedEquipmentId }: {
+  ticketId: string;
+  operators: { id: string; full_name: string }[];
+  equipment: { id: string; unit_number: string; status: string }[];
+  assignedId: string | null;
+  assignedEquipmentId: string | null;
+}) {
   const qc = useQueryClient();
+  const [op, setOp] = useState("");
   const { data: crew = [] } = useQuery({
     queryKey: ["crew", ticketId],
-    queryFn: async () => (await supabase.from("ticket_crew").select("operator_id").eq("ticket_id", ticketId)).data ?? [],
+    queryFn: async () => (await supabase.from("ticket_crew").select("operator_id, equipment_id").eq("ticket_id", ticketId)).data ?? [],
   });
-  const ids = new Set(crew.map((c) => c.operator_id));
-  const add = async (opId: string) => {
-    const { error } = await supabase.from("ticket_crew").insert({ ticket_id: ticketId, operator_id: opId, organization_id: "00000000-0000-0000-0000-000000000000" });
-    if (error) toast.error(error.message); else { toast.success("Operator added to job"); qc.invalidateQueries({ queryKey: ["crew", ticketId] }); }
+  const opIds = new Set(crew.map((c) => c.operator_id));
+  const eqIds = new Set(crew.map((c) => c.equipment_id));
+  const add = async (eqId: string) => {
+    const { error } = await supabase.from("ticket_crew").insert({ ticket_id: ticketId, operator_id: op, equipment_id: eqId, organization_id: "00000000-0000-0000-0000-000000000000" });
+    if (error) toast.error(error.message); else { toast.success("Forklift added to job"); setOp(""); qc.invalidateQueries({ queryKey: ["crew", ticketId] }); }
   };
   const remove = async (opId: string) => {
     const { error } = await supabase.from("ticket_crew").delete().eq("ticket_id", ticketId).eq("operator_id", opId);
     if (error) toast.error(error.message); else qc.invalidateQueries({ queryKey: ["crew", ticketId] });
   };
-  const avail = operators.filter((o) => o.id !== assignedId && !ids.has(o.id));
+  const availOps = operators.filter((o) => o.id !== assignedId && !opIds.has(o.id));
+  const availEq = equipment.filter((e) => e.id !== assignedEquipmentId && !eqIds.has(e.id) && e.status !== "maintenance");
+  const unit = (id: string | null) => equipment.find((e) => e.id === id)?.unit_number ?? "?";
+  const name = (id: string) => operators.find((o) => o.id === id)?.full_name ?? "Driver";
   return (
-    <div className="flex flex-wrap items-center gap-1 text-xs">
-      {operators.filter((o) => ids.has(o.id)).map((o) => (
-        <button key={o.id} onClick={() => remove(o.id)} className="rounded bg-muted px-1.5 py-0.5" title="Remove from job">+ {o.full_name} ×</button>
-      ))}
-      {avail.length > 0 && (
-        <select aria-label="Add another forklift operator" className="h-7 rounded border border-border bg-card px-1 text-xs" value=""
-          onChange={(e) => e.target.value && add(e.target.value)}>
-          <option value="">+ Add forklift operator</option>
-          {avail.map((o) => <option key={o.id} value={o.id}>{o.full_name}</option>)}
-        </select>
+    <div className="grid gap-1 text-xs">
+      <div className="text-muted-foreground">Forklifts on job: {1 + crew.length}/3</div>
+      <div className="flex flex-wrap gap-1">
+        {crew.map((c) => (
+          <button key={c.operator_id} onClick={() => remove(c.operator_id)} className="rounded bg-muted px-1.5 py-0.5" title="Remove from job">+ {unit(c.equipment_id)} · {name(c.operator_id)} ×</button>
+        ))}
+      </div>
+      {crew.length < 2 && availOps.length > 0 && availEq.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          <select aria-label="Extra driver" className="h-7 rounded border border-border bg-card px-1 text-xs" value={op} onChange={(e) => setOp(e.target.value)}>
+            <option value="">+ Add driver</option>
+            {availOps.map((o) => <option key={o.id} value={o.id}>{o.full_name}</option>)}
+          </select>
+          {op && (
+            <select aria-label="Their forklift" className="h-7 rounded border border-border bg-card px-1 text-xs" value="" onChange={(e) => e.target.value && add(e.target.value)}>
+              <option value="">on forklift…</option>
+              {availEq.map((e) => <option key={e.id} value={e.id}>{e.unit_number}</option>)}
+            </select>
+          )}
+        </div>
       )}
     </div>
   );

@@ -141,7 +141,17 @@ function JobCard({ t, operators, equipment, staff }: {
   staff: boolean;
 }) {
   const qc = useQueryClient();
-  const editable = staff && (t.status === "requested" || t.status === "assigned");
+  const held = !!t.held_at;
+  const editable = staff && !held && (t.status === "requested" || t.status === "assigned");
+  const setHold = async (hold: boolean) => {
+    const reason = hold ? prompt(`Why is ${t.ticket_number} on hold? (optional)`) : null;
+    if (hold && reason === null) return;
+    const { error } = await supabase.rpc("set_ticket_hold", { _ticket: t.id, _hold: hold, _reason: reason ?? undefined });
+    if (error) { toast.error(error.message); return; }
+    toast.success(hold ? "Job on hold — it won't be auto-assigned" : "Hold released — job is back in the queue");
+    qc.invalidateQueries({ queryKey: ["tickets"] });
+    qc.invalidateQueries({ queryKey: ["operators"] });
+  };
   const update = async (patch: TablesUpdate<"tickets">, ok: string) => {
     const { error } = await supabase.from("tickets").update(patch).eq("id", t.id);
     if (error) { toast.error(error.message); return; }
@@ -162,6 +172,11 @@ function JobCard({ t, operators, equipment, staff }: {
         <Link to="/tickets/$ticketId" params={{ ticketId: t.id }} className="font-mono text-xs font-semibold hover:underline">{t.ticket_number}</Link>
         <PriorityBadge priority={t.priority} />
       </div>
+      {held && (
+        <div className="rounded border border-status-requested/40 bg-status-requested/10 px-2 py-1 text-xs">
+          <span className="font-semibold text-status-requested">ON HOLD</span>{t.hold_reason ? ` · ${t.hold_reason}` : ""}
+        </div>
+      )}
       <div>
         {t.request_source !== "standard" && <div className="mb-1 text-xs font-semibold text-teal">{REQUEST_SOURCES[t.request_source as keyof typeof REQUEST_SOURCES] ?? "Call-in"} request</div>}
         <div className="truncate text-sm font-medium">{t.exhibitor?.company_name}</div>
@@ -178,10 +193,14 @@ function JobCard({ t, operators, equipment, staff }: {
         </div>
       </div>
       {staff && (t.status === "assigned" || t.status === "in_progress") && (
-        <CrewPicker ticketId={t.id} operators={operators} assignedId={t.assigned_operator_id} />
+        <CrewPicker ticketId={t.id} operators={operators} equipment={equipment} assignedId={t.assigned_operator_id} assignedEquipmentId={t.assigned_equipment_id} />
+      )}
+      {staff && held && (
+        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setHold(false)}>Release hold</Button>
       )}
       {editable && (
         <div className="grid gap-1.5">
+          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setHold(true)}>Put on hold</Button>
           <Select value={t.required_equipment_class} onValueChange={v => update({ required_equipment_class: v }, "Equipment type updated")}>
             <SelectTrigger className="h-8 text-xs" aria-label="Required equipment type"><SelectValue /></SelectTrigger>
             <SelectContent>{Object.entries(EQUIPMENT_CLASSES).map(([v,l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
