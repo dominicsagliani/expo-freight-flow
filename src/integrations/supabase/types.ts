@@ -311,6 +311,7 @@ export type Database = {
           id: string
           model: string | null
           organization_id: string
+          photo_path: string | null
           retired_at: string | null
           status: Database["public"]["Enums"]["equipment_status"]
           unit_number: string
@@ -324,6 +325,7 @@ export type Database = {
           id?: string
           model?: string | null
           organization_id: string
+          photo_path?: string | null
           retired_at?: string | null
           status?: Database["public"]["Enums"]["equipment_status"]
           unit_number: string
@@ -337,6 +339,7 @@ export type Database = {
           id?: string
           model?: string | null
           organization_id?: string
+          photo_path?: string | null
           retired_at?: string | null
           status?: Database["public"]["Enums"]["equipment_status"]
           unit_number?: string
