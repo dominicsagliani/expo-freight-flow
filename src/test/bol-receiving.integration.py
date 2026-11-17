@@ -19,6 +19,8 @@ draw.text((60, 120), 'Carrier: YRC Integration Test', fill='black')
 draw.text((60, 160), 'PRO: BOL-INTEGRATION-TEST', fill='black')
 draw.text((60, 200), 'Pieces: 4 crates', fill='black')
 image.save(PDF, 'PDF', resolution=100.0)
+PHOTO = WORK / 'BOL camera photo.png'
+image.save(PHOTO, 'PNG')
 
 async def main():
     with open(os.path.expanduser('~/.cache/lovable-auth/session.json')) as f:
@@ -38,7 +40,19 @@ async def main():
             await page.get_by_role('button', name='BOL check-in', exact=True).click()
             dialog = page.get_by_role('dialog')
             await dialog.get_by_text('Bill of Lading', exact=True).wait_for()
-            await dialog.locator('input[accept*="application/pdf"]').set_input_files(str(PDF))
+            camera_input = dialog.locator('input[capture="environment"]')
+            assert await camera_input.get_attribute('accept') == 'image/jpeg,image/png'
+            await camera_input.set_input_files(str(PHOTO))
+            await dialog.get_by_text(PHOTO.name, exact=True).wait_for()
+            await dialog.get_by_alt_text('Bill of Lading preview').wait_for()
+            await dialog.get_by_text('Ready — document uploads when you check in', exact=True).wait_for()
+            await dialog.get_by_role('button', name='Remove', exact=True).click()
+            await dialog.get_by_text('No document selected. You can remove or replace it before check-in.', exact=True).wait_for()
+            await dialog.locator('input[accept*="application/pdf"]').set_input_files(str(PHOTO))
+            await dialog.get_by_alt_text('Bill of Lading preview').wait_for()
+            async with page.expect_file_chooser() as chooser:
+                await dialog.get_by_role('button', name='Replace document', exact=True).click()
+            await (await chooser.value).set_files(str(PDF))
             await dialog.get_by_text(PDF.name, exact=True).wait_for()
             await dialog.locator('object[aria-label="Bill of Lading PDF preview"]').wait_for()
 
@@ -66,6 +80,7 @@ async def main():
             assert await page.locator('.print-label').count() == 4
             assert await page.locator('.print-label img[alt="Freight QR code"]').count() == 4
             await page.screenshot(path=str(WORK / '3-four-labels.png'))
+            await page.pdf(path=str(WORK / 'four-labels-print.pdf'), print_background=True, prefer_css_page_size=True)
             bol_id = page.url.split('/bol-labels/')[1].split('?')[0]
 
             saved = await page.evaluate('''async (bolId) => {
@@ -80,6 +95,12 @@ async def main():
             assert saved['bol']['carrier_name'] == 'YRC Integration Test'
             assert saved['bol']['pro_number'] == 'BOL-INTEGRATION-TEST'
             assert saved['bol']['special_instructions'] == 'Keep upright'
+            assert saved['bol']['shipper_name'] == 'Integration Shipper'
+            assert saved['bol']['consignee_name'] == 'Summit Conveyor Co.'
+            assert saved['bol']['booth_number'] == '1507'
+            assert saved['bol']['description'] == 'BOL integration test freight'
+            assert float(saved['bol']['total_weight_lbs']) == 400
+            assert saved['bol']['declared_pieces'] == 4
             assert len(saved['crates']) == 4, saved
             assert len({row['freight_code'] for row in saved['crates']}) == 4
             assert len({row['qr_token'] for row in saved['crates']}) == 4
@@ -99,10 +120,15 @@ async def main():
             assert await page.get_by_role('link', name='Reprint', exact=True).count() == 4
             await page.screenshot(path=str(WORK / '4-saved-bol-dashboard.png'))
 
-            await page.get_by_role('link', name='Reprint', exact=True).first.click()
-            await page.wait_for_url('**/labels/*')
-            await page.locator('.print-label').wait_for()
-            assert await page.locator('.print-label').count() == 1
+            for index, crate in enumerate(saved['crates']):
+                await page.goto('http://localhost:8080/freight', wait_until='domcontentloaded')
+                await page.locator('details summary').click()
+                await page.get_by_role('link', name='Reprint', exact=True).nth(index).click()
+                await page.wait_for_url('**/labels/*')
+                await page.locator('.print-label').wait_for()
+                assert await page.locator('.print-label').count() == 1
+                await page.get_by_text(crate['freight_code'], exact=True).wait_for()
+                assert await page.locator('.print-label img[alt="Freight QR code"]').count() == 1
             await page.goto('http://localhost:8080/freight', wait_until='domcontentloaded')
             await page.get_by_role('link', name='Reprint all', exact=True).wait_for()
             await page.evaluate('window.__printCalls = 0; window.print = () => { window.__printCalls += 1; }')
@@ -134,11 +160,25 @@ async def main():
 
             await page.set_viewport_size({'width': 390, 'height': 844})
             await page.goto('http://localhost:8080/freight', wait_until='domcontentloaded')
-            await page.get_by_role('button', name='BOL check-in', exact=True).click()
-            await page.get_by_role('dialog').get_by_text('Bill of Lading', exact=True).wait_for()
-            await page.screenshot(path=str(WORK / '5-mobile-bol-form.png'))
+            await page.get_by_text(PDF.name, exact=True).wait_for()
+            await page.locator('details summary').click()
+            await page.get_by_text('Crate 4', exact=True).wait_for()
+            await page.wait_for_timeout(400)
+            await page.screenshot(path=str(WORK / '5-mobile-saved-bol.png'))
             mobile_widths = await page.evaluate('({viewport:window.innerWidth,document:document.documentElement.scrollWidth})')
             assert mobile_widths['document'] <= mobile_widths['viewport'] + 1, mobile_widths
+            await page.goto(f'http://localhost:8080/bol-labels/{bol_id}', wait_until='domcontentloaded')
+            await page.locator('.print-label').nth(3).wait_for()
+            assert await page.locator('.print-label').count() == 4
+            mobile_label_widths = await page.evaluate('({viewport:window.innerWidth,document:document.documentElement.scrollWidth})')
+            assert mobile_label_widths['document'] <= mobile_label_widths['viewport'] + 1, mobile_label_widths
+            await page.goto('http://localhost:8080/freight', wait_until='domcontentloaded')
+            await page.get_by_role('button', name='BOL check-in', exact=True).click()
+            await page.get_by_role('dialog').get_by_text('Bill of Lading', exact=True).wait_for()
+            await page.wait_for_timeout(400)
+            await page.screenshot(path=str(WORK / '6-mobile-bol-form.png'))
+            mobile_form_widths = await page.evaluate('({viewport:window.innerWidth,document:document.documentElement.scrollWidth})')
+            assert mobile_form_widths['document'] <= mobile_form_widths['viewport'] + 1, mobile_form_widths
             assert not page_errors, page_errors
             result = {'result': 'PASS', 'bol_id': bol_id, 'crate_count': retry['count'], 'automatic_print_calls': 1, 'document_http_status': document_response.status, 'retry_created_duplicates': False}
             (WORK / 'result.json').write_text(json.dumps(result))
