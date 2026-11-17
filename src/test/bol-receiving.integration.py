@@ -82,6 +82,7 @@ async def main():
             await page.screenshot(path=str(WORK / '3-four-labels.png'))
             await page.pdf(path=str(WORK / 'four-labels-print.pdf'), print_background=True, prefer_css_page_size=True)
             bol_id = page.url.split('/bol-labels/')[1].split('?')[0]
+            bol_card = page.locator(f'article[data-bol-id="{bol_id}"]')
 
             saved = await page.evaluate('''async (bolId) => {
               const {supabase:db}=await import('/src/integrations/supabase/client.ts');
@@ -108,31 +109,31 @@ async def main():
             assert all(float(row['weight_lbs']) == 100 for row in saved['crates'])
 
             await page.goto('http://localhost:8080/freight', wait_until='domcontentloaded')
-            await page.get_by_text(PDF.name, exact=True).wait_for(timeout=20000)
-            open_bol = page.get_by_role('link', name='Open BOL', exact=True)
+            await bol_card.get_by_text(PDF.name, exact=True).wait_for(timeout=20000)
+            open_bol = bol_card.get_by_role('link', name='Open BOL', exact=True)
             href = await open_bol.get_attribute('href')
             assert href
             document_response = await page.request.get(href)
             assert document_response.status == 200, document_response.status
             assert 'pdf' in (document_response.headers.get('content-type') or '').lower()
-            await page.locator('details summary').click()
-            await page.get_by_text('Crate 4', exact=True).wait_for()
-            assert await page.get_by_role('link', name='Reprint', exact=True).count() == 4
+            await bol_card.locator('details summary').click()
+            await bol_card.get_by_text('Crate 4', exact=True).wait_for()
+            assert await bol_card.get_by_role('link', name='Reprint', exact=True).count() == 4
             await page.screenshot(path=str(WORK / '4-saved-bol-dashboard.png'))
 
             for index, crate in enumerate(saved['crates']):
                 await page.goto('http://localhost:8080/freight', wait_until='domcontentloaded')
-                await page.locator('details summary').click()
-                await page.get_by_role('link', name='Reprint', exact=True).nth(index).click()
+                await bol_card.locator('details summary').click()
+                await bol_card.get_by_role('link', name='Reprint', exact=True).nth(index).click()
                 await page.wait_for_url('**/labels/*')
                 await page.locator('.print-label').wait_for()
                 assert await page.locator('.print-label').count() == 1
                 await page.get_by_text(crate['freight_code'], exact=True).wait_for()
                 assert await page.locator('.print-label img[alt="Freight QR code"]').count() == 1
             await page.goto('http://localhost:8080/freight', wait_until='domcontentloaded')
-            await page.get_by_role('link', name='Reprint all', exact=True).wait_for()
+            await bol_card.get_by_role('link', name='Reprint all', exact=True).wait_for()
             await page.evaluate('window.__printCalls = 0; window.print = () => { window.__printCalls += 1; }')
-            await page.get_by_role('link', name='Reprint all', exact=True).click()
+            await bol_card.get_by_role('link', name='Reprint all', exact=True).click()
             await page.wait_for_url('**/bol-labels/*')
             await page.locator('.print-label').nth(3).wait_for()
             # Reset the instrumented counter so this checks the manual reprint button itself.
@@ -160,9 +161,9 @@ async def main():
 
             await page.set_viewport_size({'width': 390, 'height': 844})
             await page.goto('http://localhost:8080/freight', wait_until='domcontentloaded')
-            await page.get_by_text(PDF.name, exact=True).wait_for()
-            await page.locator('details summary').click()
-            await page.get_by_text('Crate 4', exact=True).wait_for()
+            await bol_card.get_by_text(PDF.name, exact=True).wait_for()
+            await bol_card.locator('details summary').click()
+            await bol_card.get_by_text('Crate 4', exact=True).wait_for()
             await page.wait_for_timeout(400)
             await page.screenshot(path=str(WORK / '5-mobile-saved-bol.png'))
             mobile_widths = await page.evaluate('({viewport:window.innerWidth,document:document.documentElement.scrollWidth})')

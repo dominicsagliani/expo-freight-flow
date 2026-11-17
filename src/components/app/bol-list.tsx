@@ -15,7 +15,7 @@ export function BolList() {
       ) : (
         <div className="divide-y divide-border">
           {bols.map((bol) => (
-            <article key={bol.id} className="grid gap-4 p-4">
+            <article key={bol.id} data-bol-id={bol.id} className="grid gap-4 p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="flex min-w-0 gap-3">
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-teal-soft text-status-progress"><FileText className="size-5" /></span>
