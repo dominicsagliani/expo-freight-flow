@@ -140,8 +140,9 @@ export function BolFormDialog({
         _intake_key: key,
       });
       if (error) throw new Error(error.message);
-      if (!data?.bol_id) throw new Error("The BOL was saved without a shipment reference");
-      return data.bol_id;
+      const result = data as { bol_id?: unknown } | null;
+      if (typeof result?.bol_id !== "string") throw new Error("The BOL was saved without a shipment reference");
+      return result.bol_id;
     },
     onSuccess: (bolId) => {
       const count = Number(pieces);
