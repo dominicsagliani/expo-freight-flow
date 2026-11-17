@@ -193,7 +193,7 @@ function ForkliftMode() {
     <div className="flex flex-wrap items-center gap-3 border-b border-primary-foreground/10 bg-primary-foreground/[0.03] px-5 py-3">
       <div className="flex items-center gap-3">
         <div className="grid size-14 place-items-center rounded-2xl bg-accent font-mono text-lg font-black text-accent-foreground shadow-lg">{(forkliftName ?? "FL").replace(/^FL-?/i, "") || "FL"}</div>
-        <div className="min-w-0">
+        <div className="min-w-0 max-w-[60vw] sm:max-w-none">
           <div className="font-mono text-xl font-bold leading-tight">{forkliftName ?? "Forklift"}</div>
           <div className="truncate text-base text-primary-foreground/70">{me[0]?.full_name} · {current?.event?.name ?? "No active event"}</div>
         </div>
@@ -342,7 +342,7 @@ function ForkliftMode() {
               <div className="flex gap-1 px-6 pb-6">
                 {steps.map((label, i) => (
                   <div key={label} className="grid flex-1 gap-1.5">
-                    <div className={`h-2 rounded-full ${i <= stepIdx ? "bg-accent" : "bg-primary/15"}`} />
+                    <div className={`h-2 rounded-full ${i <= stepIdx ? "bg-status-completed" : "bg-primary/15"}`} />
                     <span className={`text-sm font-semibold ${i <= stepIdx ? "text-primary" : "text-primary/40"}`}>{label}</span>
                   </div>
                 ))}
@@ -351,7 +351,7 @@ function ForkliftMode() {
             <button type="button" onClick={nextStep.run} disabled={nextStep.disabled}
               className={`flex min-h-28 items-center gap-5 rounded-3xl px-7 text-left shadow-xl transition active:scale-[0.99] disabled:opacity-40 ${tones[nextStep.tone]}`}>
               {nextStep.icon}
-              <span className="grid"><span className="text-3xl font-black uppercase tracking-wide">{nextStep.label}</span><span className="text-lg opacity-80">{nextStep.hint}</span></span>
+              <span className="grid"><span className="text-2xl font-black uppercase tracking-wide sm:text-3xl">{nextStep.label}</span><span className="text-lg opacity-80">{nextStep.hint}</span></span>
             </button>
             {next[0] && (
               <button type="button" onClick={() => setTab("next")} className="flex items-center gap-3 rounded-2xl bg-primary-foreground/5 px-5 py-4 text-left text-lg">
