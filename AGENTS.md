@@ -54,4 +54,4 @@ use the editor.
 - AI BOL extraction renders documents to JPEGs in the browser and uses a staff-checked server function; AI only prefills fields. Why: extraction never auto-creates freight.
 - Venue/organizer roles are event-scoped and read only via security-definer RPCs, never tables. Why: no charges/contacts exposed.
 - Holds change only via `set_ticket_hold`; dispatch skips held jobs; crews are driver+forklift pairs, max 3 forklifts. Why: safe, unforgeable holds.
-- Bone-yard staging is an append-only `freight_staging` history; a BEFORE trigger updates the crate's current location/status. Multi-crate jobs go through `dispatch_staged_crates` (one exhibitor per job), and a ticket_freight trigger blocks a crate from two open jobs. Why: location history stays auditable and crates never get double-dispatched.
+- Bone-yard staging is append-only `freight_staging` (trigger sets current location); multi-crate jobs use `dispatch_staged_crates`; a trigger blocks a crate on two open jobs. Why: auditable, no double dispatch.
