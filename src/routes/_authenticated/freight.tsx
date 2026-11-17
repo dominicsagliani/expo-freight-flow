@@ -41,7 +41,7 @@ function FreightPage() {
   const canRegister = isStaff(m) || (m.role === "exhibitor" && !!m.exhibitorId);
   const openEvents = events.filter((e) => e.status !== "closed");
   return (
-    <div className="grid gap-6">
+    <div className="grid min-w-0 gap-6">
       <PageHeader eyebrow="Freight identification" title="Freight Management" description="Every crate and pallet on file for your events."
         actions={
           <>

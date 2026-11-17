@@ -9,7 +9,7 @@ import { EmptyState, Panel } from "@/components/app/page-header";
 export function BolList() {
   const { data: bols } = useSuspenseQuery(billsOfLadingQuery());
   return (
-    <Panel title={`Bills of lading (${bols.length})`}>
+    <Panel title={`Bills of lading (${bols.length})`} className="min-w-0">
       {bols.length === 0 ? (
         <EmptyState title="No BOL shipments received" description="Use BOL check-in to attach one document to multiple individual crates." />
       ) : (
