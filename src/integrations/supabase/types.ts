@@ -1981,6 +1981,7 @@ export type Database = {
         }
         Returns: number
       }
+      can_view_event_status: { Args: { _event: string }; Returns: boolean }
       can_view_ticket: { Args: { _ticket: string }; Returns: boolean }
       can_work_ticket: { Args: { _ticket: string }; Returns: boolean }
       compute_ticket_charge: { Args: { _ticket: string }; Returns: number }
@@ -2012,6 +2013,20 @@ export type Database = {
         Returns: {
           full_name: string
           id: string
+        }[]
+      }
+      event_status_board: {
+        Args: { _event: string }
+        Returns: {
+          booth_number: string
+          exhibitor_name: string
+          freight_delivered: number
+          freight_received: number
+          freight_total: number
+          jobs_completed: number
+          jobs_held: number
+          jobs_open: number
+          open_issues: number
         }[]
       }
       exhibitor_event_ids: { Args: never; Returns: string[] }
@@ -2172,6 +2187,10 @@ export type Database = {
         Args: { s: Database["public"]["Tables"]["work_sessions"]["Row"] }
         Returns: number
       }
+      set_ticket_hold: {
+        Args: { _hold: boolean; _reason?: string; _ticket: string }
+        Returns: undefined
+      }
       staff_correct_scan: {
         Args: {
           _freight: string
@@ -2183,6 +2202,17 @@ export type Database = {
       }
       user_exhibitor_ids: { Args: never; Returns: string[] }
       user_operator_ids: { Args: never; Returns: string[] }
+      viewer_events: {
+        Args: never
+        Returns: {
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          status: Database["public"]["Enums"]["event_status"]
+          venue: string
+        }[]
+      }
     }
     Enums: {
       app_role:

@@ -211,6 +211,13 @@
       "when": 1794885305492,
       "tag": "0029_venue_organizer_roles_hold_crew_issues_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1794885378966,
+      "tag": "0030_hold_crew_viewer_functions",
+      "breakpoints": true
     }
   ]
 }
