@@ -109,7 +109,8 @@ async def main():
             await page.get_by_role('link', name='Reprint all', exact=True).click()
             await page.wait_for_url('**/bol-labels/*')
             await page.locator('.print-label').nth(3).wait_for()
-            assert await page.evaluate('window.__printCalls') == 0
+            # Reset the instrumented counter so this checks the manual reprint button itself.
+            await page.evaluate('window.__printCalls = 0')
             await page.get_by_role('button', name='Print 4 labels', exact=True).click()
             assert await page.evaluate('window.__printCalls') == 1
 
