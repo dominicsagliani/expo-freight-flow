@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Camera, FileText, LoaderCircle, Printer, Trash2, Upload } from "lucide-react";
+import { Camera, FileText, LoaderCircle, Printer, Sparkles, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "./event-form-dialog";
 import { BOL_ACCEPT, MAX_BOL_CRATES, bolMimeType, resizeBolCrates, sanitizeBolFilename, validateBolFile, type BolCrateDraft } from "@/lib/bol";
+import { prepareBolForAi } from "@/lib/bol-ai";
+import { extractBolDocument } from "@/utils/bol-extraction.functions";
 
 type Booth = { event_id: string; exhibitor_id: string; booth_number: string; exhibitor: { company_name: string } | null };
 
@@ -39,6 +41,8 @@ export function BolFormDialog({
   const [pieces, setPieces] = useState("1");
   const [details, setDetails] = useState(emptyDetails);
   const [crates, setCrates] = useState<BolCrateDraft[]>([{ description: "", weight: "" }]);
+  const [aiStatus, setAiStatus] = useState("");
+  const [aiNotes, setAiNotes] = useState<string[]>([]);
   const eventBooths = booths.filter((b) => b.event_id === eventId);
   const set = (key: keyof typeof details) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setDetails((current) => ({ ...current, [key]: e.target.value }));
@@ -53,6 +57,49 @@ export function BolFormDialog({
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  const extraction = useMutation({
+    mutationFn: async (selected: File) => {
+      if (!eventId) throw new Error("Choose an event before AI extraction");
+      setAiStatus("Preparing document pages…");
+      const prepared = await prepareBolForAi(selected);
+      setAiStatus("Reading BOL with AI…");
+      const response = await extractBolDocument({ data: { eventId, pages: prepared.pages } });
+      if (!response.ok) throw new Error(response.message);
+      return { result: response.result, truncated: prepared.truncated };
+    },
+    onSuccess: ({ result, truncated }) => {
+      const validExhibitor = eventBooths.some((booth) => booth.exhibitor_id === result.exhibitorId) ? result.exhibitorId : null;
+      const reportedCount = result.declaredPieces;
+      const count = reportedCount && Number.isInteger(reportedCount) && reportedCount >= 1 && reportedCount <= MAX_BOL_CRATES
+        ? reportedCount
+        : result.crates.length >= 1 && result.crates.length <= MAX_BOL_CRATES ? result.crates.length : Number(pieces);
+      const totalWeight = result.totalWeightLbs !== null && Number.isFinite(result.totalWeightLbs) && result.totalWeightLbs >= 0 ? String(result.totalWeightLbs) : "";
+      setExhibitorId(validExhibitor ?? "");
+      setDetails({
+        carrier: result.carrierName ?? "", pro: result.proNumber ?? "", shipper: result.shipperName ?? "",
+        consignee: result.consigneeName ?? "", booth: result.boothNumber ?? "", description: result.description ?? "",
+        totalWeight, special: result.specialInstructions ?? "",
+      });
+      setPieces(String(count));
+      setCrates(resizeBolCrates([], count, result.description ?? "").map((row, index) => {
+        const extracted = result.crates[index];
+        const weight = extracted?.weightLbs;
+        return {
+          description: extracted?.description ?? row.description,
+          weight: weight !== null && weight !== undefined && Number.isFinite(weight) && weight >= 0 ? String(weight) : "",
+        };
+      }));
+      setAiNotes([...result.warnings, ...(truncated ? ["AI read the first 5 pages; review any remaining pages manually."] : [])]);
+      setAiStatus("AI filled the fields below. Review everything before check-in.");
+      toast.success("BOL read — review the extracted details");
+    },
+    onError: (error: Error) => {
+      setAiStatus("AI could not finish reading this document. You can enter the details manually or try again.");
+      setAiNotes([]);
+      toast.error(error.message);
+    },
+  });
+
   function chooseFile(selected: File | null) {
     if (!selected) return;
     const problem = validateBolFile(selected);
@@ -61,7 +108,10 @@ export function BolFormDialog({
       return;
     }
     intakeKey.current = crypto.randomUUID();
+    setAiStatus("");
+    setAiNotes([]);
     setFile(selected);
+    extraction.mutate(selected);
   }
 
   function selectExhibitor(id: string) {
@@ -155,6 +205,8 @@ export function BolFormDialog({
       setDetails(emptyDetails);
       setPieces("1");
       setCrates([{ description: "", weight: "" }]);
+      setAiStatus("");
+      setAiNotes([]);
       intakeKey.current = null;
       navigate({ to: "/bol-labels/$bolId", params: { bolId }, search: { autoprint: 1 } });
     },
@@ -165,7 +217,7 @@ export function BolFormDialog({
   const mime = file ? bolMimeType(file) : "";
 
   return (
-    <Dialog open={open} onOpenChange={(next) => { if (!save.isPending) setOpen(next); }}>
+    <Dialog open={open} onOpenChange={(next) => { if (!save.isPending && !extraction.isPending) setOpen(next); }}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[94vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
@@ -181,9 +233,10 @@ export function BolFormDialog({
             <input ref={uploadInput} type="file" accept={BOL_ACCEPT} className="hidden" onChange={(e) => { chooseFile(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }} />
             <input ref={cameraInput} type="file" accept="image/jpeg,image/png" capture="environment" className="hidden" onChange={(e) => { chooseFile(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }} />
             <div className="flex flex-wrap gap-2">
-              <Button type="button" variant="outline" onClick={() => uploadInput.current?.click()}><Upload /> {file ? "Replace document" : "Upload BOL"}</Button>
-              <Button type="button" variant="outline" onClick={() => cameraInput.current?.click()}><Camera /> Take photo</Button>
-              {file && <Button type="button" variant="ghost" onClick={() => { setFile(null); intakeKey.current = null; }}><Trash2 /> Remove</Button>}
+              <Button type="button" variant="outline" disabled={extraction.isPending || save.isPending} onClick={() => uploadInput.current?.click()}><Upload /> {file ? "Replace document" : "Upload BOL"}</Button>
+              <Button type="button" variant="outline" disabled={extraction.isPending || save.isPending} onClick={() => cameraInput.current?.click()}><Camera /> Take photo</Button>
+              {file && <Button type="button" variant="outline" disabled={extraction.isPending || save.isPending} onClick={() => extraction.mutate(file)}><Sparkles /> Read with AI</Button>}
+              {file && <Button type="button" variant="ghost" disabled={extraction.isPending || save.isPending} onClick={() => { setFile(null); setAiStatus(""); setAiNotes([]); intakeKey.current = null; }}><Trash2 /> Remove</Button>}
             </div>
             {file ? (
               <div className="grid gap-3 rounded-md border border-border bg-card p-3">
@@ -192,7 +245,11 @@ export function BolFormDialog({
                   <span className="min-w-0 flex-1 break-words font-medium">{file.name}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                 </div>
-                <div className="text-xs text-status-progress">{stage || "Ready — document uploads when you check in"}</div>
+                <div className="flex items-center gap-2 text-xs text-status-progress">
+                  {extraction.isPending && <LoaderCircle className="size-3.5 animate-spin" />}
+                  {extraction.isPending ? aiStatus : stage || aiStatus || "Ready — document uploads when you check in"}
+                </div>
+                {!!aiNotes.length && <ul className="grid gap-1 rounded-md border border-status-pending/30 bg-status-pending/5 p-3 text-xs text-muted-foreground">{aiNotes.map((note, index) => <li key={index}>Review: {note}</li>)}</ul>}
                 {previewUrl && mime.startsWith("image/") && <img src={previewUrl} alt="Bill of Lading preview" className="max-h-72 w-full rounded border border-border object-contain" />}
                 {previewUrl && mime === "application/pdf" && <object data={previewUrl} type="application/pdf" aria-label="Bill of Lading PDF preview" className="h-72 w-full rounded border border-border"><a href={previewUrl} target="_blank" rel="noreferrer">Preview PDF</a></object>}
               </div>
@@ -200,7 +257,10 @@ export function BolFormDialog({
           </section>
 
           <section className="grid gap-4">
-            <h3 className="text-sm font-semibold">Shipment information</h3>
+            <div>
+              <h3 className="text-sm font-semibold">Shipment information</h3>
+              <p className="text-xs text-muted-foreground">AI suggestions are editable and are not saved until you check in.</p>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Event">
                 <Select value={eventId} onValueChange={(value) => { setEventId(value); setExhibitorId(""); setDetails((current) => ({ ...current, consignee: "", booth: "" })); }}>
@@ -247,8 +307,8 @@ export function BolFormDialog({
 
           <p className="text-xs text-muted-foreground">Check-in saves the original document and every crate before the print dialog opens. Canceling printing never deletes the shipment.</p>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={save.isPending}>Cancel</Button>
-            <Button type="submit" variant="teal" disabled={save.isPending}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={save.isPending || extraction.isPending}>Cancel</Button>
+            <Button type="submit" variant="teal" disabled={save.isPending || extraction.isPending}>
               {save.isPending ? <LoaderCircle className="animate-spin" /> : <Printer />}
               {save.isPending ? stage || "Checking in…" : `Check in & print ${pieces || "0"} ${Number(pieces) === 1 ? "label" : "labels"}`}
             </Button>
