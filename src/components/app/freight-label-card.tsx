@@ -15,7 +15,7 @@ export function FreightLabelCard({
 }) {
   const l = labelFields(freight);
   return (
-    <div className="print-label mx-auto w-[4in] max-w-full rounded-md border-2 border-foreground bg-card p-4 text-foreground">
+    <div className="print-label mx-auto w-full max-w-[4in] rounded-md border-2 border-foreground bg-card p-4 text-foreground">
       <div className="flex items-start justify-between border-b-2 border-foreground pb-2">
         <span className="font-display text-sm font-bold">ExpoHaul</span>
         <span className="max-w-[2.5in] text-right text-[10px] leading-tight">{l.event}</span>
