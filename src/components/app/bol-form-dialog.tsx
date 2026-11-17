@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Camera, FileText, LoaderCircle, Printer, Trash2, Upload } from "lucide-react";
+import { Camera, FileText, LoaderCircle, Printer, Sparkles, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "./event-form-dialog";
 import { BOL_ACCEPT, MAX_BOL_CRATES, bolMimeType, resizeBolCrates, sanitizeBolFilename, validateBolFile, type BolCrateDraft } from "@/lib/bol";
+import { prepareBolForAi } from "@/lib/bol-ai";
+import { extractBolDocument } from "@/utils/bol-extraction.functions";
 
 type Booth = { event_id: string; exhibitor_id: string; booth_number: string; exhibitor: { company_name: string } | null };
 
@@ -39,6 +41,8 @@ export function BolFormDialog({
   const [pieces, setPieces] = useState("1");
   const [details, setDetails] = useState(emptyDetails);
   const [crates, setCrates] = useState<BolCrateDraft[]>([{ description: "", weight: "" }]);
+  const [aiStatus, setAiStatus] = useState("");
+  const [aiNotes, setAiNotes] = useState<string[]>([]);
   const eventBooths = booths.filter((b) => b.event_id === eventId);
   const set = (key: keyof typeof details) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setDetails((current) => ({ ...current, [key]: e.target.value }));
@@ -53,6 +57,49 @@ export function BolFormDialog({
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  const extraction = useMutation({
+    mutationFn: async (selected: File) => {
+      if (!eventId) throw new Error("Choose an event before AI extraction");
+      setAiStatus("Preparing document pages…");
+      const prepared = await prepareBolForAi(selected);
+      setAiStatus("Reading BOL with AI…");
+      const response = await extractBolDocument({ data: { eventId, pages: prepared.pages } });
+      if (!response.ok) throw new Error(response.message);
+      return { result: response.result, truncated: prepared.truncated };
+    },
+    onSuccess: ({ result, truncated }) => {
+      const validExhibitor = eventBooths.some((booth) => booth.exhibitor_id === result.exhibitorId) ? result.exhibitorId : null;
+      const reportedCount = result.declaredPieces;
+      const count = reportedCount && Number.isInteger(reportedCount) && reportedCount >= 1 && reportedCount <= MAX_BOL_CRATES
+        ? reportedCount
+        : result.crates.length >= 1 && result.crates.length <= MAX_BOL_CRATES ? result.crates.length : Number(pieces);
+      const totalWeight = result.totalWeightLbs !== null && Number.isFinite(result.totalWeightLbs) && result.totalWeightLbs >= 0 ? String(result.totalWeightLbs) : "";
+      setExhibitorId(validExhibitor ?? "");
+      setDetails({
+        carrier: result.carrierName ?? "", pro: result.proNumber ?? "", shipper: result.shipperName ?? "",
+        consignee: result.consigneeName ?? "", booth: result.boothNumber ?? "", description: result.description ?? "",
+        totalWeight, special: result.specialInstructions ?? "",
+      });
+      setPieces(String(count));
+      setCrates(resizeBolCrates([], count, result.description ?? "").map((row, index) => {
+        const extracted = result.crates[index];
+        const weight = extracted?.weightLbs;
+        return {
+          description: extracted?.description ?? row.description,
+          weight: weight !== null && weight !== undefined && Number.isFinite(weight) && weight >= 0 ? String(weight) : "",
+        };
+      }));
+      setAiNotes([...result.warnings, ...(truncated ? ["AI read the first 5 pages; review any remaining pages manually."] : [])]);
+      setAiStatus("AI filled the fields below. Review everything before check-in.");
+      toast.success("BOL read — review the extracted details");
+    },
+    onError: (error: Error) => {
+      setAiStatus("AI could not finish reading this document. You can enter the details manually or try again.");
+      setAiNotes([]);
+      toast.error(error.message);
+    },
+  });
+
   function chooseFile(selected: File | null) {
     if (!selected) return;
     const problem = validateBolFile(selected);
@@ -61,7 +108,10 @@ export function BolFormDialog({
       return;
     }
     intakeKey.current = crypto.randomUUID();
+    setAiStatus("");
+    setAiNotes([]);
     setFile(selected);
+    extraction.mutate(selected);
   }
 
   function selectExhibitor(id: string) {
@@ -155,6 +205,8 @@ export function BolFormDialog({
       setDetails(emptyDetails);
       setPieces("1");
       setCrates([{ description: "", weight: "" }]);
+      setAiStatus("");
+      setAiNotes([]);
       intakeKey.current = null;
       navigate({ to: "/bol-labels/$bolId", params: { bolId }, search: { autoprint: 1 } });
     },
@@ -165,7 +217,7 @@ export function BolFormDialog({
   const mime = file ? bolMimeType(file) : "";
 
   return (
-    <Dialog open={open} onOpenChange={(next) => { if (!save.isPending) setOpen(next); }}>
+    <Dialog open={open} onOpenChange={(next) => { if (!save.isPending && !extraction.isPending) setOpen(next); }}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[94vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
