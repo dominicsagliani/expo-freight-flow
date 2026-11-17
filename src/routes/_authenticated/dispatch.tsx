@@ -17,6 +17,7 @@ import { CrewPicker, DispatchLive } from "@/components/app/dispatch-live";
 import { EQUIPMENT_CLASSES } from "@/lib/fleet";
 import { CallInDialog } from "@/components/app/call-in-dialog";
 import { driverState, REQUEST_SOURCES } from "@/lib/dispatch";
+import { FleetRadar } from "@/components/app/fleet-radar";
 import { DockQueue } from "@/components/app/dock-queue";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
@@ -68,7 +69,7 @@ function Dispatch() {
   const { data: operators } = useSuspenseQuery({ ...operatorsQuery(), refetchInterval: 15_000 });
   const { data: equipment } = useSuspenseQuery(equipmentQuery());
   const { data: queue = [] } = useQuery({ queryKey: ["queue-drivers"], refetchInterval: 10_000, queryFn: async () => {
-    const { data, error } = await supabase.from("queue_drivers").select("user_id, event_id, operator_id, equipment_id, ready, heartbeat_at, operator:operators(full_name), equipment:equipment(unit_number, equipment_class, capacity_lbs, fuel_type), event:events(name)");
+    const { data, error } = await supabase.from("queue_drivers").select("user_id, event_id, operator_id, equipment_id, ready, ready_since, heartbeat_at, operator:operators(full_name), equipment:equipment(unit_number, equipment_class, capacity_lbs, fuel_type), event:events(name)");
     if (error) throw new Error(error.message); return data ?? [];
   } });
   const today = new Date().toDateString();
@@ -102,14 +103,8 @@ function Dispatch() {
         {[{ label: "Drivers available", value: available.length, icon: Truck, tone: "text-teal" }, { label: "Waiting requests", value: waiting.length, icon: Phone, tone: "text-status-requested" }, { label: "Longest wait", value: `${oldest} min`, icon: Clock, tone: "text-foreground" }, { label: "Completed today", value: col("completed").length, icon: CheckCircle2, tone: "text-status-completed" }].map(s => <div key={s.label}><div className="flex items-center gap-2 text-xs text-muted-foreground"><s.icon className={`size-4 ${s.tone}`} />{s.label}</div><div className={`mt-2 font-mono text-3xl font-bold ${s.tone}`}>{s.value}</div></div>)}
       </div>
       <DockQueue eventId={eventId} tickets={eventTickets} />
-      <section className="grid gap-3 border-b border-border pb-5">
-        <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-sm font-semibold">Driver fleet · {drivers.filter(q => driverState(q.heartbeat_at,q.ready,!!q.job,now) !== "Offline").length} online</h2>{staff && <Button size="sm" variant="outline" onClick={dispatch} disabled={sending || !event || event.status === "closed"}><Send />{sending ? "Checking…" : "Dispatch waiting"}</Button>}</div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{drivers.map(q => {
-          const state = driverState(q.heartbeat_at,q.ready,!!q.job,now);
-          return <article key={q.user_id} className="grid gap-2 rounded-md border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><span className="font-medium">{q.operator?.full_name}</span><span className={`text-xs font-semibold ${state === "Available" ? "text-teal" : state === "On a job" ? "text-status-assigned" : "text-muted-foreground"}`}>{state}</span></div><div className="text-xs text-muted-foreground"><b className="font-mono text-foreground">{q.equipment?.unit_number}</b> · {q.equipment?.equipment_class} · {q.equipment?.capacity_lbs?.toLocaleString() ?? "Unknown"} lb · {q.equipment?.fuel_type}</div>{q.job && <Link to="/tickets/$ticketId" params={{ ticketId:q.job.id }} className="text-xs hover:underline">{q.job.ticket_number} · {q.job.destination || `Booth ${q.job.booth_number ?? "—"}`}</Link>}</article>;
-        })}</div>
-        {!drivers.length && <p className="py-3 text-sm text-muted-foreground">No drivers signed into this event.</p>}
-      </section>
+      {staff && <div className="-mb-3 flex justify-end"><Button size="sm" variant="outline" onClick={dispatch} disabled={sending || !event || event.status === "closed"}><Send />{sending ? "Checking…" : "Dispatch waiting"}</Button></div>}
+      <FleetRadar drivers={drivers} now={now} />
       <DispatchLive eventId={eventId} />
       {event && callOpen && <CallInDialog key={eventId} eventId={eventId} eventName={event.name} open={callOpen} onOpenChange={setCallOpen} />}
       <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
