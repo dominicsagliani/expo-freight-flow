@@ -176,6 +176,7 @@ function ForkliftMode() {
       if (await rpc(() => supabase.rpc("op_complete_call_in", { _ticket: current.id }), "Request completed")) { autoInvoice(current.id); setSelected(null); refresh(); }
       return;
     }
+    setScanTicket(current.id);
     setView("scan");
   };
 
