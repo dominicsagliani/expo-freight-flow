@@ -202,8 +202,8 @@ function ForkliftMode() {
     </div>
   );
 
-  if (view === "scan" && current) {
-    return <Shell onBack={() => setView("home")}>{header}<ScanScreen key={current.id} job={current} forklift={forklift} onDone={refresh} onCompleted={() => { setSelected(null); setView("home"); refresh(); }} /></Shell>;
+  if (view === "scan" && scanJob) {
+    return <Shell onBack={() => { setScanTicket(null); setView("home"); }}>{header}<ScanScreen key={scanJob.id} job={scanJob} forklift={forklift} onDone={refresh} onCompleted={() => { setScanTicket(null); setSelected(null); setView("home"); refresh(); }} /></Shell>;
   }
   if (view === "freight" && current) {
     return (
