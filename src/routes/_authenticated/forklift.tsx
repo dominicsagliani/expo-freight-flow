@@ -188,18 +188,31 @@ function ForkliftMode() {
     }} /></Shell>;
   }
 
+  const ready = !!queueState?.ready;
   const header = (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-primary-foreground/15 px-5 py-3 text-lg">
-      <span className="font-mono text-xl font-bold">{forkliftName ?? "Forklift"}</span>
-      <span className="min-w-0 break-words font-semibold">{me[0]?.full_name}</span>
-      <span className="rounded-md bg-status-completed px-2 py-1 text-sm font-bold uppercase tracking-wide text-primary-foreground">Online</span>
-      <span className="text-primary-foreground/70">{current?.event?.name ?? "No active event"}</span>
-      <Button variant="destructive" className="ml-auto uppercase tracking-wide" onClick={switchOperator}><XCircle className="size-5" />Offline</Button>
-      <Button variant="inverse" onClick={async () => {
-        const { error } = await supabase.rpc("queue_poll", { _ready: !queueState?.ready });
-        if (error) toast.error(error.message);
-        qc.invalidateQueries({ queryKey: ["forklift-queue"] }); refresh();
-      }}>{queueState?.ready ? <Pause /> : <Play />}{queueState?.ready ? "Take a break" : "Available for jobs"}</Button>
+    <div className="flex flex-wrap items-center gap-3 border-b border-primary-foreground/10 bg-primary-foreground/[0.03] px-5 py-3">
+      <div className="flex items-center gap-3">
+        <div className="grid size-14 place-items-center rounded-2xl bg-accent font-mono text-lg font-black text-accent-foreground shadow-lg">{(forkliftName ?? "FL").replace(/^FL-?/i, "") || "FL"}</div>
+        <div className="min-w-0">
+          <div className="font-mono text-xl font-bold leading-tight">{forkliftName ?? "Forklift"}</div>
+          <div className="truncate text-base text-primary-foreground/70">{me[0]?.full_name} · {current?.event?.name ?? "No active event"}</div>
+        </div>
+      </div>
+      <span className="inline-flex items-center gap-2 rounded-full bg-status-completed px-3 py-1.5 text-sm font-bold uppercase tracking-wider text-primary-foreground">
+        <span className="size-2.5 animate-pulse rounded-full bg-primary-foreground" />Online
+      </span>
+      <div className="ml-auto flex flex-wrap gap-2">
+        <button type="button" onClick={async () => {
+          const { error } = await supabase.rpc("queue_poll", { _ready: !ready });
+          if (error) toast.error(error.message);
+          qc.invalidateQueries({ queryKey: ["forklift-queue"] }); refresh();
+        }} className={`inline-flex min-h-12 items-center gap-2 rounded-full px-5 text-base font-bold ${ready ? "bg-primary-foreground/10" : "bg-status-requested text-primary-foreground"}`}>
+          {ready ? <Pause className="size-5" /> : <Play className="size-5" />}{ready ? "Take a break" : "On break · Resume"}
+        </button>
+        <button type="button" onClick={switchOperator} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-destructive px-5 text-base font-bold uppercase tracking-wide text-destructive-foreground">
+          <XCircle className="size-5" />Offline
+        </button>
+      </div>
     </div>
   );
 
@@ -245,83 +258,131 @@ function ForkliftMode() {
     );
   }
 
+  const nextStep = !current ? null
+    : current.status === "assigned" ? { label: "Accept job", hint: "Confirm you're heading to pickup", icon: <ClipboardCheck className="size-10" />, tone: "light" as const, run: accept, disabled: false }
+    : callIn ? (!mySession
+        ? { label: "Start work", hint: "Starts the billable timer", icon: <Play className="size-10" />, tone: "accent" as const, run: () => rpc(() => supabase.rpc("op_start_session", { _ticket: current.id, _equipment: forklift }), "Work timer started"), disabled: false }
+        : { label: "Complete request", hint: "Stops the timer and bills the job", icon: <CheckCircle2 className="size-10" />, tone: "success" as const, run: completeDelivery, disabled: false })
+    : { label: picked > delivered ? "Scan out at booth" : "Scan freight in", hint: picked > delivered ? `Deliver to Booth ${current.booth_number ?? "—"}` : "Scan the crate QR at pickup to start the timer", icon: <ScanLine className="size-10" />, tone: picked > delivered ? "success" as const : "accent" as const, run: () => { setScanTicket(current.id); setView("scan"); }, disabled: false };
+  const stepIdx = !current ? 0 : current.status === "assigned" ? 0 : delivered > 0 && delivered >= tf.length && tf.length > 0 ? 3 : picked > 0 || mySession ? 2 : 1;
+  const steps = ["Assigned", "En route", "On forks", "Delivered"];
+  const tones = { light: "bg-primary-foreground text-primary", accent: "bg-accent text-accent-foreground", success: "bg-status-completed text-primary-foreground" };
+
   return (
     <Shell onExit>
       {header}
-      <div className="px-5 pt-4">
-        <BigButton tone="accent" onClick={() => setQueueScanOpen(true)}><ScanLine className="size-8" />Scan freight to queue</BigButton>
-        <p className="mt-2 text-center text-base text-primary-foreground/70">Automatically sends the job to the next available compatible forklift.</p>
-      </div>
-      <div className="flex flex-wrap gap-2 px-5 pt-4">
-        {([["current", "Current job"], ["next", `Next jobs (${next.length})`], ["done", `Completed (${done.length})`]] as const).map(([k, l]) => (
+      <div className="flex flex-wrap items-center gap-2 px-5 pt-4">
+        {([["current", "Current job"], ["next", `Up next · ${next.length}`], ["done", `Done today · ${done.length}`]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)}
-            className={`rounded-lg px-4 py-3 text-lg font-semibold ${tab === k ? "bg-primary-foreground text-primary" : "bg-primary-foreground/10"}`}>{l}</button>
+            className={`min-h-12 rounded-full px-5 text-lg font-semibold transition-colors ${tab === k ? "bg-primary-foreground text-primary" : "bg-primary-foreground/10 hover:bg-primary-foreground/15"}`}>{l}</button>
         ))}
+        <button type="button" onClick={() => setQueueScanOpen(true)} className="ml-auto inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-accent px-5 text-lg font-semibold text-accent">
+          <ScanLine className="size-5" />Scan to queue
+        </button>
       </div>
 
       {tab === "next" && (
-        <div className="grid gap-3 p-5">
-          {next.length === 0 && <p className="text-xl text-primary-foreground/70">No other jobs queued.</p>}
-          {next.map((j) => (
+        <div className="grid gap-3 p-5 md:grid-cols-2">
+          {next.length === 0 && <EmptyState title="Nothing else queued" body="New jobs appear here the moment dispatch sends them." />}
+          {next.map((j, i) => (
             <button key={j.id} onClick={() => { setSelected(j.id); setTab("current"); }}
-              className="grid gap-1 rounded-xl bg-primary-foreground/5 p-4 text-left">
-              <div className="flex items-center gap-3"><span className="font-mono text-xl font-bold">{j.ticket_number}</span><PriorityBadge priority={j.priority} /></div>
-              <div className="text-lg">{j.exhibitor?.company_name} · Booth {j.booth_number ?? "—"} · {j.ticket_freight.length} freight</div>
+              className="grid gap-2 rounded-2xl border border-primary-foreground/10 bg-primary-foreground/5 p-5 text-left transition hover:bg-primary-foreground/10">
+              <div className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-full bg-primary-foreground/10 font-bold">{i + 1}</span><span className="font-mono text-xl font-bold">{j.ticket_number}</span><PriorityBadge priority={j.priority} /></div>
+              <div className="text-xl font-semibold">{j.exhibitor?.company_name}</div>
+              <div className="text-lg text-primary-foreground/70">Booth {j.booth_number ?? "—"} · {j.ticket_freight.length} {j.ticket_freight.length === 1 ? "crate" : "crates"}</div>
             </button>
           ))}
         </div>
       )}
       {tab === "done" && (
         <div className="grid gap-3 p-5">
-          {done.length === 0 && <p className="text-xl text-primary-foreground/70">Nothing completed today yet.</p>}
+          {done.length === 0 && <EmptyState title="No deliveries yet today" body="Completed jobs land here." />}
           {done.map((j) => (
-            <div key={j.id} className="rounded-xl bg-primary-foreground/5 p-4 text-lg">
-              <span className="font-mono font-bold">{j.ticket_number}</span> · {j.exhibitor?.company_name} · Booth {j.booth_number ?? "—"}
+            <div key={j.id} className="flex items-center gap-4 rounded-2xl bg-primary-foreground/5 p-4 text-lg">
+              <CheckCircle2 className="size-8 shrink-0 text-status-completed" />
+              <div><span className="font-mono font-bold">{j.ticket_number}</span> · {j.exhibitor?.company_name} · Booth {j.booth_number ?? "—"}</div>
             </div>
           ))}
         </div>
       )}
-      {tab === "current" && !current && <p className="p-8 text-2xl text-primary-foreground/70">No jobs assigned. Waiting for dispatch.</p>}
-      {tab === "current" && current && (
-        <div className="grid gap-5 p-5 lg:grid-cols-[1.3fr_1fr]">
-          <div className="grid content-start gap-4 rounded-xl bg-primary-foreground/5 p-5">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-mono text-3xl font-bold">{current.ticket_number}</span>
-              <PriorityBadge priority={current.priority} />
-              <span className="text-lg text-primary-foreground/70">{SERVICE_LABEL[current.service_type]}</span>
+      {tab === "current" && !current && (
+        <div className="grid place-items-center gap-4 px-5 py-16 text-center">
+          <div className="relative grid size-32 place-items-center">
+            <span className="absolute inset-0 animate-ping rounded-full bg-accent/20" />
+            <span className="relative grid size-24 place-items-center rounded-full bg-accent/20"><Package className="size-12 text-accent" /></span>
+          </div>
+          <div className="text-3xl font-bold">{ready ? "Waiting for your next job" : "You're on break"}</div>
+          <p className="max-w-md text-xl text-primary-foreground/70">{ready ? "Stay on this screen. Dispatch will send the next job straight to this forklift." : "Tap Resume at the top when you're ready for jobs."}</p>
+        </div>
+      )}
+      {tab === "current" && current && nextStep && (
+        <div className="grid gap-5 p-5 lg:grid-cols-[1.4fr_1fr]">
+          <div className="grid content-start gap-5">
+            <div className="overflow-hidden rounded-3xl bg-primary-foreground text-primary shadow-2xl">
+              <div className="flex flex-wrap items-center gap-3 bg-primary-foreground px-6 pt-5">
+                <span className="font-mono text-lg font-bold text-primary/60">{current.ticket_number}</span>
+                <PriorityBadge priority={current.priority} />
+                <span className="text-base text-primary/60">{SERVICE_LABEL[current.service_type]}</span>
+              </div>
+              <div className="grid gap-1 px-6 pb-4 pt-2">
+                <div className="text-sm font-bold uppercase tracking-widest text-primary/50">Deliver to</div>
+                <div className="flex items-baseline gap-3"><span className="text-6xl font-black leading-none">{current.booth_number ?? "—"}</span><span className="text-xl font-semibold text-primary/60">Booth</span></div>
+                <div className="text-2xl font-semibold">{current.exhibitor?.company_name}</div>
+                {current.destination && <div className="text-lg text-primary/70">{current.destination}</div>}
+              </div>
+              <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-1 border-t border-primary/10 px-6 py-4 text-lg">
+                <span className="text-sm font-bold uppercase tracking-widest text-primary/50">Pickup</span>
+                <span className="font-semibold">{[...new Set(tf.map((x) => x.freight?.storage_location).filter(Boolean))].join(", ") || "—"}</span>
+                <span className="text-sm font-bold uppercase tracking-widest text-primary/50">Crates</span>
+                <span className="font-semibold">{tf.length} · {picked} on forks · {delivered} delivered</span>
+              </div>
+              {current.special_instructions && (
+                <div className="mx-6 mb-5 rounded-xl border-2 border-accent bg-accent/10 p-3 text-lg"><b>Instructions:</b> {current.special_instructions}</div>
+              )}
+              <div className="flex gap-1 px-6 pb-6">
+                {steps.map((label, i) => (
+                  <div key={label} className="grid flex-1 gap-1.5">
+                    <div className={`h-2 rounded-full ${i <= stepIdx ? "bg-accent" : "bg-primary/15"}`} />
+                    <span className={`text-sm font-semibold ${i <= stepIdx ? "text-primary" : "text-primary/40"}`}>{label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="text-2xl font-semibold">{current.exhibitor?.company_name}</div>
-            <div className="text-xl">Booth <b>{current.booth_number ?? "—"}</b>{current.destination ? ` · ${current.destination}` : ""}</div>
-            <div className="text-lg text-primary-foreground/70">Pickup: {[...new Set(tf.map((x) => x.freight?.storage_location).filter(Boolean))].join(", ") || "—"}</div>
-            {current.special_instructions && (
-              <div className="rounded-lg border-2 border-accent p-3 text-lg"><b>Instructions:</b> {current.special_instructions}</div>
+            <button type="button" onClick={nextStep.run} disabled={nextStep.disabled}
+              className={`flex min-h-28 items-center gap-5 rounded-3xl px-7 text-left shadow-xl transition active:scale-[0.99] disabled:opacity-40 ${tones[nextStep.tone]}`}>
+              {nextStep.icon}
+              <span className="grid"><span className="text-3xl font-black uppercase tracking-wide">{nextStep.label}</span><span className="text-lg opacity-80">{nextStep.hint}</span></span>
+            </button>
+            {next[0] && (
+              <button type="button" onClick={() => setTab("next")} className="flex items-center gap-3 rounded-2xl bg-primary-foreground/5 px-5 py-4 text-left text-lg">
+                <span className="text-sm font-bold uppercase tracking-widest text-primary-foreground/50">Up next</span>
+                <span className="font-mono font-bold">{next[0].ticket_number}</span>
+                <span className="truncate text-primary-foreground/70">{next[0].exhibitor?.company_name} · Booth {next[0].booth_number ?? "—"}</span>
+              </button>
             )}
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <Stat label="Freight" value={tf.length} />
-              <Stat label="Picked up" value={picked} />
-              <Stat label="Delivered" value={delivered} />
-            </div>
-            {next[0] && <div className="text-lg text-primary-foreground/70">Next: <b className="font-mono">{next[0].ticket_number}</b> · {next[0].exhibitor?.company_name} · Booth {next[0].booth_number ?? "—"}</div>}
           </div>
           <div className="grid content-start gap-4">
-            <div className={`rounded-xl p-5 text-center ${mySession?.status === "paused" ? "bg-status-requested" : mySession ? "bg-accent text-accent-foreground" : "bg-primary-foreground/10"}`}>
-              <div className="text-lg font-semibold uppercase tracking-wide">{mySession ? (mySession.status === "paused" ? "Paused" : "Timer running") : "Timer not started"}</div>
-              <div className="font-mono text-6xl font-bold tabular-nums">{fmtDuration(mySession ? sessionSeconds(mySession, now) : 0)}</div>
+            <div className={`rounded-3xl p-6 text-center ${mySession?.status === "paused" ? "bg-status-requested" : mySession ? "bg-accent text-accent-foreground" : "bg-primary-foreground/10"}`}>
+              <div className="flex items-center justify-center gap-2 text-base font-bold uppercase tracking-widest">
+                {mySession && mySession.status !== "paused" && <span className="size-2.5 animate-pulse rounded-full bg-current" />}
+                {mySession ? (mySession.status === "paused" ? "Paused" : "Timer running") : "Timer not started"}
+              </div>
+              <div className="font-mono text-7xl font-bold tabular-nums">{fmtDuration(mySession ? sessionSeconds(mySession, now) : 0)}</div>
               {current.work_sessions.filter((s) => s.status !== "completed").length > 1 && (
                 <div className="mt-1 text-base">{current.work_sessions.filter((s) => s.status !== "completed").length} forklifts on this job</div>
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <BigButton onClick={accept} disabled={current.status !== "assigned"}><ClipboardCheck className="size-8" />Accept job</BigButton>
-              {callIn ? <BigButton tone="accent" disabled={!!mySession} onClick={() => rpc(() => supabase.rpc("op_start_session", { _ticket: current.id, _equipment: forklift }), "Work timer started")}><Play className="size-8" />Start work</BigButton> : <BigButton tone="accent" onClick={() => { setScanTicket(current.id); setView("scan"); }}><ScanLine className="size-8" />Scan freight</BigButton>}
-              <BigButton onClick={() => setView("freight")}><Package className="size-8" />View freight</BigButton>
-              {callIn && <BigButton tone="success" onClick={completeDelivery} disabled={!mySession}><CheckCircle2 className="size-8" />Complete request</BigButton>}
+              <BigButton onClick={() => setView("freight")}><Package className="size-8" />Crates</BigButton>
               {mySession?.status === "paused" ? (
-                <BigButton onClick={() => rpc(() => supabase.rpc("op_resume_session", { _session: mySession.id }), "Timer resumed")}><Play className="size-8" />Resume job</BigButton>
+                <BigButton onClick={() => rpc(() => supabase.rpc("op_resume_session", { _session: mySession.id }), "Timer resumed")}><Play className="size-8" />Resume</BigButton>
               ) : (
-                <BigButton onClick={() => setView("pause")} disabled={!mySession}><Pause className="size-8" />Pause job</BigButton>
+                <BigButton onClick={() => setView("pause")} disabled={!mySession}><Pause className="size-8" />Pause</BigButton>
               )}
-              <BigButton tone="danger" onClick={() => setView("issue")}><AlertTriangle className="size-8" />Report issue</BigButton>
+              {!callIn && current.status !== "assigned" && nextStep.label !== "Scan freight in" && (
+                <BigButton onClick={() => { setScanTicket(current.id); setView("scan"); }}><ScanLine className="size-8" />Scan</BigButton>
+              )}
+              <BigButton tone="danger" onClick={() => setView("issue")}><AlertTriangle className="size-8" />Issue</BigButton>
             </div>
           </div>
         </div>
@@ -500,10 +561,14 @@ function BigButton({ children, onClick, disabled, tone }: { children: React.Reac
     : tone === "danger" ? "bg-destructive text-destructive-foreground" : "bg-primary-foreground text-primary";
   return (
     <button type="button" onClick={onClick} disabled={disabled}
-      className={`flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl px-3 text-xl font-bold uppercase tracking-wide disabled:opacity-35 ${toneCls}`}>
+      className={`flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl px-3 transition active:scale-[0.98] text-xl font-bold uppercase tracking-wide disabled:opacity-35 ${toneCls}`}>
       {children}
     </button>
   );
+}
+
+function EmptyState({ title, body }: { title: string; body: string }) {
+  return <div className="col-span-full grid gap-1 rounded-2xl border border-dashed border-primary-foreground/20 p-8 text-center"><div className="text-2xl font-bold">{title}</div><div className="text-lg text-primary-foreground/70">{body}</div></div>;
 }
 
 function Shell({ children, onBack, onExit }: { children: React.ReactNode; onBack?: () => void; onExit?: boolean }) {
