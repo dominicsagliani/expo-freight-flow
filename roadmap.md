@@ -40,3 +40,4 @@
 - [x] Scan-to-queue: scanning freight creates/reuses its delivery job, force-dispatches the next compatible available forklift, and shows the job in that driver's personal queue
 - [x] BOL receiving: private PDF/photo upload, manually verified shipment details, one BOL linked to multiple unique crates, automatic batch label printing, saved-document dashboard and reprinting
 - [x] AI BOL extraction: securely read private PDFs/photos, prefill shipment and crate details for staff review, and test the real upload-to-extraction flow without auto-saving freight
+- [x] Master workflow pass: receiving dashboard (check-in / find / report issue with photo), Find My Crate search, dispatch hold + up to 3 forklift/driver pairs, read-only venue & organizer Event status (no prices). Auto-assign and required BOL kept by user choice.
