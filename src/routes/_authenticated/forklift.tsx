@@ -322,6 +322,17 @@ function ForkliftMode() {
           </div>
         </div>
       )}
+      <FreightQueueScanner
+        open={queueScanOpen}
+        onOpenChange={setQueueScanOpen}
+        onQueued={(result) => {
+          refresh();
+          if (result.assigned && myIds.includes(result.operator_id ?? "")) {
+            setSelected(result.ticket_id);
+            setTab("current");
+          }
+        }}
+      />
     </Shell>
   );
 }
