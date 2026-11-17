@@ -57,7 +57,7 @@ function BolLabelsPage() {
         </Link>
         <Button variant="teal" onClick={() => window.print()} disabled={!data.freight.length}><Printer /> Print {data.freight.length} labels</Button>
       </div>
-      <div className="print-label-sheet grid gap-6">
+      <div className="print-label-sheet grid min-w-0 gap-6">
         {data.freight.map((f) => (
           <FreightLabelCard key={f.id} freight={f} crateNumber={f.bol_crate_number} crateCount={data.freight.length} />
         ))}
