@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, CheckCircle2, ClipboardList, Package, Receipt, Route as RouteIcon, ScanLine, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Building2, CalendarDays, CheckCircle2, ClipboardList, Package, PackageCheck, Receipt, Route as RouteIcon, ScanLine, ShieldCheck, Sparkles, Warehouse } from "lucide-react";
 import heroImg from "@/assets/hero-forklift-hall.jpg";
 import dispatchImg from "@/assets/live-dispatch.jpg";
 import forkliftImg from "@/assets/forklift-mode.jpg";
@@ -37,6 +37,38 @@ const modules = [
 ];
 
 
+const audiences = [
+  {
+    icon: Warehouse,
+    title: "Material-handling contractor",
+    num: "01",
+    primary: true,
+    line: "They manage receiving, dispatch, forklift operators, and freight movement.",
+    wants: ["Operational efficiency", "Job tracking", "Labor accountability", "Accurate billing"],
+  },
+  {
+    icon: Building2,
+    title: "Convention center / venue",
+    num: "02",
+    line: "They want to know what is happening inside their building.",
+    wants: ["Visibility into freight operations", "Accountability", "Safety", "Better coordination"],
+  },
+  {
+    icon: CalendarDays,
+    title: "Trade show organizer",
+    num: "03",
+    line: "They want to know that exhibitors are receiving their freight where and when expected.",
+    wants: ["Exhibitor satisfaction", "Fewer freight complaints", "Event oversight", "Reporting"],
+  },
+  {
+    icon: PackageCheck,
+    title: "Exhibitor",
+    num: "04",
+    line: "They want to know where their shipment is and whether it reached their booth.",
+    wants: ["Confirmation freight arrived", "Delivery visibility", "Fewer missing crates"],
+  },
+];
+
 function Landing() {
   return (
     <div className="min-h-screen bg-background">
@@ -53,6 +85,7 @@ function Landing() {
             <a href="#platform" className="hover:text-foreground">Platform</a>
             <a href="#live-dispatch" className="hover:text-foreground">Live dispatch</a>
             <a href="#forklift-mode" className="hover:text-foreground">Forklift Mode</a>
+            <a href="#who-we-serve" className="hover:text-foreground">Who we serve</a>
             <Link to="/plans" className="hover:text-foreground">Pricing</Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -135,6 +168,54 @@ function Landing() {
           </div>
         </section>
       ))}
+
+      <section id="who-we-serve" className="scroll-mt-20 border-t border-border bg-surface">
+        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+          <div>
+            <div className="eyebrow mb-3">Who we serve</div>
+            <h2 className="text-3xl font-semibold">Built for everyone who touches the freight.</h2>
+            <p className="mt-4 max-w-md text-muted-foreground">
+              ExpoHaul starts at the loading dock, but the same record keeps the venue, the organizer, and the exhibitor
+              looking at the same truth.
+            </p>
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground">
+              <span className="size-2 rounded-full bg-teal" />
+              Primary focus: material-handling contractors
+            </div>
+          </div>
+
+          <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
+            {audiences.map((a) => (
+              <div key={a.title} className="p-5 sm:p-6">
+                <div className="flex items-start gap-4">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-teal-soft text-teal">
+                    <a.icon className="size-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-semibold">{a.title}</h3>
+                      {a.primary && (
+                        <span className="rounded-full bg-navy px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-navy-foreground">
+                          Primary target
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-sm text-muted-foreground">{a.line}</p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {a.wants.map((w) => (
+                        <span key={w} className="rounded-full border border-border bg-background px-2.5 py-1 text-xs">
+                          {w}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <span className="ml-auto hidden font-mono text-xs text-muted-foreground sm:block">{a.num}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6 text-sm text-muted-foreground">
