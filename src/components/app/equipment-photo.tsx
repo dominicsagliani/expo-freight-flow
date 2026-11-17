@@ -23,6 +23,6 @@ export function EquipmentPhoto({ photoPath, unitNumber, className }: {
   return <img
     src={photoUrl ?? fallbackForklift}
     alt={photoPath ? `${unitNumber} forklift` : `Representative forklift for ${unitNumber}`}
-    className={cn("bg-muted object-cover", className)}
+    className={cn("min-w-0 bg-muted object-cover", className)}
   />;
 }
