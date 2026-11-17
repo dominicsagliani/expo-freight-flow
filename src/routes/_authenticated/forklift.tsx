@@ -18,6 +18,7 @@ import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { EQUIPMENT_CLASSES, FUEL_TYPES } from "@/lib/fleet";
 import { useAutoInvoice } from "@/components/app/service-payment";
 import { driverRosterQuery } from "@/lib/queries";
+import { FreightQueueScanner } from "@/components/app/freight-queue-scanner";
 
 export const Route = createFileRoute("/_authenticated/forklift")({
   head: () => ({
@@ -60,6 +61,8 @@ function ForkliftMode() {
   const [forklift, setForklift] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [view, setView] = useState<View>("home");
+  const [scanTicket, setScanTicket] = useState<string | null>(null);
+  const [queueScanOpen, setQueueScanOpen] = useState(false);
   const [tab, setTab] = useState<"current" | "next" | "done">("current");
   const [now, setNow] = useState(Date.now());
 
@@ -134,6 +137,7 @@ function ForkliftMode() {
   const open = jobs.filter((j) => j.status !== "completed");
   const done = jobs.filter((j) => j.status === "completed" && j.completed_at && new Date(j.completed_at).toDateString() === today);
   const current = open.find((j) => j.id === selected) ?? open.find((j) => j.status === "in_progress") ?? open[0];
+  const scanJob = jobs.find((j) => j.id === scanTicket) ?? current;
   const next = open.filter((j) => j.id !== current?.id);
   const mySession = current?.work_sessions.find((s) => s.status !== "completed" && s.equipment_id === forklift);
   const tf = current?.ticket_freight ?? [];
@@ -172,6 +176,7 @@ function ForkliftMode() {
       if (await rpc(() => supabase.rpc("op_complete_call_in", { _ticket: current.id }), "Request completed")) { autoInvoice(current.id); setSelected(null); refresh(); }
       return;
     }
+    setScanTicket(current.id);
     setView("scan");
   };
 
@@ -197,8 +202,8 @@ function ForkliftMode() {
     </div>
   );
 
-  if (view === "scan" && current) {
-    return <Shell onBack={() => setView("home")}>{header}<ScanScreen key={current.id} job={current} forklift={forklift} onDone={refresh} onCompleted={() => { setSelected(null); setView("home"); refresh(); }} /></Shell>;
+  if (view === "scan" && scanJob) {
+    return <Shell onBack={() => { setScanTicket(null); setView("home"); }}>{header}<ScanScreen key={scanJob.id} job={scanJob} forklift={forklift} onDone={refresh} onCompleted={() => { setScanTicket(null); setSelected(null); setView("home"); refresh(); }} /></Shell>;
   }
   if (view === "freight" && current) {
     return (
@@ -242,6 +247,10 @@ function ForkliftMode() {
   return (
     <Shell onExit>
       {header}
+      <div className="px-5 pt-4">
+        <BigButton tone="accent" onClick={() => setQueueScanOpen(true)}><ScanLine className="size-8" />Scan freight to queue</BigButton>
+        <p className="mt-2 text-center text-base text-primary-foreground/70">Automatically sends the job to the next available compatible forklift.</p>
+      </div>
       <div className="flex flex-wrap gap-2 px-5 pt-4">
         {([["current", "Current job"], ["next", `Next jobs (${next.length})`], ["done", `Completed (${done.length})`]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)}
@@ -303,7 +312,7 @@ function ForkliftMode() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <BigButton onClick={accept} disabled={current.status !== "assigned"}><ClipboardCheck className="size-8" />Accept job</BigButton>
-              {callIn ? <BigButton tone="accent" disabled={!!mySession} onClick={() => rpc(() => supabase.rpc("op_start_session", { _ticket: current.id, _equipment: forklift }), "Work timer started")}><Play className="size-8" />Start work</BigButton> : <BigButton tone="accent" onClick={() => setView("scan")}><ScanLine className="size-8" />Scan freight</BigButton>}
+              {callIn ? <BigButton tone="accent" disabled={!!mySession} onClick={() => rpc(() => supabase.rpc("op_start_session", { _ticket: current.id, _equipment: forklift }), "Work timer started")}><Play className="size-8" />Start work</BigButton> : <BigButton tone="accent" onClick={() => { setScanTicket(current.id); setView("scan"); }}><ScanLine className="size-8" />Scan freight</BigButton>}
               <BigButton onClick={() => setView("freight")}><Package className="size-8" />View freight</BigButton>
               {callIn && <BigButton tone="success" onClick={completeDelivery} disabled={!mySession}><CheckCircle2 className="size-8" />Complete request</BigButton>}
               {mySession?.status === "paused" ? (
@@ -316,6 +325,17 @@ function ForkliftMode() {
           </div>
         </div>
       )}
+      <FreightQueueScanner
+        open={queueScanOpen}
+        onOpenChange={setQueueScanOpen}
+        onQueued={(result) => {
+          refresh();
+          if (result.assigned && myIds.includes(result.operator_id ?? "")) {
+            setSelected(result.ticket_id);
+            setTab("current");
+          }
+        }}
+      />
     </Shell>
   );
 }

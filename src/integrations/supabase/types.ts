@@ -1934,6 +1934,7 @@ export type Database = {
       reset_operator_pin: { Args: { _operator: string }; Returns: undefined }
       reset_org_drivers: { Args: { _org: string }; Returns: number }
       resolve_issue: { Args: { _update: string }; Returns: undefined }
+      scan_freight_to_queue: { Args: { _token: string }; Returns: Json }
       session_hourly_rate: { Args: { _ticket: string }; Returns: number }
       session_hours: {
         Args: { s: Database["public"]["Tables"]["work_sessions"]["Row"] }
