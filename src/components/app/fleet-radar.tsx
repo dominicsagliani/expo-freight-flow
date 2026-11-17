@@ -7,7 +7,7 @@ import { radarState, type RadarState } from "@/lib/fleet-radar";
 
 type Driver = { user_id: string; operator_id: string; equipment_id: string; ready: boolean; heartbeat_at: string; ready_since?: string | null;
   operator?: { full_name: string } | null; equipment?: { unit_number: string; equipment_class: string; capacity_lbs: number | null } | null;
-  job?: { id: string; status: string; ticket_number: string; booth_number: string | null; destination: string | null; exhibitor?: { company_name: string } | null } };
+  job?: { id: string; status: string; ticket_number: string; booth_number: string | null; destination: string | null; exhibitor?: { company_name: string } | null | undefined } | undefined };
 
 const TONE: Record<RadarState, string> = {
   "Ready now": "border-teal bg-teal/10 text-teal",
