@@ -17,6 +17,7 @@ import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticated/dispatch'
 import { Route as AuthenticatedEquipmentRouteImport } from './routes/_authenticated/equipment'
+import { Route as AuthenticatedEventStatusRouteImport } from './routes/_authenticated/event-status'
 import { Route as AuthenticatedExhibitorsRouteImport } from './routes/_authenticated/exhibitors'
 import { Route as AuthenticatedFloorPlanRouteImport } from './routes/_authenticated/floor-plan'
 import { Route as AuthenticatedForkliftRouteImport } from './routes/_authenticated/forklift'
@@ -76,6 +77,12 @@ const AuthenticatedEquipmentRoute = AuthenticatedEquipmentRouteImport.update({
   path: '/equipment',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEventStatusRoute =
+  AuthenticatedEventStatusRouteImport.update({
+    id: '/event-status',
+    path: '/event-status',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedExhibitorsRoute = AuthenticatedExhibitorsRouteImport.update({
   id: '/exhibitors',
   path: '/exhibitors',
@@ -189,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dispatch': typeof AuthenticatedDispatchRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
+  '/event-status': typeof AuthenticatedEventStatusRoute
   '/exhibitors': typeof AuthenticatedExhibitorsRoute
   '/floor-plan': typeof AuthenticatedFloorPlanRoute
   '/forklift': typeof AuthenticatedForkliftRoute
@@ -217,6 +225,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dispatch': typeof AuthenticatedDispatchRoute
   '/equipment': typeof AuthenticatedEquipmentRoute
+  '/event-status': typeof AuthenticatedEventStatusRoute
   '/exhibitors': typeof AuthenticatedExhibitorsRoute
   '/floor-plan': typeof AuthenticatedFloorPlanRoute
   '/forklift': typeof AuthenticatedForkliftRoute
@@ -247,6 +256,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/dispatch': typeof AuthenticatedDispatchRoute
   '/_authenticated/equipment': typeof AuthenticatedEquipmentRoute
+  '/_authenticated/event-status': typeof AuthenticatedEventStatusRoute
   '/_authenticated/exhibitors': typeof AuthenticatedExhibitorsRoute
   '/_authenticated/floor-plan': typeof AuthenticatedFloorPlanRoute
   '/_authenticated/forklift': typeof AuthenticatedForkliftRoute
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dispatch'
     | '/equipment'
+    | '/event-status'
     | '/exhibitors'
     | '/floor-plan'
     | '/forklift'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dispatch'
     | '/equipment'
+    | '/event-status'
     | '/exhibitors'
     | '/floor-plan'
     | '/forklift'
@@ -334,6 +346,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/dispatch'
     | '/_authenticated/equipment'
+    | '/_authenticated/event-status'
     | '/_authenticated/exhibitors'
     | '/_authenticated/floor-plan'
     | '/_authenticated/forklift'
@@ -420,6 +433,13 @@ declare module '@tanstack/react-router' {
       path: '/equipment'
       fullPath: '/equipment'
       preLoaderRoute: typeof AuthenticatedEquipmentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/event-status': {
+      id: '/_authenticated/event-status'
+      path: '/event-status'
+      fullPath: '/event-status'
+      preLoaderRoute: typeof AuthenticatedEventStatusRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/exhibitors': {
@@ -563,6 +583,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDispatchRoute: typeof AuthenticatedDispatchRoute
   AuthenticatedEquipmentRoute: typeof AuthenticatedEquipmentRoute
+  AuthenticatedEventStatusRoute: typeof AuthenticatedEventStatusRoute
   AuthenticatedExhibitorsRoute: typeof AuthenticatedExhibitorsRoute
   AuthenticatedFloorPlanRoute: typeof AuthenticatedFloorPlanRoute
   AuthenticatedForkliftRoute: typeof AuthenticatedForkliftRoute
@@ -587,6 +608,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDispatchRoute: AuthenticatedDispatchRoute,
   AuthenticatedEquipmentRoute: AuthenticatedEquipmentRoute,
+  AuthenticatedEventStatusRoute: AuthenticatedEventStatusRoute,
   AuthenticatedExhibitorsRoute: AuthenticatedExhibitorsRoute,
   AuthenticatedFloorPlanRoute: AuthenticatedFloorPlanRoute,
   AuthenticatedForkliftRoute: AuthenticatedForkliftRoute,
