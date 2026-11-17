@@ -19,6 +19,7 @@ import { EQUIPMENT_CLASSES, FUEL_TYPES } from "@/lib/fleet";
 import { useAutoInvoice } from "@/components/app/service-payment";
 import { driverRosterQuery } from "@/lib/queries";
 import { FreightQueueScanner } from "@/components/app/freight-queue-scanner";
+import { EquipmentPhoto } from "@/components/app/equipment-photo";
 
 export const Route = createFileRoute("/_authenticated/forklift")({
   head: () => ({
@@ -561,6 +562,7 @@ function GoOnline({ equipment, onOnline }: { equipment: { id: string; unit_numbe
           return (
             <Button key={e.id} disabled={blocked || !!busy || !driverId} onClick={() => go(e.id)} variant="outline"
               className="h-auto min-h-36 flex-col items-start whitespace-normal rounded-lg border-2 border-primary-foreground/20 bg-primary-foreground/5 p-4 text-left text-xl font-bold text-primary-foreground disabled:opacity-40">
+              <EquipmentPhoto photoPath={e.photo_path} unitNumber={e.unit_number} className="h-40 w-full rounded-md" />
               {e.unit_number}
               <div className="text-base font-normal">{e.model || e.description}</div>
               <div className="text-sm font-normal">{EQUIPMENT_CLASSES[e.equipment_class as keyof typeof EQUIPMENT_CLASSES]} · {FUEL_TYPES[e.fuel_type as keyof typeof FUEL_TYPES]}</div>
