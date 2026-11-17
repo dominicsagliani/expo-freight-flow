@@ -52,27 +52,27 @@ export function ReportFreightIssueDialog({ freight, orgId, trigger }: { freight:
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-md overflow-hidden">
         <DialogHeader><DialogTitle>Report freight issue</DialogTitle></DialogHeader>
-        <div className="grid gap-3">
-          <div className="grid gap-1.5">
+        <div className="grid min-w-0 gap-3">
+          <div className="grid min-w-0 gap-1.5">
             <Label htmlFor="fi-freight">Crate</Label>
-            <select id="fi-freight" className="h-9 rounded-md border border-border bg-card px-2 text-sm" value={freightId} onChange={(e) => setFreightId(e.target.value)}>
+            <select id="fi-freight" className="h-9 w-full min-w-0 rounded-md border border-border bg-card px-2 text-sm" value={freightId} onChange={(e) => setFreightId(e.target.value)}>
               <option value="">Choose…</option>
               {freight.map((f) => <option key={f.id} value={f.id}>{f.freight_code} · {f.exhibitor?.company_name} · {f.description}</option>)}
             </select>
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid min-w-0 gap-1.5">
             <Label htmlFor="fi-kind">Problem</Label>
-            <select id="fi-kind" className="h-9 rounded-md border border-border bg-card px-2 text-sm" value={kind} onChange={(e) => setKind(e.target.value)}>
+            <select id="fi-kind" className="h-9 w-full min-w-0 rounded-md border border-border bg-card px-2 text-sm" value={kind} onChange={(e) => setKind(e.target.value)}>
               {Object.entries(FREIGHT_ISSUE_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid min-w-0 gap-1.5">
             <Label htmlFor="fi-note">Notes</Label>
             <Textarea id="fi-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="What do you see?" />
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid min-w-0 gap-1.5">
             <Label htmlFor="fi-photo">Photo (optional)</Label>
             <input id="fi-photo" type="file" accept="image/*" capture="environment" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-sm" />
           </div>
