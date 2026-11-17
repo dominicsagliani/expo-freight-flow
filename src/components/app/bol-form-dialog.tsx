@@ -133,7 +133,8 @@ export function BolFormDialog({
         _booth: details.booth.trim(),
         _declared_pieces: count,
         _description: details.description.trim(),
-        _total_weight: totalWeight,
+        // The database accepts NULL for an unknown BOL weight; generated RPC types require number.
+        _total_weight: totalWeight as number,
         _special: details.special.trim(),
         _crates: crates.map((crate) => ({ description: crate.description.trim(), weight_lbs: crate.weight.trim() })),
         _intake_key: key,

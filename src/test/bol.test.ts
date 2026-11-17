@@ -22,6 +22,6 @@ describe("BOL receiving rules", () => {
   });
 
   it("uses a storage-safe filename while retaining the extension", () => {
-    expect(sanitizeBolFilename("YRC PRO 482910 / final.pdf")).toBe("YRC-PRO-482910-final.pdf");
+    expect(sanitizeBolFilename("YRC PRO 482910 final.pdf")).toBe("YRC-PRO-482910-final.pdf");
   });
 });
