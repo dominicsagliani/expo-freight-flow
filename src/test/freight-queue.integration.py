@@ -42,9 +42,6 @@ async def main():
             await page.get_by_role('button', name='Scan freight to queue', exact=True).click()
             await page.get_by_label('Freight label code', exact=True).fill(freight['qr_token'])
             await page.get_by_role('button', name='Queue', exact=True).click()
-            await page.wait_for_timeout(1500)
-            print('SCAN DIALOG', await page.get_by_role('dialog').inner_text())
-            await page.screenshot(path=str(SCREENSHOTS / 'scan-dialog-debug.png'))
 
         await scan_to_queue()
         await page.get_by_text('Sent to Dominic Sagliani · FL-01', exact=True).wait_for()
