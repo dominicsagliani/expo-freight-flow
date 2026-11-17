@@ -18,6 +18,7 @@ import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { EQUIPMENT_CLASSES, FUEL_TYPES } from "@/lib/fleet";
 import { useAutoInvoice } from "@/components/app/service-payment";
 import { driverRosterQuery } from "@/lib/queries";
+import { FreightQueueScanner } from "@/components/app/freight-queue-scanner";
 
 export const Route = createFileRoute("/_authenticated/forklift")({
   head: () => ({
