@@ -55,6 +55,9 @@ export type Membership = Awaited<ReturnType<NonNullable<ReturnType<typeof member
 export function isStaff(m: Pick<Membership, "role">) {
   return m.role === "company_admin" || m.role === "dispatcher" || m.role === "super_admin";
 }
+export function isViewer(m: Pick<Membership, "role">) {
+  return m.role === "venue" || m.role === "organizer";
+}
 export function isAdmin(m: Pick<Membership, "role">) {
   return m.role === "company_admin" || m.role === "super_admin";
 }
@@ -173,7 +176,7 @@ export const freightQuery = () =>
       unwrap(
         await supabase
           .from("freight_items")
-          .select("*, exhibitor:exhibitors(id, company_name), event:events(id, name)")
+          .select("*, exhibitor:exhibitors(id, company_name), event:events(id, name), bol:bills_of_lading(pro_number, carrier_name)")
           .order("created_at", { ascending: false }),
       ),
   });

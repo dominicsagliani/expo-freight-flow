@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ClipboardList,
   CreditCard,
+  Eye,
   LayoutDashboard,
   Map,
   Package,
@@ -33,13 +34,15 @@ import type { AppRole } from "@/lib/labels";
 type NavItem = { title: string; url: string; icon: typeof LayoutDashboard; roles?: AppRole[] };
 
 const STAFF: AppRole[] = ["super_admin", "company_admin", "dispatcher"];
+const WORK: AppRole[] = [...STAFF, "operator", "exhibitor"];
 
 const operations: NavItem[] = [
-  { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Overview", url: "/dashboard", icon: LayoutDashboard, roles: WORK },
+  { title: "Event status", url: "/event-status", icon: Eye, roles: [...STAFF, "venue", "organizer"] },
   { title: "Events", url: "/events", icon: CalendarDays, roles: STAFF },
   { title: "Exhibitors", url: "/exhibitors", icon: Building2, roles: STAFF },
-  { title: "Freight Management", url: "/freight", icon: Package },
-  { title: "Material Handling Tickets", url: "/tickets", icon: ClipboardList },
+  { title: "Freight Management", url: "/freight", icon: Package, roles: WORK },
+  { title: "Material Handling Tickets", url: "/tickets", icon: ClipboardList, roles: WORK },
   { title: "My Jobs & Scan", url: "/operator", icon: ScanLine, roles: ["operator", ...STAFF] },
   { title: "Forklift Mode", url: "/forklift", icon: Forklift, roles: ["operator", ...STAFF] },
   { title: "Dispatch", url: "/dispatch", icon: RouteIcon, roles: STAFF },

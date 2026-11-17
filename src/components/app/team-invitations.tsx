@@ -7,18 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Panel } from "@/components/app/page-header";
-import { exhibitorsQuery, invitationsQuery, operatorsQuery } from "@/lib/queries";
+import { eventsQuery, exhibitorsQuery, invitationsQuery, operatorsQuery } from "@/lib/queries";
 import { ROLE_LABEL } from "@/lib/labels";
 import { fmtDateTime } from "@/lib/format";
 
-type InviteRole = "company_admin" | "dispatcher" | "operator" | "exhibitor";
-const ROLES: InviteRole[] = ["company_admin", "dispatcher", "operator", "exhibitor"];
+type InviteRole = "company_admin" | "dispatcher" | "operator" | "exhibitor" | "venue" | "organizer";
+const ROLES: InviteRole[] = ["company_admin", "dispatcher", "operator", "exhibitor", "venue", "organizer"];
+const isView = (r: InviteRole) => r === "venue" || r === "organizer";
 
 export function TeamInvitations({ orgId }: { orgId: string }) {
   const qc = useQueryClient();
   const { data: invites = [] } = useQuery(invitationsQuery(orgId));
   const { data: exhibitors = [] } = useQuery(exhibitorsQuery());
   const { data: operators = [] } = useQuery(operatorsQuery());
+  const { data: events = [] } = useQuery(eventsQuery());
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<InviteRole>("dispatcher");
   const [linkId, setLinkId] = useState("");
@@ -33,6 +35,7 @@ export function TeamInvitations({ orgId }: { orgId: string }) {
       role,
       exhibitor_id: role === "exhibitor" ? linkId || null : null,
       operator_id: role === "operator" ? linkId || null : null,
+      event_id: isView(role) ? linkId || null : null,
     });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
@@ -53,7 +56,9 @@ export function TeamInvitations({ orgId }: { orgId: string }) {
       ? exhibitors.map((x) => ({ id: x.id, label: x.company_name }))
       : role === "operator"
         ? operators.map((x) => ({ id: x.id, label: x.full_name }))
-        : [];
+        : isView(role)
+          ? events.map((x) => ({ id: x.id, label: x.name }))
+          : [];
 
   return (
     <Panel title="Team & invitations" bodyClassName="grid gap-4 p-4">
@@ -72,7 +77,7 @@ export function TeamInvitations({ orgId }: { orgId: string }) {
           </Select>
         </div>
         <div className="grid gap-1.5">
-          <Label>{role === "exhibitor" ? "Exhibitor" : role === "operator" ? "Operator" : "Link"}</Label>
+          <Label>{role === "exhibitor" ? "Exhibitor" : role === "operator" ? "Operator" : isView(role) ? "Event" : "Link"}</Label>
           <Select value={linkId} onValueChange={setLinkId} disabled={linkOptions.length === 0}>
             <SelectTrigger><SelectValue placeholder={linkOptions.length ? "Choose…" : "Not needed"} /></SelectTrigger>
             <SelectContent>
@@ -83,7 +88,7 @@ export function TeamInvitations({ orgId }: { orgId: string }) {
         <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Invite"}</Button>
       </form>
       <p className="text-xs text-muted-foreground">
-        No email is sent yet — tell the person to create an account with this exact email. They join your company once their email is confirmed.
+        Venue and organizer accounts see live freight and job progress for one event only — never prices, charges or contact details. No email is sent yet — tell the person to create an account with this exact email. They join your company once their email is confirmed.
       </p>
       {invites.length > 0 && (
         <ul className="divide-y divide-border rounded-md border border-border">
