@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -78,6 +78,12 @@ function describeActivity(a: { action: string; details: unknown }) {
 }
 
 function Dashboard() {
+  const { data: m } = useSuspenseQuery(membershipQuery());
+  if (m.role === "venue" || m.role === "organizer") return <Navigate to="/event-status" />;
+  return <DashboardBody />;
+}
+
+function DashboardBody() {
   const { data: m } = useSuspenseQuery(membershipQuery());
   const { data: tickets } = useSuspenseQuery(ticketsQuery());
   const { data: freight } = useSuspenseQuery(freightQuery());

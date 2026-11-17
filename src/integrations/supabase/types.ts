@@ -609,6 +609,70 @@ export type Database = {
           },
         ]
       }
+      freight_issues: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_id: string | null
+          freight_id: string
+          id: string
+          kind: string
+          note: string | null
+          organization_id: string
+          photo_path: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_id?: string | null
+          freight_id: string
+          id?: string
+          kind: string
+          note?: string | null
+          organization_id: string
+          photo_path?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_id?: string | null
+          freight_id?: string
+          id?: string
+          kind?: string
+          note?: string | null
+          organization_id?: string
+          photo_path?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freight_issues_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "freight_issues_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freight_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "freight_issues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       freight_items: {
         Row: {
           arrival_status: Database["public"]["Enums"]["arrival_status"]
@@ -719,6 +783,7 @@ export type Database = {
           accepted_by: string | null
           created_at: string
           email: string
+          event_id: string | null
           exhibitor_id: string | null
           expires_at: string
           id: string
@@ -733,6 +798,7 @@ export type Database = {
           accepted_by?: string | null
           created_at?: string
           email: string
+          event_id?: string | null
           exhibitor_id?: string | null
           expires_at?: string
           id?: string
@@ -747,6 +813,7 @@ export type Database = {
           accepted_by?: string | null
           created_at?: string
           email?: string
+          event_id?: string | null
           exhibitor_id?: string | null
           expires_at?: string
           id?: string
@@ -757,6 +824,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invitations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invitations_exhibitor_id_fkey"
             columns: ["exhibitor_id"]
@@ -1330,6 +1404,7 @@ export type Database = {
         Row: {
           added_by: string | null
           created_at: string
+          equipment_id: string | null
           operator_id: string
           organization_id: string
           ticket_id: string
@@ -1337,6 +1412,7 @@ export type Database = {
         Insert: {
           added_by?: string | null
           created_at?: string
+          equipment_id?: string | null
           operator_id: string
           organization_id: string
           ticket_id: string
@@ -1344,11 +1420,19 @@ export type Database = {
         Update: {
           added_by?: string | null
           created_at?: string
+          equipment_id?: string | null
           operator_id?: string
           organization_id?: string
           ticket_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ticket_crew_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ticket_crew_operator_id_fkey"
             columns: ["operator_id"]
@@ -1539,6 +1623,9 @@ export type Database = {
           estimated_weight_lbs: number | null
           event_id: string
           exhibitor_id: string
+          held_at: string | null
+          held_by: string | null
+          hold_reason: string | null
           id: string
           intake_key: string | null
           invoice_sent_at: string | null
@@ -1576,6 +1663,9 @@ export type Database = {
           estimated_weight_lbs?: number | null
           event_id: string
           exhibitor_id: string
+          held_at?: string | null
+          held_by?: string | null
+          hold_reason?: string | null
           id?: string
           intake_key?: string | null
           invoice_sent_at?: string | null
@@ -1613,6 +1703,9 @@ export type Database = {
           estimated_weight_lbs?: number | null
           event_id?: string
           exhibitor_id?: string
+          held_at?: string | null
+          held_by?: string | null
+          hold_reason?: string | null
           id?: string
           intake_key?: string | null
           invoice_sent_at?: string | null
@@ -1674,6 +1767,7 @@ export type Database = {
       user_roles: {
         Row: {
           created_at: string
+          event_id: string | null
           exhibitor_id: string | null
           id: string
           operator_id: string | null
@@ -1683,6 +1777,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          event_id?: string | null
           exhibitor_id?: string | null
           id?: string
           operator_id?: string | null
@@ -1692,6 +1787,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          event_id?: string | null
           exhibitor_id?: string | null
           id?: string
           operator_id?: string | null
@@ -1700,6 +1796,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_roles_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_roles_exhibitor_id_fkey"
             columns: ["exhibitor_id"]
@@ -1878,6 +1981,7 @@ export type Database = {
         }
         Returns: number
       }
+      can_view_event_status: { Args: { _event: string }; Returns: boolean }
       can_view_ticket: { Args: { _ticket: string }; Returns: boolean }
       can_work_ticket: { Args: { _ticket: string }; Returns: boolean }
       compute_ticket_charge: { Args: { _ticket: string }; Returns: number }
@@ -1909,6 +2013,20 @@ export type Database = {
         Returns: {
           full_name: string
           id: string
+        }[]
+      }
+      event_status_board: {
+        Args: { _event: string }
+        Returns: {
+          booth_number: string
+          exhibitor_name: string
+          freight_delivered: number
+          freight_received: number
+          freight_total: number
+          jobs_completed: number
+          jobs_held: number
+          jobs_open: number
+          open_issues: number
         }[]
       }
       exhibitor_event_ids: { Args: never; Returns: string[] }
@@ -2069,6 +2187,10 @@ export type Database = {
         Args: { s: Database["public"]["Tables"]["work_sessions"]["Row"] }
         Returns: number
       }
+      set_ticket_hold: {
+        Args: { _hold: boolean; _reason?: string; _ticket: string }
+        Returns: undefined
+      }
       staff_correct_scan: {
         Args: {
           _freight: string
@@ -2080,6 +2202,17 @@ export type Database = {
       }
       user_exhibitor_ids: { Args: never; Returns: string[] }
       user_operator_ids: { Args: never; Returns: string[] }
+      viewer_events: {
+        Args: never
+        Returns: {
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          status: Database["public"]["Enums"]["event_status"]
+          venue: string
+        }[]
+      }
     }
     Enums: {
       app_role:
@@ -2088,6 +2221,8 @@ export type Database = {
         | "dispatcher"
         | "operator"
         | "exhibitor"
+        | "venue"
+        | "organizer"
       arrival_status:
         | "expected"
         | "received"
@@ -2256,6 +2391,8 @@ export const Constants = {
         "dispatcher",
         "operator",
         "exhibitor",
+        "venue",
+        "organizer",
       ],
       arrival_status: [
         "expected",

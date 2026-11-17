@@ -55,6 +55,8 @@ export const ROLE_LABEL: Record<AppRole, string> = {
   dispatcher: "Dispatcher",
   operator: "Forklift operator",
   exhibitor: "Exhibitor",
+  venue: "Venue (view only)",
+  organizer: "Show organizer (view only)",
 };
 
 export const FREIGHT_TYPE_LABEL: Record<FreightType, string> = {

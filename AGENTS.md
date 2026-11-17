@@ -30,10 +30,10 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project rules (ExpoHaul)
-- Destructive event deletion and company-wide driver reset use admin-verified database RPCs with event locks; reset cancels unfinished tickets, revokes queue/unlock reservations, records cancelled sessions without inventing deliveries, and preserves completed billing. Why: resets must not silently charge or auto-reassign drivers, and deletion must not leave active work orphaned.
-- Call-in intake uses an idempotent staff-only database RPC that creates and dispatches atomically; service-only requests need no freight, load requests require known capacity-safe weight for automatic routing, and no-freight completion closes sessions before advancing the queue. Why: rapid desk intake must not duplicate jobs, invent freight or bypass timing and load safety.
+- Event deletion and company driver reset use admin-verified locked RPCs: reset cancels unfinished work and releases reservations but keeps completed billing. Why: no silent charges or orphaned work.
+- Call-in intake is an idempotent staff RPC that creates and dispatches atomically; load requests need known safe weight. Why: no duplicate or unsafe jobs.
 
-- Fleet reservations and auto-dispatch use authenticated database RPCs with event locks, exclusive operator/machine reservations and short heartbeats; only registered PIN-unlocked drivers receive compatible known-weight tickets. Why: prevents duplicate assignments and unsafe or cross-event routing; assignment never starts billable time.
+- Fleet reservations and auto-dispatch use authenticated database RPCs with event locks, exclusive operator/machine reservations and short heartbeats; only registered online drivers receive compatible known-weight tickets. Why: prevents duplicate assignments and unsafe or cross-event routing; assignment never starts billable time.
 
 - Multi-tenant: every business table carries `organization_id`; access is enforced by RLS through security-definer helpers (`is_org_staff`, `is_org_admin`, `user_exhibitor_ids`, `user_operator_ids`, `can_view_ticket`). Why: company, exhibitor, and operator isolation must hold even if the UI is bypassed.
 - Roles live only in `public.user_roles` (role + optional exhibitor_id / operator_id link), never on profiles. Why: prevents privilege escalation.
@@ -52,3 +52,5 @@ use the editor.
 - Interactive floor plans live in `floor_plans` + `booth_markers` (org id set by BEFORE triggers from the parent event/plan, files in the private `floor-plans` storage bucket with org-prefixed paths); markers store percentage coordinates and booth status is derived in the UI from the exhibitor's tickets plus unresolved issue reports. Why: plans stay tenant-isolated, markers keep position at any zoom, and the map never stores a status that can go stale.
 - Pay-at-service: on job completion the client calls the authenticated `sendServiceInvoice` server fn, which emails the exhibitor a receipt linking to the contractor's own payment link (`organizations.payment_link_url`); paid state is staff-set via `mark_ticket_paid`. Why: exhibitor money never passes through ExpoHaul and receipts dedupe per ticket.
 - AI BOL extraction renders documents to JPEGs in the browser and uses a staff-checked server function; AI only prefills fields. Why: extraction never auto-creates freight.
+- Venue/organizer roles are event-scoped and read only via security-definer RPCs, never tables. Why: no charges/contacts exposed.
+- Holds change only via `set_ticket_hold`; dispatch skips held jobs; crews are driver+forklift pairs, max 3 forklifts. Why: safe, unforgeable holds.
