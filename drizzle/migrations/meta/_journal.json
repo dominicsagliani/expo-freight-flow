@@ -176,6 +176,13 @@
       "when": 1794878704355,
       "tag": "0024_scan_freight_queue_variable_fix",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1794878809527,
+      "tag": "0025_scan_freight_queue_lookup_fix",
+      "breakpoints": true
     }
   ]
 }
