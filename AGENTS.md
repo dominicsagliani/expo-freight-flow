@@ -30,8 +30,8 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project rules (ExpoHaul)
-- Destructive event deletion and company-wide driver reset use admin-verified database RPCs with event locks; reset cancels unfinished tickets, revokes queue/unlock reservations, records cancelled sessions without inventing deliveries, and preserves completed billing. Why: resets must not silently charge or auto-reassign drivers, and deletion must not leave active work orphaned.
-- Call-in intake uses an idempotent staff-only database RPC that creates and dispatches atomically; service-only requests need no freight, load requests require known capacity-safe weight for automatic routing, and no-freight completion closes sessions before advancing the queue. Why: rapid desk intake must not duplicate jobs, invent freight or bypass timing and load safety.
+- Event deletion and company driver reset use admin-verified locked RPCs: reset cancels unfinished work and releases reservations but keeps completed billing. Why: no silent charges or orphaned work.
+- Call-in intake is an idempotent staff RPC that creates and dispatches atomically; load requests need known safe weight. Why: no duplicate or unsafe jobs.
 
 - Fleet reservations and auto-dispatch use authenticated database RPCs with event locks, exclusive operator/machine reservations and short heartbeats; only registered online drivers receive compatible known-weight tickets. Why: prevents duplicate assignments and unsafe or cross-event routing; assignment never starts billable time.
 
