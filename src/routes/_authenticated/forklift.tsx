@@ -19,7 +19,6 @@ import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { EQUIPMENT_CLASSES, FUEL_TYPES } from "@/lib/fleet";
 import { useAutoInvoice } from "@/components/app/service-payment";
 import { driverRosterQuery } from "@/lib/queries";
-import { FreightQueueScanner } from "@/components/app/freight-queue-scanner";
 import { EquipmentPhoto } from "@/components/app/equipment-photo";
 
 export const Route = createFileRoute("/_authenticated/forklift")({
@@ -64,7 +63,6 @@ function ForkliftMode() {
   const [selected, setSelected] = useState<string | null>(null);
   const [view, setView] = useState<View>("home");
   const [scanTicket, setScanTicket] = useState<string | null>(null);
-  const [queueScanOpen, setQueueScanOpen] = useState(false);
   const [tab, setTab] = useState<"current" | "next" | "done" | "perf">("current");
   const [now, setNow] = useState(Date.now());
 
@@ -277,9 +275,6 @@ function ForkliftMode() {
           <button key={k} onClick={() => setTab(k)}
             className={`min-h-12 rounded-full px-5 text-lg font-semibold transition-colors ${tab === k ? "bg-primary-foreground text-primary" : "bg-primary-foreground/10 hover:bg-primary-foreground/15"}`}>{l}</button>
         ))}
-        <button type="button" onClick={() => setQueueScanOpen(true)} className="ml-auto inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-accent px-5 text-lg font-semibold text-accent">
-          <ScanLine className="size-5" />Scan to queue
-        </button>
       </div>
 
       {tab === "perf" && me?.[0]?.id && <MyPerformance operatorId={me[0].id} />}
@@ -389,17 +384,6 @@ function ForkliftMode() {
           </div>
         </div>
       )}
-      <FreightQueueScanner
-        open={queueScanOpen}
-        onOpenChange={setQueueScanOpen}
-        onQueued={(result) => {
-          refresh();
-          if (result.assigned && myIds.includes(result.operator_id ?? "")) {
-            setSelected(result.ticket_id);
-            setTab("current");
-          }
-        }}
-      />
     </Shell>
   );
 }
