@@ -22,6 +22,7 @@ import { DockQueue } from "@/components/app/dock-queue";
 import { AwaitingDelivery } from "@/components/app/awaiting-delivery";
 import { SandboxReset } from "@/components/app/sandbox-reset";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
+import { PerformancePanel } from "@/components/app/operator-performance";
 import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
@@ -112,6 +113,7 @@ function Dispatch() {
       {staff && <div className="-mb-3 flex justify-end"><Button size="sm" variant="outline" onClick={dispatch} disabled={sending || !event || event.status === "closed"}><Send />{sending ? "Checking…" : "Dispatch waiting"}</Button></div>}
       {staff && <AwaitingDelivery eventId={eventId} freight={freight} />}
       <FleetRadar drivers={drivers} now={now} />
+      {staff && eventId && <PerformancePanel eventId={eventId} />}
       <DispatchLive eventId={eventId} />
       {event && callOpen && <CallInDialog key={eventId} eventId={eventId} eventName={event.name} open={callOpen} onOpenChange={setCallOpen} />}
       <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">

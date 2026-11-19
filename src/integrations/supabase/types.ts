@@ -173,6 +173,71 @@ export type Database = {
           },
         ]
       }
+      bonus_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          bonus_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          operator_id: string | null
+          organization_id: string
+          program_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          bonus_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          operator_id?: string | null
+          organization_id: string
+          program_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          bonus_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          operator_id?: string | null
+          organization_id?: string
+          program_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bonus_audit_log_bonus_id_fkey"
+            columns: ["bonus_id"]
+            isOneToOne: false
+            referencedRelation: "operator_bonuses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bonus_audit_log_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bonus_audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bonus_audit_log_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "incentive_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booth_markers: {
         Row: {
           booth_number: string
@@ -841,6 +906,137 @@ export type Database = {
           },
         ]
       }
+      incentive_programs: {
+        Row: {
+          active: boolean
+          amount: number
+          created_at: string
+          created_by: string | null
+          ends_on: string | null
+          event_id: string | null
+          id: string
+          min_crates: number
+          min_jobs: number
+          min_scan_compliance: number
+          min_score: number
+          min_shifts: number
+          name: string
+          organization_id: string
+          period: string
+          requires_approval: boolean
+          starts_on: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          ends_on?: string | null
+          event_id?: string | null
+          id?: string
+          min_crates?: number
+          min_jobs?: number
+          min_scan_compliance?: number
+          min_score?: number
+          min_shifts?: number
+          name: string
+          organization_id: string
+          period: string
+          requires_approval?: boolean
+          starts_on?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          ends_on?: string | null
+          event_id?: string | null
+          id?: string
+          min_crates?: number
+          min_jobs?: number
+          min_scan_compliance?: number
+          min_score?: number
+          min_shifts?: number
+          name?: string
+          organization_id?: string
+          period?: string
+          requires_approval?: boolean
+          starts_on?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incentive_programs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incentive_programs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incentive_settings: {
+        Row: {
+          daily_goal_crates: number
+          on_time_minutes: number
+          organization_id: string
+          target_units_per_hour: number
+          time_zone: string
+          updated_at: string
+          updated_by: string | null
+          w_accuracy: number
+          w_documentation: number
+          w_on_time: number
+          w_productivity: number
+          w_reliability: number
+        }
+        Insert: {
+          daily_goal_crates?: number
+          on_time_minutes?: number
+          organization_id: string
+          target_units_per_hour?: number
+          time_zone?: string
+          updated_at?: string
+          updated_by?: string | null
+          w_accuracy?: number
+          w_documentation?: number
+          w_on_time?: number
+          w_productivity?: number
+          w_reliability?: number
+        }
+        Update: {
+          daily_goal_crates?: number
+          on_time_minutes?: number
+          organization_id?: string
+          target_units_per_hour?: number
+          time_zone?: string
+          updated_at?: string
+          updated_by?: string | null
+          w_accuracy?: number
+          w_documentation?: number
+          w_on_time?: number
+          w_productivity?: number
+          w_reliability?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incentive_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -979,6 +1175,110 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_bonuses: {
+        Row: {
+          amount: number
+          calculated_at: string
+          created_at: string
+          event_id: string | null
+          id: string
+          ineligible_reasons: string[]
+          metrics: Json
+          operator_id: string
+          organization_id: string
+          paid_at: string | null
+          paid_marked_by: string | null
+          payment_reference: string | null
+          period: string
+          period_end: string
+          period_start: string
+          program_id: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          score: number
+          source_ticket_ids: string[]
+          status: string
+        }
+        Insert: {
+          amount?: number
+          calculated_at?: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          ineligible_reasons?: string[]
+          metrics?: Json
+          operator_id: string
+          organization_id: string
+          paid_at?: string | null
+          paid_marked_by?: string | null
+          payment_reference?: string | null
+          period: string
+          period_end: string
+          period_start: string
+          program_id: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          score?: number
+          source_ticket_ids?: string[]
+          status?: string
+        }
+        Update: {
+          amount?: number
+          calculated_at?: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          ineligible_reasons?: string[]
+          metrics?: Json
+          operator_id?: string
+          organization_id?: string
+          paid_at?: string | null
+          paid_marked_by?: string | null
+          payment_reference?: string | null
+          period?: string
+          period_end?: string
+          period_start?: string
+          program_id?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          score?: number
+          source_ticket_ids?: string[]
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_bonuses_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_bonuses_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_bonuses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_bonuses_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "incentive_programs"
             referencedColumns: ["id"]
           },
         ]
@@ -2045,6 +2345,10 @@ export type Database = {
         }
         Returns: number
       }
+      calculate_bonuses: {
+        Args: { _period_start: string; _program: string }
+        Returns: number
+      }
       can_view_event_status: { Args: { _event: string }; Returns: boolean }
       can_view_ticket: { Args: { _ticket: string }; Returns: boolean }
       can_work_ticket: { Args: { _ticket: string }; Returns: boolean }
@@ -2088,6 +2392,7 @@ export type Database = {
           id: string
         }[]
       }
+      ensure_incentive_defaults: { Args: { _org: string }; Returns: undefined }
       event_freight_status: {
         Args: { _event: string }
         Returns: {
@@ -2152,6 +2457,21 @@ export type Database = {
         Args: { _org: string; _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
+      incentive_score: {
+        Args: {
+          _acc: number
+          _doc: number
+          _ontime: number
+          _prod: number
+          _rel: number
+          _wa: number
+          _wd: number
+          _wo: number
+          _wp: number
+          _wr: number
+        }
+        Returns: number
+      }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
       is_org_staff: { Args: { _org: string }; Returns: boolean }
@@ -2178,10 +2498,15 @@ export type Database = {
         }
         Returns: string
       }
+      mark_bonus_paid: {
+        Args: { _bonus: string; _paid: boolean; _reference?: string }
+        Returns: undefined
+      }
       mark_ticket_paid: {
         Args: { _paid: boolean; _ticket: string }
         Returns: undefined
       }
+      my_operator_ids: { Args: never; Returns: string[] }
       my_operator_on_ticket: { Args: { _ticket: string }; Returns: string }
       op_complete_call_in: {
         Args: { _notes?: string; _ticket: string }
@@ -2215,6 +2540,42 @@ export type Database = {
       }
       operator_exhibitor_ids: { Args: never; Returns: string[] }
       operator_freight_ids: { Args: never; Returns: string[] }
+      operator_performance: {
+        Args: {
+          _event: string
+          _from: string
+          _operator?: string
+          _org: string
+          _to: string
+        }
+        Returns: {
+          accuracy: number
+          active_hours: number
+          avg_accept_min: number
+          avg_gap_min: number
+          avg_pickup_min: number
+          avg_transit_min: number
+          confirmation_pct: number
+          crates_delivered: number
+          delivery_accuracy_pct: number
+          documentation: number
+          exceptions_reported: number
+          full_name: string
+          jobs_completed: number
+          on_time: number
+          on_time_pct: number
+          open_assignments: number
+          operator_id: string
+          org_work_days: number
+          productivity: number
+          reliability: number
+          scan_compliance_pct: number
+          score: number
+          shifts: number
+          source_ticket_ids: string[]
+          weight_lbs: number
+        }[]
+      }
       operator_pin_status: {
         Args: never
         Returns: {
@@ -2268,6 +2629,10 @@ export type Database = {
       reset_operator_pin: { Args: { _operator: string }; Returns: undefined }
       reset_org_drivers: { Args: { _org: string }; Returns: number }
       resolve_issue: { Args: { _update: string }; Returns: undefined }
+      review_bonus: {
+        Args: { _approve: boolean; _bonus: string; _note?: string }
+        Returns: undefined
+      }
       sandbox_reset_event: {
         Args: { _deep?: boolean; _event: string }
         Returns: Json

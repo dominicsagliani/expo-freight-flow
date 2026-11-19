@@ -22,6 +22,7 @@ import { Route as AuthenticatedExhibitorsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedFloorPlanRouteImport } from './routes/_authenticated/floor-plan'
 import { Route as AuthenticatedForkliftRouteImport } from './routes/_authenticated/forklift'
 import { Route as AuthenticatedFreightRouteImport } from './routes/_authenticated/freight'
+import { Route as AuthenticatedIncentivesRouteImport } from './routes/_authenticated/incentives'
 import { Route as AuthenticatedOperatorRouteImport } from './routes/_authenticated/operator'
 import { Route as AuthenticatedOperatorsRouteImport } from './routes/_authenticated/operators'
 import { Route as AuthenticatedPlanRequestsRouteImport } from './routes/_authenticated/plan-requests'
@@ -103,6 +104,11 @@ const AuthenticatedForkliftRoute = AuthenticatedForkliftRouteImport.update({
 const AuthenticatedFreightRoute = AuthenticatedFreightRouteImport.update({
   id: '/freight',
   path: '/freight',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedIncentivesRoute = AuthenticatedIncentivesRouteImport.update({
+  id: '/incentives',
+  path: '/incentives',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOperatorRoute = AuthenticatedOperatorRouteImport.update({
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/floor-plan': typeof AuthenticatedFloorPlanRoute
   '/forklift': typeof AuthenticatedForkliftRoute
   '/freight': typeof AuthenticatedFreightRoute
+  '/incentives': typeof AuthenticatedIncentivesRoute
   '/operator': typeof AuthenticatedOperatorRoute
   '/operators': typeof AuthenticatedOperatorsRoute
   '/plan-requests': typeof AuthenticatedPlanRequestsRoute
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/floor-plan': typeof AuthenticatedFloorPlanRoute
   '/forklift': typeof AuthenticatedForkliftRoute
   '/freight': typeof AuthenticatedFreightRoute
+  '/incentives': typeof AuthenticatedIncentivesRoute
   '/operator': typeof AuthenticatedOperatorRoute
   '/operators': typeof AuthenticatedOperatorsRoute
   '/plan-requests': typeof AuthenticatedPlanRequestsRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/_authenticated/floor-plan': typeof AuthenticatedFloorPlanRoute
   '/_authenticated/forklift': typeof AuthenticatedForkliftRoute
   '/_authenticated/freight': typeof AuthenticatedFreightRoute
+  '/_authenticated/incentives': typeof AuthenticatedIncentivesRoute
   '/_authenticated/operator': typeof AuthenticatedOperatorRoute
   '/_authenticated/operators': typeof AuthenticatedOperatorsRoute
   '/_authenticated/plan-requests': typeof AuthenticatedPlanRequestsRoute
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/floor-plan'
     | '/forklift'
     | '/freight'
+    | '/incentives'
     | '/operator'
     | '/operators'
     | '/plan-requests'
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/floor-plan'
     | '/forklift'
     | '/freight'
+    | '/incentives'
     | '/operator'
     | '/operators'
     | '/plan-requests'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/_authenticated/floor-plan'
     | '/_authenticated/forklift'
     | '/_authenticated/freight'
+    | '/_authenticated/incentives'
     | '/_authenticated/operator'
     | '/_authenticated/operators'
     | '/_authenticated/plan-requests'
@@ -494,6 +506,13 @@ declare module '@tanstack/react-router' {
       path: '/freight'
       fullPath: '/freight'
       preLoaderRoute: typeof AuthenticatedFreightRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/incentives': {
+      id: '/_authenticated/incentives'
+      path: '/incentives'
+      fullPath: '/incentives'
+      preLoaderRoute: typeof AuthenticatedIncentivesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/operator': {
@@ -628,6 +647,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFloorPlanRoute: typeof AuthenticatedFloorPlanRoute
   AuthenticatedForkliftRoute: typeof AuthenticatedForkliftRoute
   AuthenticatedFreightRoute: typeof AuthenticatedFreightRoute
+  AuthenticatedIncentivesRoute: typeof AuthenticatedIncentivesRoute
   AuthenticatedOperatorRoute: typeof AuthenticatedOperatorRoute
   AuthenticatedOperatorsRoute: typeof AuthenticatedOperatorsRoute
   AuthenticatedPlanRequestsRoute: typeof AuthenticatedPlanRequestsRoute
@@ -653,6 +673,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFloorPlanRoute: AuthenticatedFloorPlanRoute,
   AuthenticatedForkliftRoute: AuthenticatedForkliftRoute,
   AuthenticatedFreightRoute: AuthenticatedFreightRoute,
+  AuthenticatedIncentivesRoute: AuthenticatedIncentivesRoute,
   AuthenticatedOperatorRoute: AuthenticatedOperatorRoute,
   AuthenticatedOperatorsRoute: AuthenticatedOperatorsRoute,
   AuthenticatedPlanRequestsRoute: AuthenticatedPlanRequestsRoute,

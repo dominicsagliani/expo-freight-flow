@@ -14,6 +14,7 @@ import {
   ScanLine,
   Settings,
   Users,
+  Trophy,
 } from "lucide-react";
 import {
   Sidebar,
@@ -49,6 +50,7 @@ const operations: NavItem[] = [
   { title: "Floor plan", url: "/floor-plan", icon: Map, roles: STAFF },
   { title: "Fleet inventory", url: "/equipment", icon: Forklift, roles: STAFF },
   { title: "Worker list", url: "/operators", icon: Users, roles: STAFF },
+  { title: "Performance & bonuses", url: "/incentives", icon: Trophy, roles: STAFF },
 ];
 
 const admin: NavItem[] = [

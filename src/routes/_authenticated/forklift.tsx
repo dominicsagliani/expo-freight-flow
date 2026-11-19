@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { MyPerformance } from "@/components/app/operator-performance";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -64,7 +65,7 @@ function ForkliftMode() {
   const [view, setView] = useState<View>("home");
   const [scanTicket, setScanTicket] = useState<string | null>(null);
   const [queueScanOpen, setQueueScanOpen] = useState(false);
-  const [tab, setTab] = useState<"current" | "next" | "done">("current");
+  const [tab, setTab] = useState<"current" | "next" | "done" | "perf">("current");
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
@@ -272,7 +273,7 @@ function ForkliftMode() {
     <Shell onExit>
       {header}
       <div className="flex flex-wrap items-center gap-2 px-5 pt-4">
-        {([["current", "Current job"], ["next", `Up next · ${next.length}`], ["done", `Done today · ${done.length}`]] as const).map(([k, l]) => (
+        {([["current", "Current job"], ["next", `Up next · ${next.length}`], ["done", `Done today · ${done.length}`], ["perf", "My performance"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)}
             className={`min-h-12 rounded-full px-5 text-lg font-semibold transition-colors ${tab === k ? "bg-primary-foreground text-primary" : "bg-primary-foreground/10 hover:bg-primary-foreground/15"}`}>{l}</button>
         ))}
@@ -281,6 +282,7 @@ function ForkliftMode() {
         </button>
       </div>
 
+      {tab === "perf" && me?.[0]?.id && <MyPerformance operatorId={me[0].id} />}
       {tab === "next" && (
         <div className="grid gap-3 p-5 md:grid-cols-2">
           {next.length === 0 && <EmptyState title="Nothing else queued" body="New jobs appear here the moment dispatch sends them." />}

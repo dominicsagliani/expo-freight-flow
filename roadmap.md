@@ -44,3 +44,5 @@
 - [x] Bone yard staging (area, note, landmark, photo, who/when, move history) + Mission Control "Awaiting delivery" multi-crate dispatch with no double-booking
 - [x] Mission Control Sandbox menu: admin-only Quick Clear and Deep Reset for the selected show, reusable labels, completed billing preserved
 - [x] Crate chain-of-custody: clickable crate IDs, receiving/staging/dispatch/scan/delivery timeline, private photos and BOL access, exhibitor and event-viewer permissions
+
+- [x] Operator performance & incentives (scores, bonus programs, approvals, driver tab, Mission Control panel)
