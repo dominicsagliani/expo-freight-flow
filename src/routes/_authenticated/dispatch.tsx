@@ -24,6 +24,7 @@ import { SandboxReset } from "@/components/app/sandbox-reset";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { PerformancePanel } from "@/components/app/operator-performance";
 import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
+import { CrewSimulator } from "@/components/app/crew-simulator";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
   head: () => ({
@@ -64,6 +65,7 @@ function Dispatch() {
   const [eventId, setEventId] = useState(events.find(e => e.status !== "closed")?.id ?? events[0]?.id ?? "");
   const [callOpen, setCallOpen] = useState(false);
   const [sending, setSending] = useState(false);
+  const [simulationOpen, setSimulationOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const staff = isStaff(membership);
   const admin = isAdmin(membership);
@@ -97,15 +99,17 @@ function Dispatch() {
       .sort((a, b) => RANK[a.priority] - RANK[b.priority] || a.requested_at.localeCompare(b.requested_at));
 
   return (
-    <div className="grid gap-6">
+    <div className="grid min-w-0 grid-cols-1 gap-6">
       <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
         <div><div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-teal"><Activity className="size-4" />ExpoHaul dispatch desk</div><h1 className="text-3xl font-bold">Mission Control</h1></div>
         <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           <Select value={eventId} onValueChange={setEventId}><SelectTrigger aria-label="Dispatch event" className="w-full sm:w-64"><SelectValue placeholder="Select event" /></SelectTrigger><SelectContent>{events.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent></Select>
           {admin && event && <SandboxReset key={event.id} eventId={event.id} eventName={event.name} />}
+          {admin && <Button variant={simulationOpen ? "teal" : "outline"} onClick={() => setSimulationOpen(!simulationOpen)}>Solo test</Button>}
           {staff && <Button variant="teal" onClick={() => setCallOpen(true)} disabled={!event || event.status === "closed"}><Phone />New call-in</Button>}
         </div>
       </header>
+      {admin && simulationOpen && event && <CrewSimulator key={event.id} eventId={event.id} organizationId={event.organization_id} />}
       <div className="grid grid-cols-2 gap-4 border-b border-border pb-5 lg:grid-cols-4">
         {[{ label: "Drivers available", value: available.length, icon: Truck, tone: "text-teal" }, { label: "Waiting requests", value: waiting.length, icon: Phone, tone: "text-status-requested" }, { label: "Longest wait", value: `${oldest} min`, icon: Clock, tone: "text-foreground" }, { label: "Completed today", value: col("completed").length, icon: CheckCircle2, tone: "text-status-completed" }].map(s => <div key={s.label}><div className="flex items-center gap-2 text-xs text-muted-foreground"><s.icon className={`size-4 ${s.tone}`} />{s.label}</div><div className={`mt-2 font-mono text-3xl font-bold ${s.tone}`}>{s.value}</div></div>)}
       </div>

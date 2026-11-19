@@ -253,6 +253,13 @@
       "when": 1795053649535,
       "tag": "0035_operator_performance_incentives",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1795060591148,
+      "tag": "0036_isolated_crew_simulations",
+      "breakpoints": true
     }
   ]
 }

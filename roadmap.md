@@ -21,6 +21,7 @@
 - [x] Rate cards, charge calculation, billing review + export
 
 ## Requested
+- [x] Solo crew simulator: drag-and-drop pairing, automatic test dispatch, pickup/delivery, driver view and reset; keep test activity separate from real billing
 - [x] Names-only worker management, individual-device driver selection, exclusive forklift reservations and personal Forklift Mode dashboard
 - [x] Add confirmed admin event deletion and reset all drivers by cancelling unfinished jobs while preserving completed billing
 - [x] Scan-in starts driver timing; final scan-out stops timing, completes freight jobs and totals customer charges

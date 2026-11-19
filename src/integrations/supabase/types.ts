@@ -299,6 +299,48 @@ export type Database = {
           },
         ]
       }
+      crew_simulations: {
+        Row: {
+          event_id: string
+          id: string
+          organization_id: string
+          owner_id: string
+          state: Json
+          updated_at: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          organization_id: string
+          owner_id: string
+          state?: Json
+          updated_at?: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          organization_id?: string
+          owner_id?: string
+          state?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_simulations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_simulations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_updates: {
         Row: {
           created_at: string

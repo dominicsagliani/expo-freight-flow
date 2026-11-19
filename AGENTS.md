@@ -30,6 +30,7 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project rules (ExpoHaul)
+- Solo crew simulation persists owner/admin-scoped state separately from operational tables; test dispatch and charges never reserve real lifts or send invoices. Why: safe multi-driver testing from one login.
 - Event deletion and company driver reset use admin-verified locked RPCs: reset cancels unfinished work and releases reservations but keeps completed billing. Why: no silent charges or orphaned work.
 - Call-in intake is an idempotent staff RPC that creates and dispatches atomically; load requests need known safe weight. Why: no duplicate or unsafe jobs.
 - Fleet reservations and auto-dispatch use authenticated database RPCs with event locks, exclusive operator/machine reservations and short heartbeats; only registered online drivers receive compatible known-weight tickets. Why: prevents duplicate assignments and unsafe or cross-event routing; assignment never starts billable time.
