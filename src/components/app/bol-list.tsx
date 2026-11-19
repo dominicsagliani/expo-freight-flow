@@ -5,6 +5,7 @@ import { billsOfLadingQuery } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { ArrivalBadge } from "@/components/app/badges";
 import { EmptyState, Panel } from "@/components/app/page-header";
+import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
 
 export function BolList() {
   const { data: bols } = useSuspenseQuery(billsOfLadingQuery());
@@ -44,7 +45,7 @@ export function BolList() {
                   {bol.freight.map((f) => (
                     <div key={f.id} className="flex flex-wrap items-center gap-2 py-2.5">
                       <span className="w-14 text-xs text-muted-foreground">Crate {f.bol_crate_number ?? "—"}</span>
-                      <span className="min-w-28 flex-1 font-mono text-xs font-medium">{f.freight_code}</span>
+                      <span className="min-w-28 flex-1"><FreightCodeHistoryLink freightId={f.id} freightCode={f.freight_code} /></span>
                       <ArrivalBadge status={f.arrival_status} />
                       <Button asChild variant="ghost" size="sm">
                         <Link to="/labels/$freightId" params={{ freightId: f.id }}><QrCode /> Reprint</Link>

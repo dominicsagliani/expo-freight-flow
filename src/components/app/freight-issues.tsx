@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Panel } from "@/components/app/page-header";
 import { fmtAgo } from "@/lib/format";
+import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
 
 export const FREIGHT_ISSUE_LABEL: Record<string, string> = {
   damaged: "Damaged",
@@ -89,7 +90,7 @@ export function OpenFreightIssues({ canResolve }: { canResolve: boolean }) {
     queryKey: ["freight-issues"],
     queryFn: async () => {
       const { data, error } = await supabase.from("freight_issues")
-        .select("id, kind, note, photo_path, created_at, freight:freight_items(freight_code, booth_number, exhibitor:exhibitors(company_name))")
+        .select("id, kind, note, photo_path, created_at, freight:freight_items(id, freight_code, booth_number, exhibitor:exhibitors(company_name))")
         .is("resolved_at", null).order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
       return data;
@@ -110,7 +111,7 @@ export function OpenFreightIssues({ canResolve }: { canResolve: boolean }) {
         {issues.map((i) => (
           <li key={i.id} className="flex flex-wrap items-center gap-2 px-4 py-2.5 text-sm">
             <span className="font-semibold text-destructive">{FREIGHT_ISSUE_LABEL[i.kind] ?? i.kind}</span>
-            <span className="font-mono text-xs">{i.freight?.freight_code}</span>
+            {i.freight && <FreightCodeHistoryLink freightId={i.freight.id} freightCode={i.freight.freight_code} />}
             <span className="min-w-0 flex-1 truncate text-muted-foreground">
               {i.freight?.exhibitor?.company_name} · Booth {i.freight?.booth_number ?? "—"} · {fmtAgo(i.created_at)}{i.note ? ` · ${i.note}` : ""}
             </span>

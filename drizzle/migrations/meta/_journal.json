@@ -239,6 +239,13 @@
       "when": 1795049449943,
       "tag": "0033_event_sandbox_reset",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1795050048672,
+      "tag": "0034_freight_chain_of_custody",
+      "breakpoints": true
     }
   ]
 }

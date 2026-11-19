@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PRIORITY_LABEL, type TicketPriority } from "@/lib/labels";
 import type { FreightListItem } from "@/lib/queries";
 import { useLatestStaging } from "@/components/app/freight-staging";
+import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
 
 export function AwaitingDelivery({ eventId, freight }: { eventId: string; freight: FreightListItem[] }) {
   const qc = useQueryClient();
@@ -55,14 +56,14 @@ export function AwaitingDelivery({ eventId, freight }: { eventId: string; freigh
             const disabled = !!exhibitor && exhibitor !== f.exhibitor_id;
             return (
               <li key={f.id}>
-                <label className={`flex cursor-pointer items-start gap-3 p-3 ${disabled ? "opacity-40" : ""}`}>
-                  <input type="checkbox" className="mt-1 size-4" checked={picked.includes(f.id)} disabled={disabled} onChange={() => toggle(f.id)} aria-label={`Select ${f.freight_code}`} />
+                <div className={`flex items-start gap-3 p-3 ${disabled ? "opacity-40" : ""}`}>
+                  <input type="checkbox" className="mt-1 size-4 cursor-pointer" checked={picked.includes(f.id)} disabled={disabled} onChange={() => toggle(f.id)} aria-label={`Select ${f.freight_code}`} />
                   <div className="min-w-0 flex-1 text-sm">
-                    <div className="font-mono text-xs font-medium">{f.freight_code}</div>
-                    <div className="font-medium">{f.exhibitor?.company_name} · Booth {f.booth_number ?? "—"}</div>
+                    <FreightCodeHistoryLink freightId={f.id} freightCode={f.freight_code} />
+                    <div className="mt-1 font-medium">{f.exhibitor?.company_name} · Booth {f.booth_number ?? "—"}</div>
                     <div className="text-xs text-muted-foreground">{s ? `${s.area}${s.location_note ? ` · ${s.location_note}` : ""}${s.landmark ? ` · near ${s.landmark}` : ""}` : f.storage_location ?? "Not staged yet"}</div>
                   </div>
-                </label>
+                </div>
               </li>
             );
           })}

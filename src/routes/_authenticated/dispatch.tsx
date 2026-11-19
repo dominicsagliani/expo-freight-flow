@@ -22,6 +22,7 @@ import { DockQueue } from "@/components/app/dock-queue";
 import { AwaitingDelivery } from "@/components/app/awaiting-delivery";
 import { SandboxReset } from "@/components/app/sandbox-reset";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
+import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
   head: () => ({
@@ -184,6 +185,13 @@ function JobCard({ t, operators, equipment, staff }: {
         <div className="truncate text-xs text-muted-foreground">
           Booth {t.booth_number ?? "—"} · {SERVICE_LABEL[t.service_type]} · {t.ticket_freight.length} freight
         </div>
+        {t.ticket_freight.some((tf) => tf.freight) && (
+          <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1">
+            {t.ticket_freight.flatMap((tf) => tf.freight ? [
+              <FreightCodeHistoryLink key={tf.freight_id} freightId={tf.freight_id} freightCode={tf.freight.freight_code} />,
+            ] : [])}
+          </div>
+        )}
         {t.destination && <div className="break-words text-sm font-medium">{t.destination}</div>}
         {t.request_source !== "standard" && <div className={`text-xs ${!t.service_only && !t.estimated_weight_lbs ? "text-status-requested" : "text-muted-foreground"}`}>{t.service_only ? "Service only" : t.estimated_weight_lbs ? `${t.estimated_weight_lbs.toLocaleString()} lb load` : "Unknown weight · manual dispatch"}</div>}
         {t.special_instructions && <p className="break-words text-xs text-muted-foreground">{t.special_instructions}</p>}

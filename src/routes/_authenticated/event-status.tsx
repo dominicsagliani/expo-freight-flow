@@ -6,6 +6,7 @@ import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { EventStatusBadge } from "@/components/app/badges";
 import { fmtDateRange } from "@/lib/format";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
+import { BoothFreightDialog } from "@/components/app/freight-history-dialog";
 
 export const Route = createFileRoute("/_authenticated/event-status")({
   head: () => ({
@@ -32,13 +33,23 @@ function EventStatusPage() {
   });
   const [eventId, setEventId] = useState("");
   useEffect(() => { if (!eventId && events[0]) setEventId(events[0].id); }, [events, eventId]);
-  useRealtimeRefresh(["tickets", "freight_items"], [["event-board"]]);
+  useRealtimeRefresh(["tickets", "freight_items"], [["event-board"], ["event-freight"]]);
   const { data: rows = [] } = useQuery({
     queryKey: ["event-board", eventId],
     enabled: !!eventId,
     refetchInterval: 20_000,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("event_status_board", { _event: eventId });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+  const { data: crates = [] } = useQuery({
+    queryKey: ["event-freight", eventId],
+    enabled: !!eventId,
+    refetchInterval: 20_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("event_freight_status", { _event: eventId });
       if (error) throw new Error(error.message);
       return data ?? [];
     },
@@ -95,7 +106,14 @@ function EventStatusPage() {
                   <tbody className="divide-y divide-border">
                     {rows.map((r) => (
                       <tr key={r.booth_number + r.exhibitor_name}>
-                        <td className="px-4 py-3 font-mono text-xs font-semibold">{r.booth_number}</td>
+                        <td className="px-4 py-3 font-mono text-xs font-semibold">
+                          <BoothFreightDialog
+                            boothNumber={r.booth_number}
+                            exhibitorName={r.exhibitor_name}
+                            crates={crates.filter((crate) => crate.exhibitor_name === r.exhibitor_name && crate.booth_number === r.booth_number)}
+                            trigger={<button type="button" className="font-mono text-xs font-semibold text-teal hover:underline" aria-label={`View crates for booth ${r.booth_number}`}>{r.booth_number}</button>}
+                          />
+                        </td>
                         <td className="px-4 py-3 font-medium">{r.exhibitor_name}</td>
                         <td className="px-4 py-3 text-right tabular-nums">{r.freight_total}</td>
                         <td className="px-4 py-3 text-right tabular-nums">{r.freight_received}</td>

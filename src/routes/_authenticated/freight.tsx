@@ -9,6 +9,7 @@ import { FreightFormDialog } from "@/components/app/freight-form-dialog";
 import { BolFormDialog } from "@/components/app/bol-form-dialog";
 import { BolList } from "@/components/app/bol-list";
 import { StageCrateDialog, StagingSummary, useLatestStaging } from "@/components/app/freight-staging";
+import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ArrivalBadge } from "@/components/app/badges";
@@ -117,7 +118,7 @@ function FreightPage() {
               <tbody className="divide-y divide-border">
                 {shown.map((f) => (
                   <tr key={f.id}>
-                    <td className="px-4 py-3 font-mono text-xs font-medium">{f.freight_code}</td>
+                    <td className="px-4 py-3"><FreightCodeHistoryLink freightId={f.id} freightCode={f.freight_code} /></td>
                     <td className="px-4 py-3">
                       <div className="font-medium">{f.exhibitor?.company_name}</div>
                       <div className="text-xs text-muted-foreground">Booth {f.booth_number ?? "—"}</div>

@@ -114,7 +114,7 @@ export const eventExhibitorsQuery = () =>
   });
 
 const TICKET_LIST_SELECT =
-  "*, exhibitor:exhibitors(id, company_name), event:events(id, name), operator:operators!tickets_assigned_operator_id_fkey(id, full_name), equipment:equipment!tickets_assigned_equipment_id_fkey(id, unit_number), ticket_freight(freight_id), work_sessions(billable_hours, billable_amount, hourly_rate)";
+  "*, exhibitor:exhibitors(id, company_name), event:events(id, name), operator:operators!tickets_assigned_operator_id_fkey(id, full_name), equipment:equipment!tickets_assigned_equipment_id_fkey(id, unit_number), ticket_freight(freight_id, freight:freight_items(id, freight_code)), work_sessions(billable_hours, billable_amount, hourly_rate)";
 
 export const ticketsQuery = () =>
   queryOptions({

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { fmtAgo } from "@/lib/format";
 import { fmtDuration, ISSUE_LABEL, sessionSeconds } from "@/lib/work-session";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
+import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
 
 export function DispatchLive({ eventId }: { eventId: string }) {
   const qc = useQueryClient();
@@ -30,7 +31,7 @@ export function DispatchLive({ eventId }: { eventId: string }) {
     queryKey: ["open-issues"],
     queryFn: async () => {
       const { data, error } = await supabase.from("delivery_updates")
-        .select("id, issue_type, note, created_at, ticket:tickets(id, event_id, ticket_number, booth_number), freight:freight_items(freight_code)")
+        .select("id, issue_type, note, created_at, ticket:tickets(id, event_id, ticket_number, booth_number), freight:freight_items(id, freight_code)")
         .eq("kind", "issue").is("resolved_at", null).order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
       return data;
@@ -85,9 +86,10 @@ export function DispatchLive({ eventId }: { eventId: string }) {
             <div key={i.id} className="flex items-start gap-2 px-3 py-2 text-sm">
               <div className="min-w-0 flex-1">
                 <div className="font-medium text-destructive">{ISSUE_LABEL[i.issue_type ?? "other"] ?? "Issue"}</div>
-                <div className="truncate text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   {i.ticket && <Link to="/tickets/$ticketId" params={{ ticketId: i.ticket.id }} className="font-mono hover:underline">{i.ticket.ticket_number}</Link>}
-                  {i.freight?.freight_code ? ` · ${i.freight.freight_code}` : ""} · {fmtAgo(i.created_at)}{i.note ? ` · ${i.note}` : ""}
+                  {i.freight && <> · <FreightCodeHistoryLink freightId={i.freight.id} freightCode={i.freight.freight_code} /></>}
+                  {" "}· {fmtAgo(i.created_at)}{i.note ? ` · ${i.note}` : ""}
                 </div>
               </div>
               <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => resolve(i.id)}>Resolve</Button>

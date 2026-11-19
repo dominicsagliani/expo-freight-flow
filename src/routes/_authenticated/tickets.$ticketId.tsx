@@ -11,6 +11,7 @@ import { ArrivalBadge, PriorityBadge, TicketStatusBadge } from "@/components/app
 import { deliveryUpdatesQuery, isAdmin, isStaff, jobAssignmentsQuery, membershipQuery, ticketActivityQuery, ticketQuery } from "@/lib/queries";
 import { ACTIVITY_LABEL, DELIVERY_UPDATE_LABEL, type DeliveryUpdateKind, type ActivityDetails, FREIGHT_TYPE_LABEL, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
 import { fmtDateTime, fmtDims, fmtWeight } from "@/lib/format";
+import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
 
 export const Route = createFileRoute("/_authenticated/tickets/$ticketId")({
   head: () => ({
@@ -118,7 +119,7 @@ function TicketDetail() {
                   tf.freight ? (
                     <li key={tf.freight.id} className="grid gap-1 px-4 py-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-mono text-sm font-medium">{tf.freight.freight_code}</span>
+                        <FreightCodeHistoryLink freightId={tf.freight.id} freightCode={tf.freight.freight_code} className="text-sm" />
                         <ArrivalBadge status={tf.freight.arrival_status} />
                       </div>
                       <div className="text-sm">{tf.freight.description}</div>

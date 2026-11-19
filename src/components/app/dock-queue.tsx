@@ -4,6 +4,7 @@ import { Truck } from "lucide-react";
 import { freightQuery, type TicketListItem } from "@/lib/queries";
 import { buildDockQueue, type DockStatus } from "@/lib/dock-queue";
 import { fmtAgo } from "@/lib/format";
+import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
 
 const STATUS: Record<DockStatus, { label: string; tone: string }> = {
   waiting: { label: "Waiting at dock", tone: "text-status-requested" },
@@ -15,6 +16,7 @@ const STATUS: Record<DockStatus, { label: string; tone: string }> = {
 export function DockQueue({ eventId, tickets }: { eventId: string; tickets: TicketListItem[] }) {
   const { data: freight } = useSuspenseQuery({ ...freightQuery(), refetchInterval: 15_000 });
   const rows = buildDockQueue(freight.filter(f => f.event_id === eventId), tickets);
+  const idByCode = new Map(freight.map((f) => [f.freight_code, f.id]));
   return (
     <section className="grid gap-3 border-b border-border pb-5">
       <h2 className="flex items-center gap-2 text-sm font-semibold"><Truck className="size-4 text-teal" />Inbound freight queue · first truck in, first served</h2>
@@ -26,7 +28,16 @@ export function DockQueue({ eventId, tickets }: { eventId: string; tickets: Tick
             <div className="font-mono text-2xl font-bold text-teal">{r.truck ? `#${r.truck}` : "—"}</div>
             <div className="min-w-0">
               <div className="font-semibold">{r.company} <span className="font-normal text-muted-foreground">· Booth {r.booth ?? "—"}</span></div>
-              <div className="text-xs text-muted-foreground">{r.freightCount} freight · {r.pieces} pcs · {r.weight.toLocaleString()} lb · <span className="font-mono">{r.codes.slice(0, 3).join(", ")}{r.codes.length > 3 ? ` +${r.codes.length - 3}` : ""}</span></div>
+              <div className="text-xs text-muted-foreground">
+                {r.freightCount} freight · {r.pieces} pcs · {r.weight.toLocaleString()} lb ·{" "}
+                <span className="inline-flex flex-wrap items-center gap-x-1 gap-y-1">
+                  {r.codes.slice(0, 3).map((code, index) => {
+                    const id = idByCode.get(code);
+                    return <span key={code} className="inline-flex items-center gap-1">{index > 0 && <span>·</span>}{id ? <FreightCodeHistoryLink freightId={id} freightCode={code} /> : <span className="font-mono">{code}</span>}</span>;
+                  })}
+                  {r.codes.length > 3 && <span className="font-mono">+{r.codes.length - 3}</span>}
+                </span>
+              </div>
               {r.firstPrintedAt && <div className="text-xs text-muted-foreground">First ticket printed {fmtAgo(r.firstPrintedAt)}{r.truck ? ` · Truck ${r.truck}` : ""}</div>}
             </div>
             <div className="text-left sm:text-right">

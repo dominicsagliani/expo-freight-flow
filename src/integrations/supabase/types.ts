@@ -2088,6 +2088,19 @@ export type Database = {
           id: string
         }[]
       }
+      event_freight_status: {
+        Args: { _event: string }
+        Returns: {
+          arrival_status: Database["public"]["Enums"]["arrival_status"]
+          booth_number: string
+          created_at: string
+          description: string
+          exhibitor_id: string
+          exhibitor_name: string
+          freight_code: string
+          freight_id: string
+        }[]
+      }
       event_status_board: {
         Args: { _event: string }
         Returns: {
@@ -2130,6 +2143,7 @@ export type Database = {
         Args: { _event: string; _operator: string; _pin: string }
         Returns: Json
       }
+      freight_chain_of_custody: { Args: { _freight: string }; Returns: Json }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
