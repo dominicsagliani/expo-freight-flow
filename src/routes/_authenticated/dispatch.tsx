@@ -9,7 +9,7 @@ import { PriorityBadge } from "@/components/app/badges";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { freightQuery, equipmentQuery, operatorsQuery, ticketsQuery, eventsQuery, eventExhibitorsQuery, membershipQuery, isStaff, type TicketListItem } from "@/lib/queries";
+import { freightQuery, equipmentQuery, operatorsQuery, ticketsQuery, eventsQuery, eventExhibitorsQuery, membershipQuery, isStaff, isAdmin, type TicketListItem } from "@/lib/queries";
 import { PRIORITY_LABEL, SERVICE_LABEL, type TicketPriority, type TicketStatus } from "@/lib/labels";
 import { fmtAgo } from "@/lib/format";
 import { fmtMoney } from "@/lib/billing";
@@ -20,6 +20,7 @@ import { driverState, REQUEST_SOURCES } from "@/lib/dispatch";
 import { FleetRadar } from "@/components/app/fleet-radar";
 import { DockQueue } from "@/components/app/dock-queue";
 import { AwaitingDelivery } from "@/components/app/awaiting-delivery";
+import { SandboxReset } from "@/components/app/sandbox-reset";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
@@ -63,6 +64,7 @@ function Dispatch() {
   const [sending, setSending] = useState(false);
   const [now, setNow] = useState(Date.now());
   const staff = isStaff(membership);
+  const admin = isAdmin(membership);
   const event = events.find(e => e.id === eventId);
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   useRealtimeRefresh(["tickets", "queue_drivers", "operators", "work_sessions", "freight_items"], [["tickets"], ["freight"], ["queue-drivers"], ["operators"], ["live-sessions"]]);
@@ -98,6 +100,7 @@ function Dispatch() {
         <div><div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-teal"><Activity className="size-4" />ExpoHaul dispatch desk</div><h1 className="text-3xl font-bold">Mission Control</h1></div>
         <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           <Select value={eventId} onValueChange={setEventId}><SelectTrigger aria-label="Dispatch event" className="w-full sm:w-64"><SelectValue placeholder="Select event" /></SelectTrigger><SelectContent>{events.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent></Select>
+          {admin && event && <SandboxReset key={event.id} eventId={event.id} eventName={event.name} />}
           {staff && <Button variant="teal" onClick={() => setCallOpen(true)} disabled={!event || event.status === "closed"}><Phone />New call-in</Button>}
         </div>
       </header>

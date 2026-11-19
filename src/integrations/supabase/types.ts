@@ -2254,6 +2254,10 @@ export type Database = {
       reset_operator_pin: { Args: { _operator: string }; Returns: undefined }
       reset_org_drivers: { Args: { _org: string }; Returns: number }
       resolve_issue: { Args: { _update: string }; Returns: undefined }
+      sandbox_reset_event: {
+        Args: { _deep?: boolean; _event: string }
+        Returns: Json
+      }
       scan_freight_to_queue: { Args: { _token: string }; Returns: Json }
       session_hourly_rate: { Args: { _ticket: string }; Returns: number }
       session_hours: {
