@@ -54,7 +54,7 @@ function Incentives() {
     <div className="grid gap-6">
       <PageHeader title="Operator performance & bonuses" description="Scores come from real scans, deliveries and job times. Bonuses are paid by your company; ExpoHaul never moves money." />
       <Tabs defaultValue={admin ? "bonuses" : "report"}>
-        <TabsList className="flex-wrap">
+        <TabsList className="h-auto flex-wrap justify-start">
           {admin && <TabsTrigger value="bonuses">Bonuses</TabsTrigger>}
           <TabsTrigger value="report">Performance report</TabsTrigger>
           {admin && <TabsTrigger value="programs">Bonus programs</TabsTrigger>}
@@ -173,7 +173,7 @@ function Bonuses({ org }: { org: string }) {
         <span>Pending <b>{fmtMoney(totals.pending)}</b></span><span>Approved, unpaid <b>{fmtMoney(totals.approved)}</b></span><span>Paid <b>{fmtMoney(totals.paid)}</b></span>
       </div>
       <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full min-w-[1000px] text-sm">
+        <table className="w-full min-w-[880px] text-sm">
           <thead className="bg-muted/50 text-left text-xs text-muted-foreground"><tr>{["Operator", "Event", "Program · period", "Score", "Qualifying numbers", "Amount", "Status", ""].map((h) => <th key={h} className="p-2 font-medium">{h}</th>)}</tr></thead>
           <tbody>{shown.map((b) => {
             const mt = b.metrics as { jobs_completed?: number; crates_delivered?: number; scan_compliance_pct?: number | null; on_time_pct?: number | null };
