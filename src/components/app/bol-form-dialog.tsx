@@ -208,7 +208,25 @@ export function BolFormDialog({
       setAiStatus("");
       setAiNotes([]);
       intakeKey.current = null;
-      navigate({ to: "/bol-labels/$bolId", params: { bolId }, search: { autoprint: 1 } });
+      // Print straight to the DYMO the moment the truck is checked in — no page change, no dialog.
+      void (async () => {
+        try {
+          const { data: bol, error } = await supabase
+            .from("bills_of_lading")
+            .select("freight:freight_items(id, bol_crate_number, freight_code, qr_token, booth_number, exhibitor:exhibitors(company_name))")
+            .eq("id", bolId)
+            .single();
+          if (error) throw new Error(error.message);
+          const crates = [...bol.freight].sort((a, b) => (a.bol_crate_number ?? 0) - (b.bol_crate_number ?? 0));
+          const [{ printCrateLabels }, { toCrateLabels }] = await Promise.all([import("@/lib/dymo"), import("@/components/app/dymo-print")]);
+          const n = await printCrateLabels(toCrateLabels(crates));
+          toast.success(`Sent ${n} ${n === 1 ? "label" : "labels"} to the DYMO printer`);
+        } catch (e) {
+          toast.error(`Shipment saved, but labels didn't print: ${(e as Error).message}`, {
+            action: { label: "Open labels", onClick: () => navigate({ to: "/bol-labels/$bolId", params: { bolId } }) },
+          });
+        }
+      })();
     },
     onError: (error: Error) => toast.error(error.message),
     onSettled: () => setStage(""),
@@ -305,7 +323,7 @@ export function BolFormDialog({
             <Button type="button" variant="ghost" size="sm" className="justify-self-start" onClick={distributeWeight}>Distribute total weight evenly</Button>
           </section>
 
-          <p className="text-xs text-muted-foreground">Check-in saves the original document and every crate before the print dialog opens. Canceling printing never deletes the shipment.</p>
+          <p className="text-xs text-muted-foreground">Check-in saves the original document and every crate, then prints the labels straight to the DYMO printer. A printing problem never deletes the shipment.</p>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={save.isPending || extraction.isPending}>Cancel</Button>
             <Button type="submit" variant="teal" disabled={save.isPending || extraction.isPending}>
