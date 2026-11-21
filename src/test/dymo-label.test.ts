@@ -3,7 +3,7 @@ import { crateLabelXml } from "@/lib/dymo-label";
 
 describe("DYMO crate label", () => {
   const xml = crateLabelXml({ crateId: "FR-1001", exhibitor: "Acme & Sons", booth: "512", qrValue: "x" }, "QUJD");
-  it("targets the 30256 roll for the LabelWriter 450", () => expect(xml).toContain("<PaperName>30256 Shipping</PaperName>"));
+  it("targets the 30252 1x3 address roll for the LabelWriter 450", () => expect(xml).toContain("<PaperName>30252 Address</PaperName>"));
   it("contains crate ID, booth, escaped exhibitor and QR image", () => {
     expect(xml).toContain("FR-1001");
     expect(xml).toContain("Booth 512");

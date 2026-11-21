@@ -57,7 +57,7 @@ export function DymoConnectPanel() {
     <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-xs">
       <span className="font-semibold">DYMO LabelWriter</span>
       <span className={msg ? (msg.ok ? "text-status-progress" : "text-destructive") : "text-muted-foreground"}>
-        {msg?.text ?? "Uses 30256 shipping labels (2-5/16\" × 4\")."}
+        {msg?.text ?? "Uses 30252 address labels (1-1/8\" × 3-1/2\")."}
       </span>
       <span className="ml-auto flex gap-2">
         <Button size="sm" variant="outline" disabled={busy} onClick={check}><RefreshCw /> Check printer</Button>
