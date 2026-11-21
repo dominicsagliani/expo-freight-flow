@@ -190,7 +190,7 @@ export const billsOfLadingQuery = () =>
       const rows = unwrap(
         await supabase
           .from("bills_of_lading")
-          .select("*, event:events(id, name), exhibitor:exhibitors(id, company_name), freight:freight_items(id, freight_code, arrival_status, bol_crate_number)")
+          .select("*, event:events(id, name), exhibitor:exhibitors(id, company_name), freight:freight_items(id, freight_code, arrival_status, bol_crate_number, qr_token, booth_number)")
           .order("created_at", { ascending: false }),
       );
       if (rows.length === 0) return [];

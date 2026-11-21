@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { ArrivalBadge } from "@/components/app/badges";
 import { EmptyState, Panel } from "@/components/app/page-header";
 import { FreightCodeHistoryLink } from "@/components/app/freight-history-dialog";
+import { DymoConnectPanel, DymoPrintButton } from "@/components/app/dymo-print";
 
 export function BolList() {
   const { data: bols } = useSuspenseQuery(billsOfLadingQuery());
   return (
     <Panel title={`Bills of lading (${bols.length})`} className="min-w-0">
+      <div className="border-b border-border p-3"><DymoConnectPanel /></div>
       {bols.length === 0 ? (
         <EmptyState title="No BOL shipments received" description="Use BOL check-in to attach one document to multiple individual crates." />
       ) : (
@@ -31,6 +33,7 @@ export function BolList() {
                   </div>
                 </div>
                 <div className="flex shrink-0 flex-wrap gap-2">
+                  <DymoPrintButton crates={bol.freight.map((f) => ({ ...f, exhibitor: bol.exhibitor }))}>Print labels ({bol.freight.length})</DymoPrintButton>
                   <Button asChild variant="outline" size="sm" disabled={!bol.documentUrl}>
                     <a href={bol.documentUrl ?? undefined} target="_blank" rel="noreferrer"><ExternalLink /> Open BOL</a>
                   </Button>
@@ -47,6 +50,7 @@ export function BolList() {
                       <span className="w-14 text-xs text-muted-foreground">Crate {f.bol_crate_number ?? "—"}</span>
                       <span className="min-w-28 flex-1"><FreightCodeHistoryLink freightId={f.id} freightCode={f.freight_code} /></span>
                       <ArrivalBadge status={f.arrival_status} />
+                      <DymoPrintButton variant="ghost" crates={[{ ...f, exhibitor: bol.exhibitor }]}>Print</DymoPrintButton>
                       <Button asChild variant="ghost" size="sm">
                         <Link to="/labels/$freightId" params={{ freightId: f.id }}><QrCode /> Reprint</Link>
                       </Button>
