@@ -14,14 +14,25 @@ export function FreightLabelCard({
   crateCount?: number;
 }) {
   const l = labelFields(freight);
+  const qr = qrPayload(window.location.origin, freight.qr_token);
   return (
-    <div className="print-label mx-auto w-full max-w-[4in] rounded-md border-2 border-foreground bg-card p-4 text-foreground">
+    <>
+    <div className="print-label print-label-1x3 hidden">
+      <QrCode value={qr} size={96} />
+      <div className="min-w-0 flex-1 leading-tight">
+        <div className="text-[6pt] font-bold uppercase">ExpoHaul</div>
+        <div className="truncate font-mono text-[10pt] font-bold">{l.code}</div>
+        <div className="truncate text-[7pt]">{l.company}</div>
+        <div className="text-[11pt] font-bold">Booth {l.booth}</div>
+      </div>
+    </div>
+    <div className="print:hidden mx-auto w-full max-w-[4in] rounded-md border-2 border-foreground bg-card p-4 text-foreground">
       <div className="flex items-start justify-between border-b-2 border-foreground pb-2">
         <span className="font-display text-sm font-bold">ExpoHaul</span>
         <span className="max-w-[2.5in] text-right text-[10px] leading-tight">{l.event}</span>
       </div>
       <div className="mt-3 flex items-center gap-4">
-        <QrCode value={qrPayload(window.location.origin, freight.qr_token)} size={150} />
+        <QrCode value={qr} size={150} />
         <div className="grid min-w-0 gap-1.5">
           <div><div className="text-[10px] font-semibold uppercase">Company</div><div className="break-words font-display text-sm font-bold leading-tight">{l.company}</div></div>
           <div><div className="text-[10px] font-semibold uppercase">Booth</div><div className="font-display text-3xl font-bold leading-none">{l.booth}</div></div>
@@ -35,5 +46,6 @@ export function FreightLabelCard({
       </div>
       <p className="mt-3 border-t border-foreground pt-2 text-[9px]">Scan with the ExpoHaul app. Full details visible to authorized staff only.</p>
     </div>
+    </>
   );
 }

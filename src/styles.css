@@ -194,17 +194,19 @@
 }
 
 @media print {
-  @page { size: 4in 3in; margin: 0; }
+  @page { size: 3.5in 1.125in; margin: 0; }
   body * { visibility: hidden; }
   main { position: static !important; }
   .print-label, .print-label * { visibility: visible; }
-  .print-label { position: fixed; inset: 0; width: 4in; max-width: none; margin: 0; border-radius: 0; box-shadow: none; }
-  .print-label-sheet { position: absolute; inset: 0; display: block; width: 4in; margin: 0; padding: 0; }
-  .print-label-sheet .print-label {
-    position: relative;
-    inset: auto;
-    break-after: page;
-    page-break-after: always;
+  .print-label-1x3 {
+    display: flex !important; align-items: center; gap: 0.08in;
+    width: 3.5in; height: 1.125in; padding: 0.06in 0.12in; box-sizing: border-box;
+    overflow: hidden; color: #000; background: #fff;
+    break-after: page; page-break-after: always;
   }
-  .print-label-sheet .print-label:last-child { break-after: auto; page-break-after: auto; }
+  .print-label-1x3 svg, .print-label-1x3 canvas, .print-label-1x3 img { width: 0.95in !important; height: 0.95in !important; flex: none; }
+  .print-label-sheet { position: absolute; inset: 0; display: block; width: 3.5in; margin: 0; padding: 0; }
+  .print-label-sheet > :not(.print-label) { display: none; }
+  body:not(:has(.print-label-sheet)) .print-label-1x3 { position: fixed; top: 0; left: 0; }
+  .print-label-1x3:last-child { break-after: auto; page-break-after: auto; }
 }
