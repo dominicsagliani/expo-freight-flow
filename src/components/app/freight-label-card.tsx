@@ -17,7 +17,7 @@ export function FreightLabelCard({
   const qr = qrPayload(window.location.origin, freight.qr_token);
   return (
     <>
-    <div className="print-label print-label-1x3 hidden">
+    <div className="print-label print-label-page hidden"><div className="print-label-1x3">
       <QrCode value={qr} size={96} />
       <div className="min-w-0 flex-1 leading-tight">
         <div className="text-[6pt] font-bold uppercase">ExpoHaul</div>
@@ -25,7 +25,7 @@ export function FreightLabelCard({
         <div className="truncate text-[7pt]">{l.company}</div>
         <div className="text-[11pt] font-bold">Booth {l.booth}</div>
       </div>
-    </div>
+    </div></div>
     <div className="print:hidden mx-auto w-full max-w-[4in] rounded-md border-2 border-foreground bg-card p-4 text-foreground">
       <div className="flex items-start justify-between border-b-2 border-foreground pb-2">
         <span className="font-display text-sm font-bold">ExpoHaul</span>
