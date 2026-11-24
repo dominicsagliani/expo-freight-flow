@@ -201,7 +201,7 @@
   main { position: static !important; }
   .print-label, .print-label * { visibility: visible; }
   .print-label-page {
-    display: block !important; position: relative; width: 3.5in; height: 1.08in; overflow: visible;
+    display: block !important; position: relative; width: 3.5in; height: 1.08in; overflow: hidden;
     background: #fff; break-after: page; page-break-after: always; margin: 0; padding: 0;
   }
   .print-label-page:last-child { break-after: auto; page-break-after: auto; }
@@ -209,8 +209,8 @@
     width: 3.3in; height: 1in; margin: 0.04in 0.1in;
     display: flex; align-items: center; gap: 0.1in; box-sizing: border-box;
     padding: 0.04in; color: #000; background: #fff; overflow: hidden;
-    /* Printer-calibrated offset: the DYMO prints ~0.5in too high, so shift down without adding page height. */
-    transform: translateY(var(--label-offset-y, 0.5in));
+    /* Printer calibration: matches LABEL_FEED_OFFSET_IN in print-1x3 — content starts 0.5in further along the 3.5in feed. */
+    width: 2.9in; margin-left: 0.5in;
   }
   .print-label-1x3 img { width: 0.85in !important; height: 0.85in !important; flex: none; }
   .print-label-sheet { position: absolute; top: 0; left: 0; display: block; width: 3.5in; margin: 0; padding: 0; }
