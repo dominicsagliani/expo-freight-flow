@@ -64,7 +64,7 @@ function BolLabelsPage() {
         </Link>
         <div className="flex flex-wrap gap-2">
           <DymoPrintButton size="default" crates={data.freight}>Print labels ({data.freight.length})</DymoPrintButton>
-          <Button variant="outline" onClick={() => void import("@/lib/print-1x3").then((m) => m.print1x3Labels(toCrateLabels(data.freight)))} disabled={!data.freight.length}><Printer /> Browser print</Button>
+          <Button variant="outline" onClick={() => window.print()} disabled={!data.freight.length}><Printer /> Browser print</Button>
         </div>
       </div>
       <div className="print:hidden"><DymoConnectPanel /></div>

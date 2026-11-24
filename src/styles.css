@@ -194,26 +194,17 @@
 }
 
 @media print {
-  /* DYMO 30252 (1-1/8" x 3-1/2"): landscape page, no transforms, safe inner margins. */
-  @page { size: 3.5in 1.125in; margin: 0; }
-  html, body { width: 3.5in !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important; }
+  @page { size: 4in 3in; margin: 0; }
   body * { visibility: hidden; }
   main { position: static !important; }
   .print-label, .print-label * { visibility: visible; }
-  .print-label-page {
-    display: block !important; position: relative; width: 3.5in; height: 1.08in; overflow: hidden;
-    background: #fff; break-after: page; page-break-after: always; margin: 0; padding: 0;
+  .print-label { position: fixed; inset: 0; width: 4in; max-width: none; margin: 0; border-radius: 0; box-shadow: none; }
+  .print-label-sheet { position: absolute; inset: 0; display: block; width: 4in; margin: 0; padding: 0; }
+  .print-label-sheet .print-label {
+    position: relative;
+    inset: auto;
+    break-after: page;
+    page-break-after: always;
   }
-  .print-label-page:last-child { break-after: auto; page-break-after: auto; }
-  .print-label-1x3 {
-    width: 3.3in; height: 1in; margin: 0.04in 0.1in;
-    display: flex; align-items: center; gap: 0.1in; box-sizing: border-box;
-    padding: 0.04in; color: #000; background: #fff; overflow: hidden;
-    /* Printer calibration: matches LABEL_FEED_OFFSET_IN in print-1x3 — content starts 0.5in further along the 3.5in feed. */
-    width: 2.9in; margin-left: 0.5in;
-  }
-  .print-label-1x3 img { width: 0.85in !important; height: 0.85in !important; flex: none; }
-  .print-label-sheet { position: absolute; top: 0; left: 0; display: block; width: 3.5in; margin: 0; padding: 0; }
-  .print-label-sheet > :not(.print-label) { display: none; }
-  body:not(:has(.print-label-sheet)) .print-label-page { position: absolute; top: 0; left: 0; }
+  .print-label-sheet .print-label:last-child { break-after: auto; page-break-after: auto; }
 }

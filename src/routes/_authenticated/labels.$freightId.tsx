@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { toCrateLabels } from "@/components/app/dymo-print";
 import { FreightLabelCard } from "@/components/app/freight-label-card";
 
 export const Route = createFileRoute("/_authenticated/labels/$freightId")({
@@ -42,7 +41,7 @@ function LabelPage() {
   useEffect(() => {
     if (!f || !autoprint || autoPrinted.has(freightId)) return;
     autoPrinted.add(freightId);
-    const timer = setTimeout(() => void import("@/lib/print-1x3").then((m) => m.print1x3Labels(toCrateLabels([f]))), 400);
+    const timer = setTimeout(() => window.print(), 400);
     return () => clearTimeout(timer);
   }, [f, autoprint, freightId]);
   if (error) return <p className="text-sm text-muted-foreground">This freight item isn't available.</p>;
@@ -54,7 +53,7 @@ function LabelPage() {
         <Link to="/freight" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" /> Freight
         </Link>
-        <Button variant="teal" onClick={() => void import("@/lib/print-1x3").then((m) => m.print1x3Labels(toCrateLabels([f])))}><Printer /> Print label</Button>
+        <Button variant="teal" onClick={() => window.print()}><Printer /> Print label</Button>
       </div>
       <FreightLabelCard freight={f} />
       <p className="text-center text-xs text-muted-foreground print:hidden">
