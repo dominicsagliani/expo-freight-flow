@@ -194,25 +194,24 @@
 }
 
 @media print {
-  /* DYMO 30252 (1-1/8" x 3-1/2") feeds narrow edge first: portrait page, content rotated 90deg. */
-  @page { size: 1.125in 3.5in; margin: 0; }
-  html, body { width: 1.125in !important; min-width: 0 !important; overflow: hidden !important; }
+  /* DYMO 30252 (1-1/8" x 3-1/2"): landscape page, no transforms, safe inner margins. */
+  @page { size: 3.5in 1.125in; margin: 0; }
+  html, body { width: 3.5in !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important; }
   body * { visibility: hidden; }
   main { position: static !important; }
   .print-label, .print-label * { visibility: visible; }
   .print-label-page {
-    display: block !important; position: relative; width: 1.125in; height: 3.5in; overflow: hidden;
-    background: #fff; break-after: page; page-break-after: always;
+    display: block !important; position: relative; width: 3.5in; height: 1.08in; overflow: hidden;
+    background: #fff; break-after: page; page-break-after: always; margin: 0; padding: 0;
   }
   .print-label-page:last-child { break-after: auto; page-break-after: auto; }
   .print-label-1x3 {
-    position: absolute; top: 0; left: 1.125in; width: 3.5in; height: 1.125in;
-    transform: rotate(90deg); transform-origin: top left;
-    display: flex; align-items: center; gap: 0.08in; box-sizing: border-box;
-    padding: 0.12in 0.2in; color: #000; background: #fff; overflow: hidden;
+    width: 3.3in; height: 1in; margin: 0.04in 0.1in;
+    display: flex; align-items: center; gap: 0.1in; box-sizing: border-box;
+    padding: 0.04in; color: #000; background: #fff; overflow: hidden;
   }
-  .print-label-1x3 img { width: 0.8in !important; height: 0.8in !important; flex: none; }
-  .print-label-sheet { position: fixed; top: 0; left: 0; display: block; width: 1.125in; margin: 0; padding: 0; }
+  .print-label-1x3 img { width: 0.85in !important; height: 0.85in !important; flex: none; }
+  .print-label-sheet { position: absolute; top: 0; left: 0; display: block; width: 3.5in; margin: 0; padding: 0; }
   .print-label-sheet > :not(.print-label) { display: none; }
-  body:not(:has(.print-label-sheet)) .print-label-page { position: fixed; top: 0; left: 0; }
+  body:not(:has(.print-label-sheet)) .print-label-page { position: absolute; top: 0; left: 0; }
 }
