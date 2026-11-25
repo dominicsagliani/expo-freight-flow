@@ -39,6 +39,7 @@ const WORK: AppRole[] = [...STAFF, "operator", "exhibitor"];
 
 const operations: NavItem[] = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard, roles: WORK },
+  { title: "Shipments & tracking", url: "/shipments", icon: Package, roles: [...STAFF, "exhibitor"] },
   { title: "Event status", url: "/event-status", icon: Eye, roles: [...STAFF, "venue", "organizer"] },
   { title: "Events", url: "/events", icon: CalendarDays, roles: STAFF },
   { title: "Exhibitors", url: "/exhibitors", icon: Building2, roles: STAFF },

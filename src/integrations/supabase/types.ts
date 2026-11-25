@@ -796,6 +796,7 @@ export type Database = {
           freight_type: Database["public"]["Enums"]["freight_type"]
           height_in: number | null
           id: string
+          import_piece_number: number | null
           length_in: number | null
           organization_id: string
           pieces: number
@@ -820,6 +821,7 @@ export type Database = {
           freight_type?: Database["public"]["Enums"]["freight_type"]
           height_in?: number | null
           id?: string
+          import_piece_number?: number | null
           length_in?: number | null
           organization_id: string
           pieces?: number
@@ -844,6 +846,7 @@ export type Database = {
           freight_type?: Database["public"]["Enums"]["freight_type"]
           height_in?: number | null
           id?: string
+          import_piece_number?: number | null
           length_in?: number | null
           organization_id?: string
           pieces?: number
@@ -2498,6 +2501,10 @@ export type Database = {
       has_org_role: {
         Args: { _org: string; _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
+      }
+      import_exhibitor_shipment: {
+        Args: { _event: string; _row: Json }
+        Returns: Json
       }
       incentive_score: {
         Args: {

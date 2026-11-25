@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { FileUp, Pencil, Plus, Search } from "lucide-react";
+import { FileUp, Pencil, Plus, Search, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
@@ -35,6 +35,7 @@ function ExhibitorsPage() {
   const { data: events } = useSuspenseQuery(eventsQuery());
   const { data: freight } = useSuspenseQuery(freightQuery());
   const [q, setQ] = useState("");
+  const navigate = useNavigate();
 
   const eventOptions = events.filter((e) => e.status !== "closed").map((e) => ({ id: e.id, name: e.name }));
   const contactName = (x: (typeof exhibitors)[number]) =>
@@ -43,7 +44,7 @@ function ExhibitorsPage() {
   const filtered = exhibitors.filter((x) =>
     [x.company_name, contactName(x), x.contact_email, ...x.event_exhibitors.map((b) => b.booth_number)]
       .filter(Boolean)
-      .some((v) => v!.toLowerCase().includes(q.toLowerCase())),
+      .some((v) => v?.toLowerCase().includes(q.toLowerCase())),
   );
 
   return (
@@ -54,11 +55,13 @@ function ExhibitorsPage() {
         description="Companies exhibiting at your events, their contacts, and booth assignments."
         actions={
           isStaff(m) && m.organizationId ? (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild><Link to="/shipments" search={{ eventId: "" }}><Package /> Shipments & labels</Link></Button>
             <ExhibitorImportDialog
               organizationId={m.organizationId}
               events={eventOptions}
               existing={exhibitors}
+              onImported={(eventId) => void navigate({ to: "/shipments", search: { eventId } })}
               trigger={
                 <Button variant="outline">
                   <FileUp /> Import CSV

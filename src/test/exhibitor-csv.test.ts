@@ -22,4 +22,19 @@ describe("exhibitor CSV import", () => {
     expect(rows[0]?.errors).toContain("Booth number missing");
     expect(rows[2]?.errors).toContain("Duplicate row in file");
   });
+  it("creates one label per declared piece", () => {
+    const { rows } = parseExhibitorCsv("Company,Booth,Piece Count,Weight Lbs\nAcme,101,3,500");
+    expect(rows[0]?.piece_count).toBe(3);
+    expect(rows[0]?.weight_lbs).toBe(500);
+  });
+  it("keeps missing weight unknown and defaults to one piece", () => {
+    const { rows } = parseExhibitorCsv("Company,Booth\nAcme,101");
+    expect(rows[0]?.weight_lbs).toBe(0);
+    expect(rows[0]?.piece_count).toBe(1);
+  });
+  it("rejects fractional piece counts and unsafe weights", () => {
+    const { rows } = parseExhibitorCsv("Company,Booth,Pieces,Weight\nAcme,101,1.5,-10");
+    expect(rows[0]?.errors).toContain("Piece count must be 1–1000");
+    expect(rows[0]?.errors).toContain("Invalid weight");
+  });
 });

@@ -17,11 +17,13 @@ export function ExhibitorImportDialog({
   events,
   existing,
   trigger,
+  onImported,
 }: {
   organizationId: string;
   events: { id: string; name: string }[];
   existing: Existing[];
   trigger: ReactNode;
+  onImported?: (eventId: string) => void;
 }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -36,7 +38,7 @@ export function ExhibitorImportDialog({
     if (r.errors.length) return r.errors.join(", ");
     const ex = byName.get(r.company_name.toLowerCase());
     if (!ex) return "New";
-    return ex.event_exhibitors.some((b) => b.event_id === eventId) ? "Already at this event — skipped" : "Existing company — add booth";
+    return ex.event_exhibitors.some((b) => b.event_id === eventId) ? "Existing booth — reuse saved labels" : "Existing company — add booth + labels";
   };
 
   const downloadSample = () => {
@@ -59,61 +61,38 @@ export function ExhibitorImportDialog({
   const run = useMutation({
     mutationFn: async () => {
       if (!eventId) throw new Error("Choose an event");
-      let created = 0, booths = 0, skipped = 0;
+      let created = 0, labels = 0, reused = 0;
       const failed: string[] = [];
+      const failedRows: ExhibitorCsvRow[] = [];
       for (const r of valid) {
         try {
-          let ex = byName.get(r.company_name.toLowerCase());
-          if (ex?.event_exhibitors.some((b) => b.event_id === eventId)) { skipped++; continue; }
-          let id = ex?.id;
-          if (!id) {
-            const name = [r.first_name, r.last_name].filter(Boolean).join(" ");
-            const { data, error } = await supabase
-              .from("exhibitors")
-              .insert({
-                organization_id: organizationId,
-                company_name: r.company_name,
-                first_name: r.first_name || null,
-                last_name: r.last_name || null,
-                contact_name: name || null,
-                contact_email: r.contact_email || null,
-                contact_phone: r.contact_phone || null,
-                billing_address: r.billing_address || null,
-              })
-              .select("id")
-              .single();
-            if (error) throw error;
-            id = data.id;
-            created++;
-          }
-          const { error: e2 } = await supabase.from("event_exhibitors").insert({
-            organization_id: organizationId,
-            event_id: eventId,
-            exhibitor_id: id,
-            booth_number: r.booth_number,
-          });
-          if (e2) throw e2;
-          booths++;
-          ex = { id, company_name: r.company_name, event_exhibitors: [...(ex?.event_exhibitors ?? []), { event_id: eventId, booth_number: r.booth_number }] };
-          byName.set(r.company_name.toLowerCase(), ex);
+          const { data, error } = await supabase.rpc("import_exhibitor_shipment", { _event: eventId, _row: { ...r } });
+          if (error) throw error;
+          const result = data as { created: boolean; labels_created: number; labels_reused: number };
+          if (result.created) created++;
+          labels += result.labels_created;
+          reused += result.labels_reused;
         } catch (e) {
           failed.push(`Row ${r.line}: ${(e as Error).message}`);
+          failedRows.push(r);
         }
       }
-      return { created, booths, skipped, failed };
+      return { created, labels, reused, failed, failedRows };
     },
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ["exhibitors"] });
       qc.invalidateQueries({ queryKey: ["events"] });
       qc.invalidateQueries({ queryKey: ["event_exhibitors"] });
-      const msg = `${r.created} new exhibitors, ${r.booths} booths assigned${r.skipped ? `, ${r.skipped} skipped` : ""}`;
-      if (r.failed.length) toast.error(`${msg}. ${r.failed.length} failed — ${r.failed[0]}`);
-      else { toast.success(msg); setOpen(false); setRows([]); setFileName(""); }
+      qc.invalidateQueries({ queryKey: ["freight"] });
+      const msg = `${r.created} new exhibitors · ${r.labels} labels saved${r.reused ? ` · ${r.reused} labels reused` : ""}`;
+      if (r.failed.length) { toast.error(`${msg}. ${r.failed.length} failed — ${r.failed[0]}`); setRows(r.failedRows); }
+      else { toast.success(msg); setOpen(false); setRows([]); setFileName(""); setFileError(null); onImported?.(eventId); }
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const handleOpenChange = (next: boolean) => {
+    if (run.isPending) return;
     setOpen(next);
     if (!next) {
       setRows([]);
@@ -132,11 +111,12 @@ export function ExhibitorImportDialog({
         <div className="grid gap-4">
           <p className="text-sm text-muted-foreground">
             Columns: Company Name, Booth Number (required), First Name, Last Name, Contact Email, Contact Phone, Billing
-            Address. Companies already in your list are matched by name, so no duplicates are created.
+            Address, Piece Count, Weight Lbs (per piece). One unique freight label per piece; a blank Piece Count means
+            one label. Blank weights stay unknown until receiving. Reimporting reuses the same saved labels.
           </p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Event">
-              <Select value={eventId} onValueChange={setEventId}>
+              <Select value={eventId} onValueChange={setEventId} disabled={run.isPending}>
                 <SelectTrigger><SelectValue placeholder="Choose event" /></SelectTrigger>
                 <SelectContent>
                   {events.map((e) => (
@@ -146,7 +126,7 @@ export function ExhibitorImportDialog({
               </Select>
             </Field>
             <Field label="CSV file">
-              <Input type="file" accept=".csv,text/csv" onChange={(e) => onFile(e.target.files?.[0])} />
+              <Input disabled={run.isPending} type="file" accept=".csv,text/csv" onChange={(e) => onFile(e.target.files?.[0])} />
             </Field>
           </div>
           <Button type="button" variant="outline" size="sm" className="w-fit" onClick={downloadSample}>
@@ -156,7 +136,7 @@ export function ExhibitorImportDialog({
           {rows.length > 0 && (
             <div className="rounded-md border border-border">
               <div className="border-b border-border px-3 py-2 text-xs text-muted-foreground">
-                {fileName}: {valid.length} ready · {rows.length - valid.length} with problems
+                {fileName}: {valid.length} ready · {valid.reduce((n, r) => n + r.piece_count, 0)} freight labels · {rows.length - valid.length} with problems
               </div>
               <div className="max-h-72 overflow-auto">
                 <table className="w-full text-xs">
@@ -166,6 +146,7 @@ export function ExhibitorImportDialog({
                       <th className="px-2 py-1.5">Company</th>
                       <th className="px-2 py-1.5">Booth</th>
                       <th className="px-2 py-1.5">Contact</th>
+                      <th className="px-2 py-1.5">Pieces</th>
                       <th className="px-2 py-1.5">Status</th>
                     </tr>
                   </thead>
@@ -176,6 +157,7 @@ export function ExhibitorImportDialog({
                         <td className="px-2 py-1.5">{r.company_name || "—"}</td>
                         <td className="px-2 py-1.5 font-mono">{r.booth_number || "—"}</td>
                         <td className="px-2 py-1.5">{[r.first_name, r.last_name].filter(Boolean).join(" ") || r.contact_email || "—"}</td>
+                        <td className="px-2 py-1.5">{r.piece_count}</td>
                         <td className="px-2 py-1.5">{status(r)}</td>
                       </tr>
                     ))}
@@ -186,7 +168,7 @@ export function ExhibitorImportDialog({
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
+          <Button disabled={run.isPending} variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
           <Button disabled={!eventId || valid.length === 0 || run.isPending} onClick={() => run.mutate()}>
             <Upload /> {run.isPending ? "Importing…" : `Import ${valid.length} exhibitors`}
           </Button>

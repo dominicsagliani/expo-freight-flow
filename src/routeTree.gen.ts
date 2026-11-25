@@ -28,6 +28,8 @@ import { Route as AuthenticatedPlanRequestsRouteImport } from './routes/_authent
 import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedShipLabelsRouteImport } from './routes/_authenticated/ship-labels'
+import { Route as AuthenticatedShipmentLabelsRouteImport } from './routes/_authenticated/shipment-labels'
+import { Route as AuthenticatedShipmentsRouteImport } from './routes/_authenticated/shipments'
 import { Route as AuthenticatedBolLabelsBolIdRouteImport } from './routes/_authenticated/bol-labels.$bolId'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
@@ -137,6 +139,17 @@ const AuthenticatedShipLabelsRoute = AuthenticatedShipLabelsRouteImport.update({
   path: '/ship-labels',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedShipmentLabelsRoute =
+  AuthenticatedShipmentLabelsRouteImport.update({
+    id: '/shipment-labels',
+    path: '/shipment-labels',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShipmentsRoute = AuthenticatedShipmentsRouteImport.update({
+  id: '/shipments',
+  path: '/shipments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBolLabelsBolIdRoute =
   AuthenticatedBolLabelsBolIdRouteImport.update({
     id: '/bol-labels/$bolId',
@@ -225,6 +238,8 @@ export interface FileRoutesByFullPath {
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/ship-labels': typeof AuthenticatedShipLabelsRoute
+  '/shipment-labels': typeof AuthenticatedShipmentLabelsRoute
+  '/shipments': typeof AuthenticatedShipmentsRoute
   '/bol-labels/$bolId': typeof AuthenticatedBolLabelsBolIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
@@ -257,6 +272,8 @@ export interface FileRoutesByTo {
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/ship-labels': typeof AuthenticatedShipLabelsRoute
+  '/shipment-labels': typeof AuthenticatedShipmentLabelsRoute
+  '/shipments': typeof AuthenticatedShipmentsRoute
   '/bol-labels/$bolId': typeof AuthenticatedBolLabelsBolIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
@@ -291,6 +308,8 @@ export interface FileRoutesById {
   '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/ship-labels': typeof AuthenticatedShipLabelsRoute
+  '/_authenticated/shipment-labels': typeof AuthenticatedShipmentLabelsRoute
+  '/_authenticated/shipments': typeof AuthenticatedShipmentsRoute
   '/_authenticated/bol-labels/$bolId': typeof AuthenticatedBolLabelsBolIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/labels/$freightId': typeof AuthenticatedLabelsFreightIdRoute
@@ -325,6 +344,8 @@ export interface FileRouteTypes {
     | '/plans'
     | '/settings'
     | '/ship-labels'
+    | '/shipment-labels'
+    | '/shipments'
     | '/bol-labels/$bolId'
     | '/events/$eventId'
     | '/labels/$freightId'
@@ -357,6 +378,8 @@ export interface FileRouteTypes {
     | '/plans'
     | '/settings'
     | '/ship-labels'
+    | '/shipment-labels'
+    | '/shipments'
     | '/bol-labels/$bolId'
     | '/events/$eventId'
     | '/labels/$freightId'
@@ -390,6 +413,8 @@ export interface FileRouteTypes {
     | '/_authenticated/plans'
     | '/_authenticated/settings'
     | '/_authenticated/ship-labels'
+    | '/_authenticated/shipment-labels'
+    | '/_authenticated/shipments'
     | '/_authenticated/bol-labels/$bolId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/labels/$freightId'
@@ -550,6 +575,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShipLabelsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/shipment-labels': {
+      id: '/_authenticated/shipment-labels'
+      path: '/shipment-labels'
+      fullPath: '/shipment-labels'
+      preLoaderRoute: typeof AuthenticatedShipmentLabelsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shipments': {
+      id: '/_authenticated/shipments'
+      path: '/shipments'
+      fullPath: '/shipments'
+      preLoaderRoute: typeof AuthenticatedShipmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bol-labels/$bolId': {
       id: '/_authenticated/bol-labels/$bolId'
       path: '/bol-labels/$bolId'
@@ -653,6 +692,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedShipLabelsRoute: typeof AuthenticatedShipLabelsRoute
+  AuthenticatedShipmentLabelsRoute: typeof AuthenticatedShipmentLabelsRoute
+  AuthenticatedShipmentsRoute: typeof AuthenticatedShipmentsRoute
   AuthenticatedBolLabelsBolIdRoute: typeof AuthenticatedBolLabelsBolIdRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
   AuthenticatedLabelsFreightIdRoute: typeof AuthenticatedLabelsFreightIdRoute
@@ -679,6 +720,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlansRoute: AuthenticatedPlansRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedShipLabelsRoute: AuthenticatedShipLabelsRoute,
+  AuthenticatedShipmentLabelsRoute: AuthenticatedShipmentLabelsRoute,
+  AuthenticatedShipmentsRoute: AuthenticatedShipmentsRoute,
   AuthenticatedBolLabelsBolIdRoute: AuthenticatedBolLabelsBolIdRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
   AuthenticatedLabelsFreightIdRoute: AuthenticatedLabelsFreightIdRoute,

@@ -7,6 +7,8 @@ export type ExhibitorCsvRow = {
   contact_email: string;
   contact_phone: string;
   billing_address: string;
+  piece_count: number;
+  weight_lbs: number;
   errors: string[];
 };
 
@@ -18,12 +20,14 @@ export const EXHIBITOR_CSV_HEADERS = [
   "contact_email",
   "contact_phone",
   "billing_address",
+  "piece_count",
+  "weight_lbs",
 ] as const;
 
 export const SAMPLE_EXHIBITOR_CSV =
-  "Company Name,Booth Number,First Name,Last Name,Contact Email,Contact Phone,Billing Address\n" +
-  'Acme Marine Supplies,B-14,Sarah,Jenkins,sarah@acmemarine.com,555-234-5678,"1200 Harbor Dr, St. Petersburg, FL"\n' +
-  'Gulf Coast Rigging,402,Dave,Miller,dave@gulfcoast.com,555-876-5432,"450 Bay St, Tampa, FL"\n';
+  "Company Name,Booth Number,First Name,Last Name,Contact Email,Contact Phone,Billing Address,Piece Count,Weight Lbs\n" +
+  'Acme Marine Supplies,B-14,Sarah,Jenkins,sarah@acmemarine.com,555-234-5678,"1200 Harbor Dr, St. Petersburg, FL",3,500\n' +
+  'Gulf Coast Rigging,402,Dave,Miller,dave@gulfcoast.com,555-876-5432,"450 Bay St, Tampa, FL",2,300\n';
 
 /** RFC4180-style CSV parser (quotes, escaped quotes, CRLF, newlines in quotes). */
 export function parseCsv(text: string): string[][] {
@@ -57,13 +61,17 @@ const ALIASES: Record<string, string> = {
   contactemail: "contact_email", email: "contact_email",
   contactphone: "contact_phone", phone: "contact_phone",
   billingaddress: "billing_address", address: "billing_address",
+  piececount: "piece_count", pieces: "piece_count", cratecount: "piece_count",
+  weightlbs: "weight_lbs", weight: "weight_lbs",
 };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function parseExhibitorCsv(text: string): { rows: ExhibitorCsvRow[]; error?: string } {
   const all = parseCsv(text);
   if (all.length < 2) return { rows: [], error: "The file needs a header row and at least one exhibitor." };
-  const keys = all[0]!.map((h) => ALIASES[norm(h)] ?? null);
+  const header = all[0];
+  if (!header) return { rows: [], error: "Missing headers" };
+  const keys = header.map((h) => ALIASES[norm(h)] ?? null);
   if (!keys.includes("company_name") || !keys.includes("booth_number"))
     return { rows: [], error: "Missing required columns: Company Name and Booth Number." };
   const seen = new Set<string>();
@@ -86,11 +94,15 @@ export function parseExhibitorCsv(text: string): { rows: ExhibitorCsvRow[]; erro
       contact_email: g["contact_email"] ?? "",
       contact_phone: g["contact_phone"] ?? "",
       billing_address: g["billing_address"] ?? "",
+      piece_count: Number(g["piece_count"] || 1),
+      weight_lbs: Number(g["weight_lbs"] || 0),
       errors: [],
     };
     if (r.company_name.length < 2) r.errors.push("Company name missing");
     if (!r.booth_number) r.errors.push("Booth number missing");
     if (r.contact_email && !EMAIL.test(r.contact_email)) r.errors.push("Invalid email");
+    if (!Number.isInteger(r.piece_count) || r.piece_count < 1 || r.piece_count > 1000) r.errors.push("Piece count must be 1–1000");
+    if (!Number.isFinite(r.weight_lbs) || r.weight_lbs < 0) r.errors.push("Invalid weight");
     const key = `${r.company_name.toLowerCase()}|${r.booth_number.toLowerCase()}`;
     if (r.company_name && r.booth_number && seen.has(key)) r.errors.push("Duplicate row in file");
     seen.add(key);

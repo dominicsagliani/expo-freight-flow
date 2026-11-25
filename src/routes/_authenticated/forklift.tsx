@@ -17,7 +17,9 @@ import { SERVICE_LABEL } from "@/lib/labels";
 import { fmtDuration, ISSUE_TYPES, PAUSE_REASONS, sessionSeconds, type IssueType } from "@/lib/work-session";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { EQUIPMENT_CLASSES, FUEL_TYPES } from "@/lib/fleet";
-import { useAutoInvoice } from "@/components/app/service-payment";
+import { notifyInvoiceOutcome } from "@/components/app/service-payment";
+import { useServerFn } from "@tanstack/react-start";
+import { completeAndInvoice } from "@/utils/service-invoice.functions";
 import { driverRosterQuery } from "@/lib/queries";
 import { EquipmentPhoto } from "@/components/app/equipment-photo";
 
@@ -57,7 +59,7 @@ async function uploadPhoto(ticketId: string, file: File, extra: { freight_id?: s
 }
 
 function ForkliftMode() {
-  const autoInvoice = useAutoInvoice();
+  const complete = useServerFn(completeAndInvoice);
   const qc = useQueryClient();
   const [forklift, setForklift] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -173,7 +175,10 @@ function ForkliftMode() {
     if (!current) return;
     if (callIn) {
       if (!confirm(`Complete request ${current.ticket_number}?`)) return;
-      if (await rpc(() => supabase.rpc("op_complete_call_in", { _ticket: current.id }), "Request completed")) { autoInvoice(current.id); setSelected(null); refresh(); }
+      try {
+        const result = await complete({ data: { ticketId: current.id, operation: "call_in" } });
+        notifyInvoiceOutcome(result.invoice); toast.success("Request completed"); setSelected(null); refresh();
+      } catch (e) { toast.error(e instanceof Error ? e.message : "Could not complete request"); }
       return;
     }
     setScanTicket(current.id);
@@ -389,7 +394,7 @@ function ForkliftMode() {
 }
 
 function ScanScreen({ job, forklift, onDone, onCompleted }: { job: { id: string; booth_number: string | null }; forklift: string; onDone: () => void; onCompleted: () => void }) {
-  const autoInvoice = useAutoInvoice();
+  const complete = useServerFn(completeAndInvoice);
   const [mode, setMode] = useState<"pickup" | "deliver">("pickup");
   const [result, setResult] = useState<ScanResult | null>(null);
   const [pending, setPending] = useState<string | null>(null);
@@ -400,20 +405,24 @@ function ScanScreen({ job, forklift, onDone, onCompleted }: { job: { id: string;
 
   const submit = async (token: string, extra: { booth_ok?: boolean; flag?: string | null; note?: string; photo?: File | null } = {}) => {
     setBusy(true);
-    const args: { _token: string; _ticket: string; _action: string; _equipment: string; _booth_ok?: boolean; _flag?: string; _note?: string } =
-      { _token: token, _ticket: job.id, _action: mode, _equipment: forklift };
-    if (extra.booth_ok !== undefined) args._booth_ok = extra.booth_ok;
-    if (extra.flag) args._flag = extra.flag;
-    if (extra.note) args._note = extra.note;
-    const { data, error } = await supabase.rpc("op_scan_freight", args);
+    let data;
+    try {
+      const response = await complete({ data: {
+        ticketId: job.id, operation: "scan", token, action: mode, equipment: forklift,
+        ...(extra.booth_ok !== undefined ? { boothOk: extra.booth_ok } : {}),
+        ...(extra.flag ? { flag: extra.flag } : {}), ...(extra.note ? { note: extra.note } : {}),
+      } });
+      data = response.scan;
+      notifyInvoiceOutcome(response.invoice);
+    } catch (e) {
+      setBusy(false); setResult({ ok: false, error: e instanceof Error ? e.message : "Scan failed" }); return;
+    }
     setBusy(false);
-    if (error) { setResult({ ok: false, error: error.message }); return; }
     const r = data as unknown as ScanResult & { freight_id?: string };
     if (r.ok && extra.photo && r.freight_id) {
       try { await uploadPhoto(job.id, extra.photo, { freight_id: r.freight_id }); } catch (e) { toast.error((e as Error).message); }
     }
     setPending(null); setResult(r);
-    if (r.ok && r.job_completed) autoInvoice(job.id);
     if (!r.job_completed) onDone();
   };
   const onScan = (raw: string) => {

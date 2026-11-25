@@ -8,6 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { sendServiceInvoice, INVOICE_REASON } from "@/utils/service-invoice.functions";
 import { fmtDateTime } from "@/lib/format";
 
+export function notifyInvoiceOutcome(r: { sent: boolean; to?: string; reason?: string } | null) {
+  if (!r) return;
+  if (r.sent) toast.success(`Invoice emailed to ${r.to}`);
+  else if (r.reason !== "already_sent" && r.reason !== "already_paid") toast.message(`Invoice pending: ${INVOICE_REASON[r.reason ?? ""] ?? r.reason}`);
+}
+
 /** Fire-and-forget receipt after a job completes; silent unless it fails for a fixable reason. */
 export function useAutoInvoice() {
   const send = useServerFn(sendServiceInvoice);

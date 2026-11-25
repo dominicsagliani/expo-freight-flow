@@ -6,12 +6,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { TicketStatus } from "@/lib/labels";
+import { useServerFn } from "@tanstack/react-start";
+import { completeAndInvoice } from "@/utils/service-invoice.functions";
+import { notifyInvoiceOutcome } from "./service-payment";
 
 export function OperatorJobActions({ ticketId, status }: { ticketId: string; status: TicketStatus }) {
   const qc = useQueryClient();
+  const complete = useServerFn(completeAndInvoice);
   const [busy, setBusy] = useState(false);
   const [notes, setNotes] = useState("");
   const [confirming, setConfirming] = useState(false);
+
+  const finish = async () => {
+    setBusy(true);
+    try {
+      const result = await complete({ data: { ticketId, operation: "manual", note: notes } });
+      notifyInvoiceOutcome(result.invoice);
+      toast.success("Job completed");
+      setConfirming(false); setNotes("");
+      window.__lovableEvents?.track?.("project.job_completed", {});
+      void qc.invalidateQueries();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Could not complete job"); }
+    finally { setBusy(false); }
+  };
 
   const run = async (fn: () => PromiseLike<{ error: { message: string } | null }>, ok: string, event: string) => {
     setBusy(true);
@@ -39,7 +56,7 @@ export function OperatorJobActions({ ticketId, status }: { ticketId: string; sta
         <div className="flex gap-2">
           <Button variant="outline" className="h-12 flex-1" onClick={() => setConfirming(false)}>Cancel</Button>
           <Button className="h-12 flex-1" disabled={busy}
-            onClick={() => run(() => supabase.rpc("operator_complete_job", { _ticket: ticketId, _notes: notes }), "Job completed", "project.job_completed")}>
+            onClick={finish}>
             Confirm complete
           </Button>
         </div>
