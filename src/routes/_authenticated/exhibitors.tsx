@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ExhibitorFormDialog } from "@/components/app/exhibitor-form-dialog";
 import { ExhibitorImportDialog } from "@/components/app/exhibitor-import-dialog";
-import { eventsQuery, exhibitorsQuery, freightQuery, isStaff, membershipQuery, ticketsQuery } from "@/lib/queries";
+import { eventsQuery, exhibitorsQuery, freightQuery, isStaff, membershipQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/_authenticated/exhibitors")({
   head: () => ({
@@ -24,7 +24,6 @@ export const Route = createFileRoute("/_authenticated/exhibitors")({
     Promise.all([
       queryClient.ensureQueryData(exhibitorsQuery()),
       queryClient.ensureQueryData(eventsQuery()),
-      queryClient.ensureQueryData(ticketsQuery()),
       queryClient.ensureQueryData(freightQuery()),
     ]),
   component: ExhibitorsPage,
@@ -34,7 +33,6 @@ function ExhibitorsPage() {
   const { data: m } = useSuspenseQuery(membershipQuery());
   const { data: exhibitors } = useSuspenseQuery(exhibitorsQuery());
   const { data: events } = useSuspenseQuery(eventsQuery());
-  const { data: tickets } = useSuspenseQuery(ticketsQuery());
   const { data: freight } = useSuspenseQuery(freightQuery());
   const [q, setQ] = useState("");
 
@@ -106,7 +104,6 @@ function ExhibitorsPage() {
                   <th className="px-4 py-2.5 font-semibold">Contact</th>
                   <th className="px-4 py-2.5 font-semibold">Event · Booth</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Freight</th>
-                  <th className="px-4 py-2.5 text-right font-semibold">Open tickets</th>
                   <th className="w-10" />
                 </tr>
               </thead>
@@ -143,15 +140,6 @@ function ExhibitorsPage() {
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">
                       {freight.filter((f) => f.exhibitor_id === x.id).length}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums">
-                      {
-                        tickets.filter(
-                          (t) =>
-                            t.exhibitor_id === x.id &&
-                            (t.status === "requested" || t.status === "assigned" || t.status === "in_progress"),
-                        ).length
-                      }
                     </td>
                     <td className="px-2 py-2">
                       {isStaff(m) && m.organizationId && (
