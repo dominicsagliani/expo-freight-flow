@@ -2567,6 +2567,10 @@ export type Database = {
       }
       create_my_organization: { Args: { _name: string }; Returns: string }
       delete_event: { Args: { _event: string }; Returns: undefined }
+      delete_event_and_exhibitors: {
+        Args: { _delete_exhibitors: boolean; _event: string }
+        Returns: number
+      }
       dispatch_next_available: { Args: { _event: string }; Returns: undefined }
       dispatch_staged_crates: {
         Args: {

@@ -11,16 +11,18 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 export function DeleteEventButton({ eventId, name, compact = false, leavePage = false }: { eventId: string; name: string; compact?: boolean; leavePage?: boolean }) {
   const [open, setOpen] = useState(false);
   const [confirmation, setConfirmation] = useState("");
+  const [wipeExhibitors, setWipeExhibitors] = useState(false);
   const qc = useQueryClient();
   const navigate = useNavigate();
   const remove = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("delete_event", { _event: eventId });
+      const { data, error } = await supabase.rpc("delete_event_and_exhibitors", { _event: eventId, _delete_exhibitors: wipeExhibitors });
       if (error) throw error;
+      return data ?? 0;
     },
-    onSuccess: async () => {
+    onSuccess: async (count) => {
       setOpen(false);
-      toast.success("Event deleted");
+      toast.success(wipeExhibitors ? `Event deleted along with ${count} exhibitors` : "Event deleted");
       qc.removeQueries({ queryKey: ["events", eventId], exact: true });
       if (leavePage) await navigate({ to: "/events" });
       await qc.invalidateQueries();
@@ -28,7 +30,7 @@ export function DeleteEventButton({ eventId, name, compact = false, leavePage = 
     onError: (e: Error) => toast.error(e.message),
   });
   return (
-    <Dialog open={open} onOpenChange={(value) => { if (!remove.isPending) { setOpen(value); setConfirmation(""); } }}>
+    <Dialog open={open} onOpenChange={(value) => { if (!remove.isPending) { setOpen(value); setConfirmation(""); setWipeExhibitors(false); } }}>
       <DialogTrigger asChild>
         <Button variant={compact ? "ghost" : "destructive"} size={compact ? "icon" : "default"} aria-label={`Delete event ${name}`} title={`Delete event ${name}`}>
           <Trash2 />{!compact && "Delete event"}
@@ -39,6 +41,10 @@ export function DeleteEventButton({ eventId, name, compact = false, leavePage = 
           <DialogTitle>Delete {name}?</DialogTitle>
           <DialogDescription>This permanently deletes the event and its tickets, freight, photos records, event rates, and billing history. Company exhibitors, operators, machines, and subscriptions remain. Active work must finish or be reset first. This cannot be undone.</DialogDescription>
         </DialogHeader>
+        <label className="flex items-start gap-2 rounded-md border p-3 text-sm">
+          <input type="checkbox" className="mt-1" checked={wipeExhibitors} onChange={(e) => setWipeExhibitors(e.target.checked)} disabled={remove.isPending} />
+          <span><span className="font-medium">Also delete this event's exhibitors</span><br /><span className="text-muted-foreground">Removes their company, contact info, and logins so you can import fresh. Exhibitors who are also in another event are kept.</span></span>
+        </label>
         <label className="grid gap-2 text-sm">Type DELETE to confirm
           <Input value={confirmation} onChange={(e) => setConfirmation(e.target.value)} autoComplete="off" disabled={remove.isPending} />
         </label>

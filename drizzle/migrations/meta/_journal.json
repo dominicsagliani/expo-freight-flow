@@ -309,6 +309,13 @@
       "when": 1795570431279,
       "tag": "0043_apply_existing_plan_gate_to_inbound_shipments",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1795626777927,
+      "tag": "0044_delete_event_with_exhibitors",
+      "breakpoints": true
     }
   ]
 }
