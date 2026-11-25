@@ -14,6 +14,7 @@ import {
   Settings,
   Users,
   Trophy,
+  Tag,
 } from "lucide-react";
 import {
   Sidebar,
@@ -42,6 +43,7 @@ const operations: NavItem[] = [
   { title: "Events", url: "/events", icon: CalendarDays, roles: STAFF },
   { title: "Exhibitors", url: "/exhibitors", icon: Building2, roles: STAFF },
   { title: "Freight Management", url: "/freight", icon: Package, roles: WORK },
+  { title: "Shipping labels", url: "/ship-labels", icon: Tag, roles: WORK },
   { title: "Material Handling Tickets", url: "/tickets", icon: ClipboardList, roles: WORK },
   { title: "My Driver Dashboard", url: "/operator", icon: ScanLine, roles: ["operator", ...STAFF] },
   { title: "Forklift Mode", url: "/forklift", icon: Forklift, roles: ["operator", ...STAFF] },
