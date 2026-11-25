@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Pencil, Plus, Search } from "lucide-react";
+import { FileUp, Pencil, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { ExhibitorFormDialog } from "@/components/app/exhibitor-form-dialog";
+import { ExhibitorImportDialog } from "@/components/app/exhibitor-import-dialog";
 import { eventsQuery, exhibitorsQuery, freightQuery, isStaff, membershipQuery, ticketsQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/_authenticated/exhibitors")({
@@ -55,6 +56,17 @@ function ExhibitorsPage() {
         description="Companies exhibiting at your events, their contacts, and booth assignments."
         actions={
           isStaff(m) && m.organizationId ? (
+            <div className="flex gap-2">
+            <ExhibitorImportDialog
+              organizationId={m.organizationId}
+              events={eventOptions}
+              existing={exhibitors}
+              trigger={
+                <Button variant="outline">
+                  <FileUp /> Import CSV
+                </Button>
+              }
+            />
             <ExhibitorFormDialog
               organizationId={m.organizationId}
               events={eventOptions}
@@ -64,6 +76,7 @@ function ExhibitorsPage() {
                 </Button>
               }
             />
+            </div>
           ) : null
         }
       />
