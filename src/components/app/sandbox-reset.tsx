@@ -12,9 +12,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 type ResetMode = "quick" | "deep";
 type ResetResult = { cancelled_jobs: number; stopped_sessions: number; reset_freight: number };
 
-export function SandboxReset({ eventId, eventName }: { eventId: string; eventName: string }) {
+export function SandboxReset({ eventId, eventName, defaultMode = "quick" }: { eventId: string; eventName: string; defaultMode?: ResetMode }) {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<ResetMode>("quick");
+  const [mode, setMode] = useState<ResetMode>(defaultMode);
   const [confirmation, setConfirmation] = useState("");
   const qc = useQueryClient();
   const deep = mode === "deep";
@@ -42,7 +42,7 @@ export function SandboxReset({ eventId, eventName }: { eventId: string; eventNam
     if (reset.isPending) return;
     setOpen(value);
     if (!value) {
-      setMode("quick");
+      setMode(defaultMode);
       setConfirmation("");
     }
   };
@@ -50,7 +50,7 @@ export function SandboxReset({ eventId, eventName }: { eventId: string; eventNam
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline"><FlaskConical />Sandbox</Button>
+        <Button variant="outline"><FlaskConical />{defaultMode === "deep" ? "Reset test data" : "Sandbox"}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>

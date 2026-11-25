@@ -12,6 +12,7 @@ import { PageHeader, Panel, EmptyState } from "@/components/app/page-header";
 import { EventStatusBadge } from "@/components/app/badges";
 import { EventFormDialog, Field } from "@/components/app/event-form-dialog";
 import { DeleteEventButton } from "@/components/app/admin-reset-actions";
+import { SandboxReset } from "@/components/app/sandbox-reset";
 import { eventQuery, exhibitorsQuery, freightQuery, isAdmin, isStaff, membershipQuery, ticketsQuery } from "@/lib/queries";
 import { fmtDate, fmtDateRange } from "@/lib/format";
 
@@ -93,6 +94,7 @@ function EventDetail() {
                 </Button>
               }
             />
+            <SandboxReset eventId={eventId} eventName={event.name} defaultMode="deep" />
             <DeleteEventButton eventId={eventId} name={event.name} leavePage />
             </div>
           ) : null
