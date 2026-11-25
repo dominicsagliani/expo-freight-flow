@@ -797,6 +797,8 @@ export type Database = {
           height_in: number | null
           id: string
           import_piece_number: number | null
+          inbound_extra: boolean
+          inbound_shipment_id: string | null
           length_in: number | null
           organization_id: string
           pieces: number
@@ -822,6 +824,8 @@ export type Database = {
           height_in?: number | null
           id?: string
           import_piece_number?: number | null
+          inbound_extra?: boolean
+          inbound_shipment_id?: string | null
           length_in?: number | null
           organization_id: string
           pieces?: number
@@ -847,6 +851,8 @@ export type Database = {
           height_in?: number | null
           id?: string
           import_piece_number?: number | null
+          inbound_extra?: boolean
+          inbound_shipment_id?: string | null
           length_in?: number | null
           organization_id?: string
           pieces?: number
@@ -876,6 +882,13 @@ export type Database = {
             columns: ["exhibitor_id"]
             isOneToOne: false
             referencedRelation: "exhibitors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "freight_items_inbound_shipment_id_fkey"
+            columns: ["inbound_shipment_id"]
+            isOneToOne: false
+            referencedRelation: "inbound_shipments"
             referencedColumns: ["id"]
           },
           {
@@ -944,6 +957,139 @@ export type Database = {
           },
           {
             foreignKeyName: "freight_staging_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inbound_receipts: {
+        Row: {
+          created_at: string
+          id: string
+          intake_key: string
+          note: string
+          organization_id: string
+          original_filename: string | null
+          received_by: string | null
+          received_count: number
+          shipment_id: string
+          storage_path: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intake_key: string
+          note?: string
+          organization_id: string
+          original_filename?: string | null
+          received_by?: string | null
+          received_count: number
+          shipment_id: string
+          storage_path?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intake_key?: string
+          note?: string
+          organization_id?: string
+          original_filename?: string | null
+          received_by?: string | null
+          received_count?: number
+          shipment_id?: string
+          storage_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbound_receipts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbound_receipts_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "inbound_shipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inbound_shipments: {
+        Row: {
+          booth_number: string
+          carrier: string
+          created_at: string
+          created_by: string | null
+          event_id: string
+          exhibitor_id: string
+          expected_arrival: string | null
+          expected_pieces: number
+          freight_type: Database["public"]["Enums"]["freight_type"]
+          id: string
+          intake_key: string
+          note: string
+          organization_id: string
+          original_filename: string | null
+          storage_path: string | null
+          unexpected: boolean
+        }
+        Insert: {
+          booth_number: string
+          carrier?: string
+          created_at?: string
+          created_by?: string | null
+          event_id: string
+          exhibitor_id: string
+          expected_arrival?: string | null
+          expected_pieces: number
+          freight_type?: Database["public"]["Enums"]["freight_type"]
+          id?: string
+          intake_key: string
+          note?: string
+          organization_id: string
+          original_filename?: string | null
+          storage_path?: string | null
+          unexpected?: boolean
+        }
+        Update: {
+          booth_number?: string
+          carrier?: string
+          created_at?: string
+          created_by?: string | null
+          event_id?: string
+          exhibitor_id?: string
+          expected_arrival?: string | null
+          expected_pieces?: number
+          freight_type?: Database["public"]["Enums"]["freight_type"]
+          id?: string
+          intake_key?: string
+          note?: string
+          organization_id?: string
+          original_filename?: string | null
+          storage_path?: string | null
+          unexpected?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbound_shipments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbound_shipments_exhibitor_id_fkey"
+            columns: ["exhibitor_id"]
+            isOneToOne: false
+            referencedRelation: "exhibitors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbound_shipments_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -2378,6 +2524,10 @@ export type Database = {
     }
     Functions: {
       accept_my_invitations: { Args: never; Returns: number }
+      attach_inbound_document: {
+        Args: { _filename: string; _path: string; _shipment: string }
+        Returns: undefined
+      }
       calc_ticket_charge: {
         Args: {
           _completed: string
@@ -2394,6 +2544,7 @@ export type Database = {
         Args: { _period_start: string; _program: string }
         Returns: number
       }
+      can_upload_inbound_bol: { Args: { _name: string }; Returns: boolean }
       can_view_event_status: { Args: { _event: string }; Returns: boolean }
       can_view_ticket: { Args: { _ticket: string }; Returns: boolean }
       can_work_ticket: { Args: { _ticket: string }; Returns: boolean }
@@ -2674,6 +2825,33 @@ export type Database = {
           _total_weight: number
         }
         Returns: Json
+      }
+      receive_inbound_shipment: {
+        Args: {
+          _extra: number
+          _filename: string
+          _key: string
+          _note: string
+          _path: string
+          _pieces: Json
+          _shipment: string
+        }
+        Returns: string
+      }
+      register_inbound_shipment: {
+        Args: {
+          _arrival: string
+          _carrier: string
+          _count: number
+          _event: string
+          _exhibitor: string
+          _existing: string[]
+          _key: string
+          _note: string
+          _type: Database["public"]["Enums"]["freight_type"]
+          _unexpected: boolean
+        }
+        Returns: string
       }
       reset_operator_pin: { Args: { _operator: string }; Returns: undefined }
       reset_org_drivers: { Args: { _org: string }; Returns: number }

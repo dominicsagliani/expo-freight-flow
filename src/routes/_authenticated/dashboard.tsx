@@ -13,7 +13,9 @@ import {
   ticketsQuery,
   isStaff,
   exhibitorCountQuery,
+  inboundShipmentsQuery,
 } from "@/lib/queries";
+import { InboundOverview } from "@/components/app/inbound-list";
 import { fmtMoney } from "@/lib/billing";
 import { computeDashboardStats } from "@/lib/dashboard-stats";
 import { ACTIVITY_LABEL, type ActivityDetails, SERVICE_LABEL, TICKET_STATUS_LABEL, type TicketStatus } from "@/lib/labels";
@@ -38,6 +40,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       queryClient.ensureQueryData(recentActivityQuery()),
       queryClient.ensureQueryData(eventsQuery()),
       queryClient.ensureQueryData(exhibitorCountQuery()),
+      queryClient.ensureQueryData(inboundShipmentsQuery()),
     ]),
   component: Dashboard,
 });
@@ -91,6 +94,7 @@ function DashboardBody() {
   const { data: activity } = useSuspenseQuery(recentActivityQuery());
   const { data: events } = useSuspenseQuery(eventsQuery());
   const { data: exhibitorCount } = useSuspenseQuery(exhibitorCountQuery());
+  const { data: inbound } = useSuspenseQuery(inboundShipmentsQuery());
   const completed = tickets.filter((t) => t.status === "completed");
   const revenue = completed.reduce((s, t) => s + Number(t.charge_amount ?? 0), 0);
   const activeEvents = events.filter((e) => e.status !== "closed" && e.status !== "planning").length;
@@ -159,6 +163,8 @@ function DashboardBody() {
         <Kpi label="Completed deliveries" value={completed.length} sub={`${stats.completedToday} today`} accent="text-status-completed" />
         <Kpi label="Revenue" value={fmtMoney(revenue)} sub="From completed services" />
       </div>
+
+      {isStaff(m) && <InboundOverview shipments={inbound} />}
 
       <Panel title="Ticket pipeline" bodyClassName="p-4">
         <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">

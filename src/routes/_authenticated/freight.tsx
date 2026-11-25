@@ -63,6 +63,7 @@ function FreightPage() {
       <PageHeader eyebrow="Freight identification" title="Freight Management" description="Every crate and pallet on file for your events."
         actions={
           <>
+            {isStaff(m) && <Button variant="outline" asChild><Link to="/shipments" search={{ eventId: "" }}>Expected shipments</Link></Button>}
             {isStaff(m) && <BolFormDialog events={openEvents} booths={booths} trigger={<Button variant="teal"><FileScan /> BOL check-in</Button>} />}
             {canRegister && (
               <FreightFormDialog

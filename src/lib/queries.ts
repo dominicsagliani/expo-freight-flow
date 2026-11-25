@@ -183,6 +183,15 @@ export const freightQuery = () =>
 
 export type FreightListItem = Awaited<ReturnType<NonNullable<ReturnType<typeof freightQuery>["queryFn"]>>>[number];
 
+export const inboundShipmentsQuery = () => queryOptions({
+  queryKey: ["inbound-shipments"],
+  queryFn: async () => unwrap(await supabase.from("inbound_shipments")
+    .select("*, exhibitor:exhibitors(company_name), freight:freight_items(id, freight_code, pieces, description, weight_lbs, arrival_status, arrived_at, inbound_extra), receipts:inbound_receipts(id, note, received_count, storage_path, original_filename, created_at)")
+    .order("created_at", { ascending: false })),
+  refetchInterval: 20_000,
+});
+export type InboundShipment = Awaited<ReturnType<NonNullable<ReturnType<typeof inboundShipmentsQuery>["queryFn"]>>>[number];
+
 export const billsOfLadingQuery = () =>
   queryOptions({
     queryKey: ["bills_of_lading"],

@@ -10,18 +10,21 @@ import { ExhibitorImportDialog } from "@/components/app/exhibitor-import-dialog"
 import { FreightHistoryDialog } from "@/components/app/freight-history-dialog";
 import { ServicePayment } from "@/components/app/service-payment";
 import { ArrivalBadge } from "@/components/app/badges";
-import { eventsQuery, exhibitorsQuery, freightQuery, ticketsQuery, membershipQuery, isStaff, isAdmin } from "@/lib/queries";
+import { eventsQuery, exhibitorsQuery, freightQuery, ticketsQuery, membershipQuery, isStaff, isAdmin, inboundShipmentsQuery } from "@/lib/queries";
 import { shipmentSummary } from "@/lib/shipments";
 import { fmtMoney } from "@/lib/billing";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { ShipmentInvitations } from "@/components/app/shipment-invitations";
 import { ReceiveShipment } from "@/components/app/receive-shipment";
+import { InboundRegister } from "@/components/app/inbound-register";
+import { InboundList } from "@/components/app/inbound-list";
 
 export const Route = createFileRoute("/_authenticated/shipments")({
-  validateSearch: (s: Record<string, unknown>) => ({ eventId: typeof s["eventId"] === "string" ? s["eventId"] : "" }),
+  validateSearch: (s: Record<string, unknown>) => ({ eventId: typeof s["eventId"] === "string" ? s["eventId"] : "", ...(typeof s["shipmentId"] === "string" ? { shipmentId: s["shipmentId"] } : {}) }),
   loader: ({ context: { queryClient } }) => Promise.all([
     queryClient.ensureQueryData(eventsQuery()), queryClient.ensureQueryData(exhibitorsQuery()),
     queryClient.ensureQueryData(freightQuery()), queryClient.ensureQueryData(ticketsQuery()),
+    queryClient.ensureQueryData(inboundShipmentsQuery()),
   ]),
   head: () => ({ meta: [
     { title: "Shipments & tracking — ExpoHaul" },
@@ -39,7 +42,8 @@ function ShipmentsPage() {
   const { data: exhibitors } = useSuspenseQuery(exhibitorsQuery());
   const { data: freight } = useSuspenseQuery(freightQuery());
   const { data: tickets } = useSuspenseQuery(ticketsQuery());
-  const { eventId: selected } = Route.useSearch();
+  const { data: inbound } = useSuspenseQuery(inboundShipmentsQuery());
+  const { eventId: selected, shipmentId } = Route.useSearch();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const eventId = selected || events.find((e) => e.status !== "closed")?.id || events[0]?.id || "";
@@ -61,6 +65,7 @@ function ShipmentsPage() {
       <Select value={eventId} onValueChange={changeEvent}><SelectTrigger className="w-full sm:w-80" aria-label="Shipment event"><SelectValue placeholder="Choose event" /></SelectTrigger><SelectContent>{events.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent></Select>
       {staff && <Button variant="outline" asChild><Link to="/freight">Receiving</Link></Button>}
       {staff && <Button variant="outline" asChild><Link to="/dispatch">Dispatch</Link></Button>}
+      {(staff || m.role === "exhibitor") && events.some((e) => e.id === eventId && e.status !== "closed") && <InboundRegister key={eventId} eventId={eventId} orgId={events.find((e) => e.id === eventId)?.organization_id ?? ""} companies={exhibitors} freight={eventFreight} staff={staff} />}
       {isAdmin(m) && eventId && <ShipmentInvitations eventId={eventId} contacts={exhibitors.filter((x) => x.contact_email && x.event_exhibitors.some((b) => b.event_id === eventId)).length} />}
     </div>
     <div className="grid grid-cols-2 gap-4 border-b border-border pb-6 lg:grid-cols-4">
@@ -71,7 +76,8 @@ function ShipmentsPage() {
         { label: "Completed charges", value: fmtMoney(all.total), icon: Receipt },
       ].map((s) => <div key={s.label} className="min-w-0"><s.icon className="mb-2 size-5 text-status-progress" /><div className="break-words font-display text-2xl font-bold">{s.value}</div><div className="text-xs text-muted-foreground">{s.label}</div></div>)}
     </div>
-    <div className="relative max-w-sm"><Search className="absolute left-3 top-3 size-4 text-muted-foreground" /><Input className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search company or booth" /></div>
+    <div className="relative max-w-sm"><Search className="absolute left-3 top-3 size-4 text-muted-foreground" /><Input className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search company, booth, carrier or shipment" /></div>
+    <InboundList shipments={inbound.filter((s) => s.event_id === eventId)} search={q} selectedId={shipmentId ?? ""} staff={staff} tickets={eventTickets} />
     {!companies.length && <EmptyState title={staff ? "No exhibitors for this event" : "No freight assigned to your account"} />}
     <div className="divide-y divide-border">
       {companies.map((ex) => {
@@ -90,7 +96,7 @@ function ShipmentsPage() {
             {s.pendingInvoices > 0 && <span className="text-status-requested">{s.pendingInvoices} invoice{ s.pendingInvoices === 1 ? "" : "s"} pending</span>}
             {staff && !ex.contact_email && <span className="text-destructive">Contact email missing</span>}
           </div>
-          {staff && m.organizationId && items.some((f) => f.arrival_status === "expected" && !f.bol_id) && <div className="mt-3"><ReceiveShipment eventId={eventId} exhibitorId={ex.id} organizationId={m.organizationId} pieces={items.filter((f) => f.arrival_status === "expected" && !f.bol_id)} /></div>}
+          {staff && m.organizationId && items.some((f) => f.arrival_status === "expected" && !f.bol_id && !f.inbound_shipment_id) && <div className="mt-3"><ReceiveShipment eventId={eventId} exhibitorId={ex.id} organizationId={m.organizationId} pieces={items.filter((f) => f.arrival_status === "expected" && !f.bol_id && !f.inbound_shipment_id)} /></div>}
           <details className="mt-3"><summary className="cursor-pointer text-sm font-medium text-status-progress">Freight & invoices</summary>
             <div className="mt-3 grid gap-2">
               {items.map((f) => <div key={f.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-2 text-sm">

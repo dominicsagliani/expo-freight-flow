@@ -281,6 +281,20 @@
       "when": 1795568951984,
       "tag": "0039_fix_receiving_validation_alias",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1795569856585,
+      "tag": "0040_inbound_shipment_registration_and_receiving",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1795569997406,
+      "tag": "0041_protect_inbound_links_and_audit_arrivals",
+      "breakpoints": true
     }
   ]
 }
