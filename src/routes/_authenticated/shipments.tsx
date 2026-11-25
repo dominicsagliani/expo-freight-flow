@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { FileUp, Printer, Search, Package, Truck, CheckCircle2, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,20 +16,12 @@ import { fmtMoney } from "@/lib/billing";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { ShipmentInvitations } from "@/components/app/shipment-invitations";
 import { ReceiveShipment } from "@/components/app/receive-shipment";
-import { supabase } from "@/integrations/supabase/client";
-
-const paymentSetupQuery = () => queryOptions({ queryKey: ["shipment-payment-setup"], queryFn: async () => {
-  const { data, error } = await supabase.from("organizations").select("id, payment_link_url, payment_instructions");
-  if (error) throw new Error(error.message);
-  return data ?? [];
-} });
 
 export const Route = createFileRoute("/_authenticated/shipments")({
   validateSearch: (s: Record<string, unknown>) => ({ eventId: typeof s["eventId"] === "string" ? s["eventId"] : "" }),
   loader: ({ context: { queryClient } }) => Promise.all([
     queryClient.ensureQueryData(eventsQuery()), queryClient.ensureQueryData(exhibitorsQuery()),
     queryClient.ensureQueryData(freightQuery()), queryClient.ensureQueryData(ticketsQuery()),
-    queryClient.ensureQueryData(paymentSetupQuery()),
   ]),
   head: () => ({ meta: [
     { title: "Shipments & tracking — ExpoHaul" },
@@ -47,13 +39,11 @@ function ShipmentsPage() {
   const { data: exhibitors } = useSuspenseQuery(exhibitorsQuery());
   const { data: freight } = useSuspenseQuery(freightQuery());
   const { data: tickets } = useSuspenseQuery(ticketsQuery());
-  const { data: paymentSetup } = useSuspenseQuery(paymentSetupQuery());
   const { eventId: selected } = Route.useSearch();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const eventId = selected || events.find((e) => e.status !== "closed")?.id || events[0]?.id || "";
   const staff = isStaff(m);
-  const payment = paymentSetup.find((o) => o.id === m.organizationId);
   const changeEvent = (id: string) => void navigate({ to: "/shipments", search: { eventId: id } });
   useRealtimeRefresh(["freight_items", "tickets", "ticket_freight"], [["freight"], ["tickets"]]);
   const eventFreight = freight.filter((f) => f.event_id === eventId);
@@ -73,7 +63,6 @@ function ShipmentsPage() {
       {staff && <Button variant="outline" asChild><Link to="/dispatch">Dispatch</Link></Button>}
       {isAdmin(m) && eventId && <ShipmentInvitations eventId={eventId} contacts={exhibitors.filter((x) => x.contact_email && x.event_exhibitors.some((b) => b.event_id === eventId)).length} />}
     </div>
-    {staff && !payment?.payment_link_url && !payment?.payment_instructions && <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4 text-sm text-status-requested"><span>Invoices pending setup: add your company’s payment link or payment instructions.</span><Button variant="outline" size="sm" asChild><Link to="/settings">Payment settings</Link></Button></div>}
     <div className="grid grid-cols-2 gap-4 border-b border-border pb-6 lg:grid-cols-4">
       {[
         { label: "Arrived at venue", value: `${all.received} / ${all.expected}`, icon: Package },

@@ -19,7 +19,7 @@ export async function invoiceCompletedTicket(db: SupabaseClient<Database>, ticke
     if (!ex?.contact_email) return { sent: false, reason: "no_email" as const };
     const { data: org } = await db
       .from("organizations").select("name, payment_link_url, payment_instructions").eq("id", t.organization_id).maybeSingle();
-    if (!org?.payment_link_url && !org?.payment_instructions) return { sent: false, reason: "no_payment_setup" as const };
+    if (!org) return { sent: false, reason: "not_found" };
 
     const { SERVICE_LABEL } = await import("@/lib/labels");
     const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");

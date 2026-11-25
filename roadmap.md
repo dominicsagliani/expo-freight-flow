@@ -22,7 +22,7 @@
 
 ## Requested
 - [x] Streamlined shipments: CSV piece counts, retry-safe unique freight labels, single batch print, BOL receiving with preserved codes, private exhibitor tracking and completion invoice attempts (verified 100-row import/retry/print and pickup/delivery/charge)
-- [ ] Completion email delivery verification — waiting for contractor payment link/instructions; sending also requires exhibitor contact email
+- [x] Defer payment collection; completion invoices do not require a payment link, payment-setup warnings removed (tested with mocked send; no real emails sent in verification)
 - [x] Solo crew simulator: drag-and-drop pairing, automatic test dispatch, pickup/delivery, driver view and reset; keep test activity separate from real billing
 - [x] Names-only worker management, individual-device driver selection, exclusive forklift reservations and personal Forklift Mode dashboard
 - [x] Add confirmed admin event deletion and reset all drivers by cancelling unfinished jobs while preserving completed billing

@@ -24,7 +24,7 @@ const Email = ({ contractorName = 'Your service company', contactName, exhibitor
       <Container style={container}>
         <Text style={eyebrow}>{contractorName}</Text>
         <Heading style={h1}>Service complete — {amount} due</Heading>
-        <Text style={text}>{contactName ? `Hi ${contactName},` : 'Hello,'} your material handling job is done. You can pay now instead of waiting for an invoice after the show.</Text>
+        <Text style={text}>{contactName ? `Hi ${contactName},` : 'Hello,'} your material handling job is complete. This invoice records the service and final charge.</Text>
         <Section style={box}>
           {[
             ['Job', ticketNumber], ['Service', service], ['Company', exhibitorName], ['Show', eventName], ['Booth', booth], ['Completed', completedAt],
@@ -36,7 +36,7 @@ const Email = ({ contractorName = 'Your service company', contactName, exhibitor
         </Section>
         {paymentUrl ? <Button href={paymentUrl} style={button}>Pay {amount} now</Button> : null}
         {instructions ? <Text style={text}>{instructions}</Text> : null}
-        <Text style={small}>Please include job {ticketNumber ?? ''} with your payment. Questions? Just reply to this email.</Text>
+        <Text style={small}>{paymentUrl ? `Please include job ${ticketNumber ?? ''} with your payment.` : 'No online payment is requested through ExpoHaul.'} Contact {contractorName} with questions about this invoice.</Text>
       </Container>
     </Body>
   </Html>
@@ -45,7 +45,7 @@ const Email = ({ contractorName = 'Your service company', contactName, exhibitor
 export const template = {
   component: Email,
   subject: (d: Record<string, any>) => `${d['amount'] ?? 'Payment'} due — ${d['ticketNumber'] ?? 'forklift service'} complete`,
-  displayName: 'Service receipt with pay button',
+  displayName: 'Completed service invoice',
   previewData: { contractorName: 'Summit Material Handling', contactName: 'Jane', exhibitorName: 'Northwind Robotics', eventName: 'Pacific Manufacturing Expo', booth: '1214', ticketNumber: 'MH-10002', service: 'Inbound delivery to booth', completedAt: 'Nov 13, 2:40 PM', amount: '$197.00', paymentUrl: 'https://example.com/pay', instructions: 'Card, ACH or check accepted.' },
 } satisfies TemplateEntry
 
