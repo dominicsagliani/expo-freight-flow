@@ -21,7 +21,7 @@
 - [x] Rate cards, charge calculation, billing review + export
 
 ## Requested
-- [ ] Inbound shipments: expected registration, optional BOL, partial/extra/unexpected receiving, existing QR links and office overview; validate tenant access and receiving retries
+- [x] Inbound shipments: expected registration, optional BOL, partial/extra/unexpected receiving, existing QR links and office overview; verified staff/exhibitor access, private BOL upload/retrieval, retry-safe 2/3 and 4/3 arrivals, dispatch integration, delivery read-back, mobile details and event deletion; temporary test records removed
 - [x] Streamlined shipments: CSV piece counts, retry-safe unique freight labels, single batch print, BOL receiving with preserved codes, private exhibitor tracking and completion invoice attempts (verified 100-row import/retry/print and pickup/delivery/charge)
 - [x] Defer payment collection; completion invoices do not require a payment link, payment-setup warnings removed (tested with mocked send; no real emails sent in verification)
 - [x] Solo crew simulator: drag-and-drop pairing, automatic test dispatch, pickup/delivery, driver view and reset; keep test activity separate from real billing
