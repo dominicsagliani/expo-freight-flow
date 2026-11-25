@@ -113,8 +113,17 @@ export function ExhibitorImportDialog({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) {
+      setRows([]);
+      setFileName("");
+      setFileError(null);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
@@ -177,7 +186,7 @@ export function ExhibitorImportDialog({
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
           <Button disabled={!eventId || valid.length === 0 || run.isPending} onClick={() => run.mutate()}>
             <Upload /> {run.isPending ? "Importing…" : `Import ${valid.length} exhibitors`}
           </Button>
