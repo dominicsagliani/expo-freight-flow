@@ -50,7 +50,7 @@ function ShipmentLabels() {
       <Button variant="ghost" asChild><Link to="/shipments" search={{ eventId }}><ArrowLeft /> Shipments</Link></Button>
       <Button disabled={!ready} onClick={() => window.print()}><Printer /> {ready ? `Print all ${freight.length} labels` : freight.length ? "Preparing labels…" : "No freight labels"}</Button>
     </div>
-    <div className="print:hidden"><h1 className="font-display text-2xl font-bold">{freight[0]?.event?.name ?? "Freight labels"}</h1><p className="text-sm text-muted-foreground">{freight.length} saved labels · 4 × 3 inches</p></div>
+    <div className="print:hidden"><h1 className="font-display text-2xl font-bold">{freight[0]?.event?.name ?? "Freight labels"}</h1><p className="text-sm text-muted-foreground">{freight.length} saved labels · 59 × 104 mm</p></div>
     <div ref={sheet} className="print-label-sheet grid min-w-0 gap-6">
       {freight.map((f) => <FreightLabelCard key={f.id} freight={f} />)}
     </div>

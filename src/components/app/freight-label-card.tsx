@@ -15,25 +15,24 @@ export function FreightLabelCard({
 }) {
   const l = labelFields(freight);
   return (
-    <div className="print-label mx-auto w-full max-w-[4in] rounded-md border-2 border-foreground bg-card p-4 text-foreground">
-      <div className="flex items-start justify-between border-b-2 border-foreground pb-2">
-        <span className="font-display text-sm font-bold">ExpoHaul</span>
-        <span className="max-w-[2.5in] text-right text-[10px] leading-tight">{l.event}</span>
+    <div className="print-label mx-auto grid min-h-[59mm] w-full max-w-[104mm] grid-rows-[auto_1fr] gap-2 rounded-md border-2 border-foreground bg-card p-[3mm] text-foreground">
+      <div className="flex items-start justify-between gap-2 border-b border-foreground pb-1">
+        <span className="font-display text-xs font-bold">ExpoHaul</span>
+        <span className="max-w-[65mm] break-words text-right text-[9px] leading-tight">{l.event}</span>
       </div>
-      <div className="mt-3 flex items-center gap-4">
-        <QrCode value={qrPayload(window.location.origin, freight.qr_token)} size={150} />
-        <div className="grid min-w-0 gap-1.5">
-          <div><div className="text-[10px] font-semibold uppercase">Company</div><div className="break-words font-display text-sm font-bold leading-tight">{l.company}</div></div>
-          <div><div className="text-[10px] font-semibold uppercase">Booth</div><div className="font-display text-3xl font-bold leading-none">{l.booth}</div></div>
-          <div><div className="text-[10px] font-semibold uppercase">Contact</div><div className="text-xs font-medium leading-tight">{l.contact}</div></div>
-          <div><div className="text-[10px] font-semibold uppercase">Freight ID</div><div className="font-mono text-base font-bold leading-tight">{l.code}</div></div>
-          <div className="text-xs">
+      <div className="flex items-center gap-3">
+        <div className="shrink-0"><QrCode value={qrPayload(window.location.origin, freight.qr_token)} size={118} /></div>
+        <div className="grid min-w-0 gap-1">
+          <div className="break-words font-display text-xs font-bold leading-tight">{l.company}</div>
+          <div><div className="text-[9px] font-semibold uppercase">Booth</div><div className="break-words font-display text-2xl font-bold leading-none">{l.booth}</div></div>
+          <div className="break-words text-[10px] font-medium leading-tight">Contact: {l.contact}</div>
+          <div className="break-all font-mono text-xs font-bold leading-tight">{l.code}</div>
+          <div className="text-[9px] leading-tight">
             {FREIGHT_TYPE_LABEL[l.type as FreightType]} · {l.pieces} pc
             {crateNumber && crateCount ? ` · Crate ${crateNumber} of ${crateCount}` : ""}
           </div>
         </div>
       </div>
-      <p className="mt-3 border-t border-foreground pt-2 text-[9px]">Scan with the ExpoHaul app. Full details visible to authorized staff only.</p>
     </div>
   );
 }
