@@ -1,0 +1,1 @@
+CREATE TRIGGER zz_plan_gate BEFORE INSERT ON public.inbound_shipments FOR EACH ROW EXECUTE FUNCTION public.plan_gate_before_insert();

@@ -295,6 +295,20 @@
       "when": 1795569997406,
       "tag": "0041_protect_inbound_links_and_audit_arrivals",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1795570357329,
+      "tag": "0042_preserve_event_deletion_with_inbound_shipments",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1795570431279,
+      "tag": "0043_apply_existing_plan_gate_to_inbound_shipments",
+      "breakpoints": true
     }
   ]
 }

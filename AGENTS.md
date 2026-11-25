@@ -56,3 +56,4 @@ use the editor.
 - Bone-yard staging is append-only `freight_staging` (trigger sets current location); multi-crate jobs use `dispatch_staged_crates`; a trigger blocks a crate on two open jobs. Why: auditable, no double dispatch.
 - Operator scores are computed live by `operator_performance` (never stored); bonuses change only via admin RPCs with append-only `bonus_audit_log`; reviewed/paid bonuses lock. Why: traceable, unforgeable incentives.
 - Shipment import is an event-locked staff RPC with stable per-booth piece sequences; tracking/labels use RLS and email-matched invitations. Why: retries preserve QR identity without exposing other exhibitors.
+- Inbound shipments reconcile linked freight via locked RPCs; original expected counts stay fixed and extras remain separate. Why: partial arrivals and retries must preserve crate identity.
